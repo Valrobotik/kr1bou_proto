@@ -1,8 +1,7 @@
 gpio:
   start_button_pin: 4
   emergency_button_pin: 26
-  front_bumper_pins: [17, 27]
-  back_bumper_pins: [22, 23]
+  bumper_pins: [0, 1, 5, 6]
 
 frequency: 10   # Frequency Rate
 queue_size: 10  # Queue Size
