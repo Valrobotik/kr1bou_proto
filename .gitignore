@@ -1,2 +1,6 @@
-/.vscode
-/kr1bou_venv
+/.vscode/
+/kr1bou_venv/
+/build/
+/devel/
+/src/build/
+/src/.vscode/
