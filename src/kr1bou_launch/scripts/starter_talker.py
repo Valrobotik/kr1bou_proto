@@ -22,8 +22,8 @@ def on_key_release():
 if __name__ == '__main__':
     try:
         rospy.init_node('starter_talker', anonymous=True)
-        start_pin = rospy.get_param('/kr1bou_launch/gpio/start_button_pin')
-        queue_size = rospy.get_param('/kr1bou_launch/queue_size')
+        start_pin = rospy.get_param('/gpio/start_button_pin')
+        queue_size = rospy.get_param('/queue_size')
         
         pub = rospy.Publisher('starter', Bool, queue_size=queue_size)
         key = Button(start_pin)
@@ -33,4 +33,4 @@ if __name__ == '__main__':
         rospy.loginfo("Starter node initialized, monitoring the start key.")
         rospy.spin()
     except rospy.ROSInterruptException as e:
-        rospy.logdebug(e)
+        rospy.logerr(e)

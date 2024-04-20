@@ -40,4 +40,4 @@ if __name__ == '__main__':
         frequency = rospy.get_param('/frequency', 10)  # Default to 10 Hz if not set
         publish_bumper_event(front_pins, back_pins, frequency)
     except rospy.ROSInterruptException as e:
-        rospy.logdebug(e)
+        rospy.logerr(e)

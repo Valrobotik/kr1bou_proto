@@ -29,5 +29,5 @@ if __name__ == '__main__':
         # Spin to keep the script for exiting
         rospy.spin()
     except rospy.ROSInterruptException as e:
-        rospy.logdebug(e)
+        rospy.logerr(e)
 
