@@ -23,10 +23,10 @@ def check_bumpers(buttons: Tuple[Button]):
     return state
 
 
-def publish_bumper_event(bumper_pins, frequency):
+def publish_bumper_event(bumper_pins, frequency, queue_size):
     buttons = setup_buttons(bumper_pins)
     
-    pub = rospy.Publisher('bumper', Byte, queue_size=10)
+    pub = rospy.Publisher('bumper', Byte, queue_size=queue_size)
     rospy.init_node('bumper_watch', anonymous=True)
     rate = rospy.Rate(frequency)
 
@@ -41,6 +41,7 @@ if __name__ == '__main__':
     try:
         bumper_pins = rospy.get_param('/gpio/bumper_pins')
         frequency = rospy.get_param('/frequency')
-        publish_bumper_event(bumper_pins, frequency)
+        queue_size = rospy.get_param('/queue_size')
+        publish_bumper_event(bumper_pins, frequency, queue_size)
     except rospy.ROSInterruptException as e:
         rospy.logerr(e)
