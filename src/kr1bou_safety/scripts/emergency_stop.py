@@ -20,7 +20,8 @@ if __name__ == '__main__':
 
         # ROS node initialization
         rospy.init_node('emergency_stop', anonymous=True)
-        pub = rospy.Publisher('emergency', Bool, queue_size=10)
+        queue_size = rospy.get_param('/queue_size')
+        pub = rospy.Publisher('emergency', Bool, queue_size=queue_size)
 
         # GPIO setup
         button = Button(button_pin)  # The emergency button
