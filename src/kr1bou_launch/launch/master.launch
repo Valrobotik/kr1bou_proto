@@ -1,0 +1,19 @@
+<launch>
+    <!-- Load the configuration (such as GPIO, Rate, Queue size...)-->
+    <rosparam file="$(find kr1bou_launch)/config/config.yaml" command="load" />
+
+    <!-- Start the starter_talker node -->
+    <node name="starter_talker" pkg="kr1bou_launch" type="starter_talker.py" output="screen" />
+
+    <!-- Include Controller Package Launch File -->
+    <include file="$(find kr1bou_controller)/launch/controller.launch"/>
+
+    <!-- Include Sensors Package Launch File -->
+    <include file="$(find kr1bou_sensors)/launch/sensors.launch"/>
+
+    <!-- Include Actuators Package Launch File -->
+    <include file="$(find kr1bou_actuators)/launch/actuators.launch"/>
+
+    <!-- Include Safety Package Launch File -->
+    <include file="$(find kr1bou_safety)/launch/safety.launch"/>
+</launch>

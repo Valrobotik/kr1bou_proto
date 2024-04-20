@@ -1,0 +1,6 @@
+<launch>
+    <!-- Wheel Control Node -->
+    <node name="wheel_control" pkg="kr1bou_actuators" type="wheel_control.py" output="screen">
+        <!-- Optional parameters can be added here -->
+    </node>
+</launch>

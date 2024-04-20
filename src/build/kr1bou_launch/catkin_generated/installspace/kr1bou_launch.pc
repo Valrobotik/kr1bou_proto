@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: kr1bou_launch
+Description: Description of kr1bou_launch
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

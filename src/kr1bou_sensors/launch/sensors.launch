@@ -1,0 +1,16 @@
+<launch>
+    <!-- Ultrasound Sensor Node -->
+    <node name="ultrasound" pkg="kr1bou_sensors" type="ultrasound.py" output="screen">
+        <!-- Optional parameters can be added here -->
+    </node>
+
+    <!-- Front Camera Node -->
+    <node name="camera_front" pkg="kr1bou_sensors" type="camera_front.py" output="screen">
+        <!-- Optional parameters can be added here -->
+    </node>
+
+    <!-- Pole Camera Node -->
+    <node name="camera_pole" pkg="kr1bou_sensors" type="camera_pole.py" output="screen">
+        <!-- Optional parameters can be added here -->
+    </node>
+</launch>

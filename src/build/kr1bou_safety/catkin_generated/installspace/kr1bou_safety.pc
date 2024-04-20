@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: kr1bou_safety
+Description: Description of kr1bou_safety
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
