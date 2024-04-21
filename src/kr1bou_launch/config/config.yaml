@@ -1,3 +1,8 @@
+arduino:
+  baudrate: 115200
+  known_sensors: [Motor, Ultrasonic]
+
+
 gpio:
   start_button_pin: 4
   emergency_button_pin: 26

@@ -12,8 +12,8 @@ from geometry_msgs.msg import PoseStamped
 # Load configuration parameters
 frequency = rospy.get_param('/frequency')
 map_boundaries = rospy.get_param('/map_boundaries')  # (x_min, y_min, x_max, y_max)
-sensor_positions = rospy.get_param('/sensor_positions')  # [(x, y, z, angle), ...]. Angle is in radians
-serial_port_param = rospy.get_param('/arduino_serial_ports/ultrasound_seri')
+sensor_positions = rospy.get_param('/sensor_positions/uS')  # [(x, y, z, angle), ...]. Angle is in radians
+serial_port_param = [rospy.get_param(f'/arduino/arduino_serial_ports/uS{i}') for i in range(1, 9)]
 
 # Manage robot's pose
 current_pose = None
