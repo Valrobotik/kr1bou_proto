@@ -14,11 +14,13 @@ def on_button_press():
 
 
 if __name__ == '__main__':
-    # Wait for the runningPhase True signal
-    start = rospy.Subscriber('runningPhase', Bool)
-    while not start.data:
-        rospy.sleep(1)
     try:
+        # Initialization
+        rospy.init_node('emergency_stop')
+        # Wait for the runningPhase True signal
+        start = rospy.wait_for_message('runningPhase', Bool)
+        while not start.data:
+            start = rospy.wait_for_message('runningPhase', Bool)
         # Load configuration
         button_pin = rospy.get_param('/gpio/emergency_button_pin')
 

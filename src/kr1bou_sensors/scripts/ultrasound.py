@@ -68,11 +68,12 @@ def read_and_publish_sensor_data():
 
 
 if __name__ == '__main__':
+    # Initialization
+    rospy.init_node('ultrasound_sensor_manager')
     # Wait for the runningPhase True signal
-    start = rospy.Subscriber('runningPhase', Bool)
+    start = rospy.wait_for_message('runningPhase', Bool)
     while not start.data:
-        rospy.sleep(1)
-
+        start = rospy.wait_for_message('runningPhase', Bool)
     # Load configuration parameters
     frequency = rospy.get_param('/frequency')
     queue_size = rospy.get_param('/queue_size')
@@ -80,17 +81,14 @@ if __name__ == '__main__':
     map_boundaries = rospy.get_param('/map_boundaries')  # (x_min, y_min, x_max, y_max)
     sensor_positions = rospy.get_param('/sensor_positions/uS')  # [(x, y, z, angle), ...]. Angle is in radians
     serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/uS')
-
+    serial_port = serial.Serial(serial_port_param, baudrate, timeout=1)
+    
     # Manage robot's pose
     current_pose = None
     def pose_callback(pose_msg):
         global current_pose
         current_pose = pose_msg.pose
         rospy.loginfo(f"Received current pose at {pose_msg.header.stamp}")
-
-    # Initialization
-    rospy.init_node('ultrasound_sensor_manager')
-    serial_port = serial.Serial(serial_port_param, 9600, timeout=1)
 
     # Publisher and Subscriber
     sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
