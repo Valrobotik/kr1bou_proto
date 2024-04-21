@@ -25,7 +25,7 @@ if __name__ == '__main__':
         start_pin = rospy.get_param('/gpio/start_button_pin')
         queue_size = rospy.get_param('/queue_size')
         
-        pub = rospy.Publisher('starter', Bool, queue_size=queue_size)
+        pub = rospy.Publisher('configPhase', Bool, queue_size=queue_size)
         key = Button(start_pin)
         key.when_pressed = on_key_press
         key.when_released = on_key_release
