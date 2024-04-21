@@ -69,8 +69,8 @@ def read_and_publish_sensor_data():
 
 if __name__ == '__main__':
     # Wait for the runningPhase True signal
-    response = rospy.Subscriber('runningPhase', Bool)
-    while not response.data:
+    start = rospy.Subscriber('runningPhase', Bool)
+    while not start.data:
         rospy.sleep(1)
 
     # Load configuration parameters

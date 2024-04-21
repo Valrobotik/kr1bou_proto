@@ -3,11 +3,11 @@
 Looks out for bumpers signals on specific GPIO pins. Handles events such as the robot reaching a wall.
 When two front or two back buttons are held, it publishes on the 'bumper' topic.
 """
-
 import rospy
 from gpiozero import Button
-from std_msgs.msg import Byte
+from std_msgs.msg import Byte, Bool
 from typing import Tuple
+
 
 def setup_buttons(pins):
     return [Button(pin) for pin in pins]
@@ -23,7 +23,7 @@ def check_bumpers(buttons: Tuple[Button]):
     return state
 
 
-def publish_bumper_event(bumper_pins, frequency, queue_size):
+def publish_bumper_event(bumper_pins):
     buttons = setup_buttons(bumper_pins)
     
     pub = rospy.Publisher('bumper', Byte, queue_size=queue_size)
@@ -38,10 +38,14 @@ def publish_bumper_event(bumper_pins, frequency, queue_size):
 
 
 if __name__ == '__main__':
+    # Wait for the runningPhase True signal
+    start = rospy.Subscriber('runningPhase', Bool)
+    while not start.data:
+        rospy.sleep(1)
     try:
         bumper_pins = rospy.get_param('/gpio/bumper_pins')
         frequency = rospy.get_param('/frequency')
         queue_size = rospy.get_param('/queue_size')
-        publish_bumper_event(bumper_pins, frequency, queue_size)
+        publish_bumper_event(bumper_pins)
     except rospy.ROSInterruptException as e:
         rospy.logerr(e)
