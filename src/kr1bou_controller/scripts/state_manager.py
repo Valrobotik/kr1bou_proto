@@ -7,6 +7,8 @@ import rospy
 import serial.tools.list_ports
 from std_msgs.msg import Bool
 
+queue_size = rospy.get_param('/queue_size')
+
 
 # Identify connected Arduinos
 def identify_arduino_ports(known_sensors):
@@ -24,7 +26,6 @@ def identify_arduino_ports(known_sensors):
 
 
 def config_callback(msg):
-    queue_size = rospy.get_param('/queue_size')
     if msg.data is False:  # We want the key to be released
         rospy.loginfo("Config phase started")
 

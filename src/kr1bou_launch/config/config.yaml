@@ -1,6 +1,6 @@
 arduino:
   baudrate: 115200
-  known_sensors: [Motor, Ultrasonic]
+  known_sensors: [Motor, uS]
 
 
 gpio:
@@ -8,5 +8,7 @@ gpio:
   emergency_button_pin: 26
   bumper_pins: [0, 1, 5, 6]
 
-frequency: 10   # Frequency Rate
-queue_size: 10  # Queue Size
+frequency: 10   # Rate 
+queue_size: 10 
+map_boundaries: [0, 0, 200, 300]  # in cm
+sensor_positions: [(x, y, z, angle), ...] # TODO
