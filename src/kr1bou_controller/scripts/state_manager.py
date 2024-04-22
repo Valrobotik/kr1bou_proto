@@ -26,6 +26,7 @@ def identify_arduino_ports(known_sensors):
                     rospy.loginfo(f"sensor {sensor_id} connected on {port}")
                     identified_ports[sensor_id] = port
             ser.close()
+            rospy.sleep(0.1)
         elif len(known_sensors) == len(identified_ports):
             break
     if not identified_ports:
