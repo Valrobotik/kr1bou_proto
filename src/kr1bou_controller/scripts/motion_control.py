@@ -16,7 +16,7 @@ IN_PROGESS = 2
 KLigne = -19.0
 KAngle = 0.1
 
-ANGLE_PRECISION = 0.1
+ANGLE_PRECISION = 0.05
 DISTANCE_PRECISION = 0.05
 KP_R = -0.1
 
@@ -89,6 +89,7 @@ class Kr1bou():
         if temp != -1:
             while cam_id == temp: pass
             self.publisher_corect_odom.publish(camera_position)
+            rospy.loginfo("odometrie corected")
         else:
             rospy.logwarn("no conexion with cammera")
 

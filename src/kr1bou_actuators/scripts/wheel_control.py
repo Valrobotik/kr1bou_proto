@@ -35,8 +35,7 @@ class WheelController():
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
-        if data.theta < 0:
-            data.theta += pi + pi
+        rospy.loginfo(f"O{format(data.x/100, '.2f')};{format(data.y/100, '.2f')};{format(data.theta, '.2f')}R\n")
         try:
             self.serial_port.write(f"O{format(data.x/100, '.2f')};{format(data.y/100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
         except:
