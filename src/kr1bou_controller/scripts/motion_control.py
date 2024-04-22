@@ -183,6 +183,7 @@ class Kr1bou():
 
 if __name__=="__main__":
     try:
+        print("test")
         # Initialization
         rospy.init_node('controller', anonymous=True)
         rospy.loginfo("Init node controller")

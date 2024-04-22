@@ -46,8 +46,6 @@ def config_callback(msg):
         known_sensors = rospy.get_param('/arduino/known_sensors')
         rospy.loginfo("Identifying connected Arduino sensors...")
         identified_ports = identify_arduino_ports(known_sensors)
-        
-        rospy.loginfo("test")
 
         # Dump identified ports to ROS parameters
         for sensor_id, port in identified_ports.items():
@@ -62,6 +60,7 @@ def config_callback(msg):
         pub = rospy.Publisher('runningPhase', Bool, queue_size=queue_size)
         pub.publish(True)
         pub.unregister()
+        rospy.loginfo("Published on runningPhase topic")
 
 
 def running_callback(msg):
