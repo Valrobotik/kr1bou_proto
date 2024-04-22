@@ -13,6 +13,8 @@ queue_size = rospy.get_param('/queue_size')
 def identify_arduino_ports(known_sensors):
     ports = serial.tools.list_ports.comports()
     identified_ports = {}
+    list_port = [port for port, desc, hwid in sorted(ports)]
+    rospy.loginfo(f"list of ports : {list_port}")
     for port, desc, hwid in sorted(ports):
         # rospy.loginfo("coucou444")
         rospy.loginfo(port)
