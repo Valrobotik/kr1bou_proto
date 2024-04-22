@@ -62,7 +62,7 @@ class WheelController():
 
     def run(self):
         while not rospy.is_shutdown():
-            self.receive_odometry
+            self.receive_odometry()
             self.rate.sleep()
 
     def close(self):
