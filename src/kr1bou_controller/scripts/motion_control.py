@@ -56,6 +56,8 @@ class Kr1bou():
         self.destination_angle = 0
         self.epsilon = 0.07
 
+        self.need_rst_odom = False
+
         self.freq = rospy.get_param('/frequency')
 
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
@@ -72,9 +74,9 @@ class Kr1bou():
             self.update_rotation_speed()
         elif self.etat == READY_LINEAR :
             self.etat = READY
+            self.need_rst_odom = True
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
-            self.reset_position_camera()
         else:
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
@@ -82,6 +84,7 @@ class Kr1bou():
         data.y = self.vitesse_gauche
         data.x = self.vitesse_droite
         self.publisher_speed.publish(data)
+        if(self.need_rst_odom): self.reset_position_camera()
 
     def reset_position_camera(self):
         global cam_id, camera_position
@@ -93,12 +96,14 @@ class Kr1bou():
             rospy.loginfo("odometrie corected")
         else:
             rospy.logwarn("no conexion with cammera")
+        self.need_rst_odom = False
 
     def update_rotation_speed(self):
         angle_diff = self.angleDiffRad(self.objectif_theta, self.theta)
         w = angle_diff * KP_R
         if abs(angle_diff) < ANGLE_PRECISION:
             self.etat = READY
+            self.need_rst_odom = True
             w = 0
         self.vitesse_gauche = w
         self.vitesse_droite = -w
