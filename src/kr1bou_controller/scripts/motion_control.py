@@ -207,6 +207,7 @@ camera_position = Pose2D()
 def update_camera(data : Pose2D):
     global cam_id, camera_position
     cam_id = (cam_id+1)%2
+    rospy.loginfo("camera receive")
     camera_position = data
 
 if __name__=="__main__":
