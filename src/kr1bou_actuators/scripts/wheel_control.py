@@ -15,10 +15,14 @@ class WheelController():
         # Retrieve the serial port parameter for the Arduino controlling the wheels
         self.serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/Motor')
         self.baudrate = rospy.get_param('/arduino/baudrate')
+        self.rate = rospy.Rate(30)
 
         # Initialize the serial port for communication with Arduino
         self.serial_port = serial.Serial(self.serial_port_param, self.baudrate, timeout=1)
-        
+
+        # Publish the received odometry
+        self.publisher_odometry = rospy.Publisher('odometry', Pose2D, queue_size=1)
+
         # Subscribe to the motor_speed topic
         rospy.Subscriber('motor_speed', Vector3, self.motor_speed_callback)
         rospy.Subscriber('odom_corrected', Pose2D, self.correct_odometry)
@@ -38,15 +42,27 @@ class WheelController():
         except:
             rospy.logwarn("Error while sending correction")
 
+    def receive_odometry(self):
+        if self.serial_port.in_waiting > 0:
+            data = str(self.serial_port.serial.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n', '').replace('R', '')
+            self.serial_port.reset_input_buffer()
+            data = data.split(';')
+            position = Pose2D(float(data[0]), float(data[1]), float(data[2]))
+            self.publisher_odometry.publish(position)
+            rospy.loginfo(f"Received ({position}) from arduino")
+
+
     def stop(self, data):
         # Format : SR
         self.serial_port.write("SR".encode())
         
 
     def run(self):
-        rospy.spin()
+        while not rospy.is_shutdown():
+            self.receive_odometry
+            self.rate.sleep()
 
-    def __del__(self):
+    def close(self):
         self.serial_port.close()
 
 
@@ -63,7 +79,7 @@ if __name__ == "__main__":
 
         wheel_controller.run()
     except rospy.ROSInterruptException as e:
-        rospy.logerr(e)
+        pass
     finally:
-        del wheel_controller
+        wheel_controller.close
         rospy.loginfo("Wheel Controller node has stopped.")

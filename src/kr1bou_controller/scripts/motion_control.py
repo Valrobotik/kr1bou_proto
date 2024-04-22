@@ -5,7 +5,6 @@ Controls the movement of the robot using inputs from sensors and navigation data
 from math import atan2, sqrt, cos, sin, atan, pi
 
 import rospy
-import serial
 from geometry_msgs.msg import Pose2D, Vector3
 from std_msgs.msg import Float64, Bool
 
@@ -44,7 +43,7 @@ class Kr1bou():
         self.y = 0
         self.theta = 0
         
-        self.objectif_x = 0
+        self.objectif_x = 0.2
         self.objectif_y = 0
         self.objectif_theta = 0
 
@@ -55,35 +54,29 @@ class Kr1bou():
         self.last_right_speed = 0
 
         self.freq = rospy.get_param('/frequency')
-        self.serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/Motor')
-        self.baudrate = rospy.get_param('/arduino/baudrate')
-        self.serial_port = serial.Serial(self.serial_port_param, self.baudrate, timeout=1)
 
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
-        self.publisher_odometry = rospy.Publisher('odometry', Pose2D, queue_size=1)
+        rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, self.set_max_speed)
         rospy.Subscriber('stop', Bool, self.stop)
 
     def publish_speed(self):
-        rate = rospy.Rate(self.freq)
-        while not rospy.is_shutdown():
-            if self.etat == IN_PROGESS :
-                self.update_speed()
-            elif self.etat == READY_LINEAR and self.objectif_theta != -1:
-                self.update_rotation_speed()
-            elif self.etat == READY_LINEAR :
-                self.etat = READY
-                self.vitesse_gauche = 0
-                self.vitesse_droite = 0
-            else:
-                self.vitesse_gauche = 0
-                self.vitesse_droite = 0
-            data = Vector3()
-            data.x = self.vitesse_gauche
-            data.y = self.vitesse_droite
-            self.publisher_speed.publish(data)
-            rate.sleep()
+        if self.etat == IN_PROGESS :
+            self.update_speed()
+        elif self.etat == READY_LINEAR and self.objectif_theta != -1:
+            self.update_rotation_speed()
+        elif self.etat == READY_LINEAR :
+            self.etat = READY
+            self.vitesse_gauche = 0
+            self.vitesse_droite = 0
+        else:
+            self.vitesse_gauche = 0
+            self.vitesse_droite = 0
+        data = Vector3()
+        data.x = self.vitesse_gauche
+        data.y = self.vitesse_droite
+        self.publisher_speed.publish(data)
 
 
     def update_rotation_speed(self):
@@ -95,6 +88,10 @@ class Kr1bou():
         self.vitesse_gauche = w
         self.vitesse_droite = -w
 
+    def update_pose(self, data:Pose2D):
+        self.x = data.x
+        self.y = data.y
+        self.theta = data.theta
 
     def update_speed(self, allowed_backward = False):
         x2 = self.objectif_x
@@ -179,13 +176,6 @@ class Kr1bou():
             self.vitesse_droite = 0
         else:
             self.etat = IN_PROGESS
-        
-    def receive_odometry(self):
-        if self.serial_port.in_waiting > 0:
-            data = str(self.serial_port.serial.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n', '').replace('R', '')
-            self.serial_port.reset_input_buffer()
-            data = data.split(';')
-            self.publisher_odometry.publish(Pose2D(float(data[0]), float(data[1]), float(data[2])))
 
     def __del__(self):
         self.serial_port.close()
@@ -200,9 +190,10 @@ if __name__=="__main__":
         while not start.data:
             start = rospy.wait_for_message('runningPhase', Bool)
         robot = Kr1bou()
-        robot.publish_speed()
-        robot.receive_odometry()
-        rospy.spin()
+        rate = rospy.Rate(robot.freq)
+        while not rospy.is_shutdown():  
+            robot.publish_speed()
+            rate.sleep()
     except rospy.ROSInterruptException as e:
         rospy.logerr(e)
     finally:
