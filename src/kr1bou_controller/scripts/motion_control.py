@@ -74,8 +74,8 @@ class Kr1bou():
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
         data = Vector3()
-        data.x = self.vitesse_gauche
-        data.y = self.vitesse_droite
+        data.x = self.vitesse_droite
+        data.y = self.vitesse_gauche
         self.publisher_speed.publish(data)
 
 
