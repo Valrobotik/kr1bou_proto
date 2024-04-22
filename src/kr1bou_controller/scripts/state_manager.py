@@ -25,6 +25,7 @@ def identify_arduino_ports(known_sensors):
             rospy.loginfo("coucou111")
         rospy.loginfo("coucou222")
         ser.close()
+        rospy.loginfo("coucou222bis")
     rospy.loginfo("coucou333")
     if not identified_ports:
         rospy.logerr("No ports detected")
