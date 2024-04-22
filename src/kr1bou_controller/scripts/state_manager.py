@@ -23,6 +23,8 @@ def identify_arduino_ports(known_sensors):
                 rospy.loginfo(f"Identified {sensor_id} at {port}")
                 identified_ports[sensor_id] = port
         ser.close()
+    if not identified_ports:
+        rospy.logerr("No ports detected")
     return identified_ports
 
 
