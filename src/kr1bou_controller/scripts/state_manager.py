@@ -15,7 +15,7 @@ def identify_arduino_ports(known_sensors):
     identified_ports = {}
     for port, desc, hwid in sorted(ports):
         rospy.loginfo("coucou444")
-        rospy.loginfo(port, desc, hwid)
+        rospy.loginfo(port)
         ser = serial.Serial(port)  # Open the port
         ser.write('NR\n'.encode())  # Send command to get sensor ID response
         line = ser.readline()
