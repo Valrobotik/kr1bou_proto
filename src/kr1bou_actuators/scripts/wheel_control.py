@@ -71,9 +71,14 @@ if __name__ == "__main__":
         # Initialization
         rospy.init_node('wheel_controller')
         # Wait for the runningPhase True signal
-        start = rospy.wait_for_message('runningPhase', Bool)
-        while not start.data:
-            start = rospy.wait_for_message('runningPhase', Bool)
+        rate = rospy.Rate(rospy.get_param('/rate'))
+        start = False
+        def run(data):
+            start = data
+        rospy.Subscriber('runningPhase', Bool, run)
+        rospy.loginfo(f"Received {start} from runnningPhase")
+        while not start:
+            rate.sleep()
         wheel_controller = WheelController()
         rospy.loginfo("Wheel Controller node has started.")
 

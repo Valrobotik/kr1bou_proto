@@ -183,18 +183,19 @@ class Kr1bou():
 
 if __name__=="__main__":
     try:
-        print("test")
         # Initialization
         rospy.init_node('controller', anonymous=True)
         rospy.loginfo("Init node controller")
         # Wait for the runningPhase True signal
-        start = rospy.wait_for_message('runningPhase', Bool)
+        rate = rospy.Rate(rospy.get_param('/rate'))
+        start = False
+        def run(data):
+            start = data
+        rospy.Subscriber('runningPhase', Bool, run)
         rospy.loginfo(f"Received {start} from runnningPhase")
-        while not start.data:
-            start = rospy.wait_for_message('runningPhase', Bool)
-            rospy.loginfo(f"Received {start} from runnningPhase")
+        while not start:
+            rate.sleep()
         robot = Kr1bou()
-        rate = rospy.Rate(robot.freq)
         while not rospy.is_shutdown():  
             robot.publish_speed()
             rate.sleep()
