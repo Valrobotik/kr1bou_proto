@@ -60,10 +60,12 @@ class Kr1bou():
 
         self.freq = rospy.get_param('/frequency')
 
-        self.reset_position_camera()
-
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
         self.publisher_corect_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
+        
+        rospy.sleep(0.1)
+        self.reset_position_camera()
+
         rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, self.set_max_speed)
