@@ -193,7 +193,7 @@ if __name__=="__main__":
             global start
             start = data
         rospy.Subscriber('runningPhase', Bool, run)
-        rospy.loginfo(f"Received {start} from runnningPhase")
+        rospy.loginfo(f"Received {start} from runningPhase")
         while not start:
             rate.sleep()
         robot = Kr1bou()
