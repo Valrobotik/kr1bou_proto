@@ -53,6 +53,9 @@ class Kr1bou():
         self.last_left_speed = 0
         self.last_right_speed = 0
 
+        self.destination_angle = 0
+        self.epsilon = 0.07
+
         self.freq = rospy.get_param('/frequency')
 
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
@@ -97,8 +100,8 @@ class Kr1bou():
         x2 = self.objectif_x
         y2 = self.objectif_y
 
-        destination_angle = atan2(y2 - self.y, x2 - self.x)
-
+        if (sqrt((self.x-x2)**2+(self.y-y2)**2) > self.epsilon) : self.destination_angle = atan2(y2 - self.y, x2 - self.x)
+        destination_angle = self.destination_angle
         pos = [self.x, self.y]
         pos[0] -= cos(self.theta) * POSITION_SHIFT
         pos[1] -= sin(self.theta) * POSITION_SHIFT
