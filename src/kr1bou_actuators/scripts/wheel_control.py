@@ -44,7 +44,7 @@ class WheelController():
 
     def receive_odometry(self):
         if self.serial_port.in_waiting > 0:
-            data = str(self.serial_port.serial.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n', '').replace('R', '')
+            data = str(self.serial_port.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n', '').replace('R', '')
             self.serial_port.reset_input_buffer()
             data = data.split(';')
             position = Pose2D(float(data[0]), float(data[1]), float(data[2]))
