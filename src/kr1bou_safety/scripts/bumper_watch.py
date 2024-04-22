@@ -32,7 +32,7 @@ def publish_bumper_event(bumper_pins):
 
     while not rospy.is_shutdown():
         bumpers_pressed = check_bumpers(buttons)
-        rospy.loginfo(bumpers_pressed)
+        #rospy.loginfo(bumpers_pressed)
         pub.publish(bumpers_pressed.data)
         rate.sleep()
 
