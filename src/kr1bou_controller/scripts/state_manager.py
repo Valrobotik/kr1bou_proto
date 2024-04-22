@@ -56,10 +56,10 @@ def config_callback(msg):
         # Transition to the next state via publisher
         pub = rospy.Publisher('configPhase', Bool, queue_size=queue_size)
         pub.publish(False)
-        pub.unregister()
+        # pub.unregister()
         pub = rospy.Publisher('runningPhase', Bool, queue_size=queue_size)
         pub.publish(True)
-        pub.unregister()
+        # pub.unregister()
         rospy.loginfo("Published on runningPhase topic")
 
 
