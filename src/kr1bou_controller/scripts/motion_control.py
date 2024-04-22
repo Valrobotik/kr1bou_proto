@@ -190,6 +190,7 @@ if __name__=="__main__":
         rate = rospy.Rate(rospy.get_param('/frequency'))
         start = False
         def run(data):
+            global start
             start = data
         rospy.Subscriber('runningPhase', Bool, run)
         rospy.loginfo(f"Received {start} from runnningPhase")
