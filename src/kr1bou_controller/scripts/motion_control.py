@@ -43,8 +43,8 @@ class Kr1bou():
         self.y = 0
         self.theta = 0
         
-        self.objectif_x = 0.5
-        self.objectif_y = 0.0
+        self.objectif_x = 2.0
+        self.objectif_y = 1.0
         self.objectif_theta = pi/2
 
         self.vitesse_gauche = 0
@@ -60,12 +60,16 @@ class Kr1bou():
 
         self.freq = rospy.get_param('/frequency')
 
+        self.reset_position_camera()
+
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
         self.publisher_corect_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
         rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, self.set_max_speed)
         rospy.Subscriber('stop', Bool, self.stop)
+
+
 
     def publish_speed(self):
         if self.etat == IN_PROGESS :
@@ -213,9 +217,10 @@ cam_id = -1
 camera_position = Pose2D()
 def update_camera(data : Pose2D):
     global cam_id, camera_position
-    cam_id = (cam_id+1)%2
     rospy.loginfo("camera receive")
     camera_position = data
+    camera_position.theta = 2*pi-camera_position.theta
+    cam_id = (cam_id+1)%2
 
 if __name__=="__main__":
     try:
