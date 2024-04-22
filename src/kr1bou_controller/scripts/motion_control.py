@@ -103,6 +103,7 @@ class Kr1bou():
         if (sqrt((self.x-x2)**2+(self.y-y2)**2) > self.epsilon) : self.destination_angle = atan2(y2 - self.y, x2 - self.x)
         destination_angle = self.destination_angle
         pos = [self.x, self.y]
+
         pos[0] -= cos(self.theta) * POSITION_SHIFT
         pos[1] -= sin(self.theta) * POSITION_SHIFT
 
@@ -113,7 +114,8 @@ class Kr1bou():
                            
         angle_line_to_robot = atan2(pos[1] - p1[1], pos[0] - p1[0])
         
-        diff_angle_line_to_robot = destination_angle - angle_line_to_robot
+        diff_angle_line_to_robot = self.angleDiffRad(destination_angle, angle_line_to_robot)
+
         is_on_right_side = diff_angle_line_to_robot > 0.0
         target_angle = destination_angle + atan(dist_to_line * 3.5) * (-1 if is_on_right_side else 1)
 
@@ -127,12 +129,12 @@ class Kr1bou():
             m_goto_base_reached = True
             self.etat = READY_LINEAR
         
-        angle_diff = target_angle - self.theta
+        angle_diff = self.angleDiffRad(target_angle, self.theta)
         backward = abs(angle_diff) > pi / 2
 
         backward = backward and allowed_backward
         if backward:
-            angle_diff = target_angle + pi - self.theta
+            angle_diff = self.angleDiffRad(target_angle + pi, self.theta)
 
         speed_limit = WHEEL_BACKWARD_SPEED if backward else WHEEL_FORWARD_SPEED
 
@@ -158,8 +160,8 @@ class Kr1bou():
         self.vitesse_gauche = right_speed
         self.vitesse_droite = left_speed
 
-        self.last_left_speed = left_speed
-        self.last_right_speed = right_speed
+        #self.last_left_speed = left_speed
+        #self.last_right_speed = right_speed
 
     def set_objectif(self, data:Pose2D):
         self.etat = IN_PROGESS
@@ -180,12 +182,17 @@ class Kr1bou():
         else:
             self.etat = IN_PROGESS
 
+    def angleDiffRad(from_a, to_a):
+        return atan2(sin(to_a-from_a), cos(to_a-from_a))
+        
 
 start = False
 def run(data:Bool):
     global start
     start = data.data
     rospy.loginfo(f"Received {start} from runningPhase")
+
+
 
 
 if __name__=="__main__":
