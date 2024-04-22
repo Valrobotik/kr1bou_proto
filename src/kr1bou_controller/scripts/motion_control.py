@@ -18,7 +18,7 @@ KAngle = 0.1
 
 ANGLE_PRECISION = 0.05
 DISTANCE_PRECISION = 0.05
-KP_R = -0.2
+KP_R = -0.1
 
 GOTO_DELTA = -0.02
 POSITION_SHIFT = 0.0
@@ -88,8 +88,8 @@ class Kr1bou():
         if abs(angle_diff) < ANGLE_PRECISION:
             self.etat = READY
             w = 0
-        self.vitesse_gauche = w
-        self.vitesse_droite = -w
+        self.vitesse_gauche = -w
+        self.vitesse_droite = w
 
     def update_pose(self, data:Pose2D):
         self.x = data.x
