@@ -217,7 +217,7 @@ if __name__=="__main__":
         # Wait for the runningPhase True signal
         rate = rospy.Rate(rospy.get_param('/frequency'))
         rospy.Subscriber('runningPhase', Bool, run)
-        rospy.SubscribeListener('camera', Pose2D, update_camera)
+        rospy.Subscriber('camera', Pose2D, update_camera)
         while not start:
             rate.sleep()
         robot = Kr1bou()
