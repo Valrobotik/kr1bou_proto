@@ -43,7 +43,7 @@ class Kr1bou():
         self.y = 0
         self.theta = 0
         
-        self.objectif_x = 1.0
+        self.objectif_x = -1.0
         self.objectif_y = 0.0
         self.objectif_theta = -1
 
