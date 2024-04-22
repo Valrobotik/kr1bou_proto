@@ -225,4 +225,4 @@ if __name__=="__main__":
             robot.publish_speed()
             rate.sleep()
     except rospy.ROSInterruptException as e:
-        pass
+        rospy.logerr(e)
