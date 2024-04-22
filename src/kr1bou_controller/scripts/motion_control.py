@@ -177,11 +177,6 @@ class Kr1bou():
         else:
             self.etat = IN_PROGESS
 
-    def __del__(self):
-        self.serial_port.close()
-
-
-
 
 start = False
 def run(data:Bool):
@@ -206,5 +201,3 @@ if __name__=="__main__":
             rate.sleep()
     except rospy.ROSInterruptException as e:
         pass
-    finally:
-        del robot
