@@ -221,7 +221,7 @@ def update_camera(data : Pose2D):
     global cam_id, camera_position
     rospy.loginfo("camera receive")
     camera_position = data
-    #camera_position.theta = 2*pi-camera_position.theta
+    camera_position.theta = 2*pi-camera_position.theta
     cam_id = (cam_id+1)%2
 
 if __name__=="__main__":
