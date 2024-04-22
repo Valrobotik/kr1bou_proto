@@ -88,8 +88,8 @@ class Kr1bou():
         if abs(angle_diff) < ANGLE_PRECISION:
             self.etat = READY
             w = 0
-        self.vitesse_gauche = w
-        self.vitesse_droite = -w
+        self.vitesse_gauche = -w
+        self.vitesse_droite = w
 
     def update_pose(self, data:Pose2D):
         self.x = data.x
