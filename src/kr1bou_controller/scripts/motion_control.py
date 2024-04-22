@@ -43,9 +43,9 @@ class Kr1bou():
         self.y = 0
         self.theta = 0
         
-        self.objectif_x = -1.0
+        self.objectif_x = 1.0
         self.objectif_y = 0.0
-        self.objectif_theta = -1
+        self.objectif_theta = pi/2
 
         self.vitesse_gauche = 0
         self.vitesse_droite = 0
@@ -83,7 +83,7 @@ class Kr1bou():
 
 
     def update_rotation_speed(self):
-        angle_diff = self.objectif_theta - self.theta
+        angle_diff = self.angleDiffRad(self.objectif_theta, self.theta)
         w = angle_diff * KP_R
         if abs(angle_diff) < ANGLE_PRECISION:
             self.etat = READY
@@ -96,7 +96,7 @@ class Kr1bou():
         self.y = data.y
         self.theta = data.theta
 
-    def update_speed(self, allowed_backward = False):
+    def update_speed(self, allowed_backward = True):
         x2 = self.objectif_x
         y2 = self.objectif_y
 
