@@ -43,7 +43,7 @@ class Kr1bou():
         self.y = 0
         self.theta = 0
         
-        self.objectif_x = 2.0
+        self.objectif_x = 1.5
         self.objectif_y = 1.0
         self.objectif_theta = pi/2
 
@@ -87,8 +87,8 @@ class Kr1bou():
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
         data = Vector3()
-        data.y = self.vitesse_gauche
-        data.x = self.vitesse_droite
+        data.x = self.vitesse_gauche
+        data.y = self.vitesse_droite
         self.publisher_speed.publish(data)
         if(self.need_rst_odom): self.reset_position_camera()
 
