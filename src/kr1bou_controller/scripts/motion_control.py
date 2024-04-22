@@ -155,8 +155,8 @@ class Kr1bou():
             left_speed = 0
             right_speed = 0
 
-        self.vitesse_gauche = left_speed
-        self.vitesse_droite = right_speed
+        self.vitesse_gauche = right_speed
+        self.vitesse_droite = left_speed
 
         self.last_left_speed = left_speed
         self.last_right_speed = right_speed
