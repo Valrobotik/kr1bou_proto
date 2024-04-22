@@ -16,7 +16,7 @@ def identify_arduino_ports(known_sensors):
     for port, desc, hwid in sorted(ports):
         # rospy.loginfo("coucou444")
         rospy.loginfo(port)
-        if 'ACM' in port or 'USB' in port:
+        if 'ACM' in port or 'AMA' in port:
             ser = serial.Serial(port)  # Open the port
             ser.write('NR\n'.encode())  # Send command to get sensor ID response
             line = ser.readline()
