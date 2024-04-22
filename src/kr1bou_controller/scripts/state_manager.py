@@ -46,7 +46,8 @@ def config_callback(msg):
         pub = rospy.Publisher('configPhase', Bool, queue_size=queue_size)
         pub.publish(False)
         pub.unregister()
-        pub = rospy.Publisher('runingPhase', Bool, queue_size=queue_size)
+        pub = rospy.Publisher('runningPhase', Bool, queue_size=queue_size)
+        rospy.loginfo("Running pahhse s")
         pub.publish(True)
         pub.unregister()
 
