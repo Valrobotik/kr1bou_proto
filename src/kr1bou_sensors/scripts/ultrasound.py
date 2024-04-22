@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # Load configuration parameters
     frequency = rospy.get_param('/frequency')
     queue_size = rospy.get_param('/queue_size')
-    baudrate = rospy.get_param('/baudrate')
+    baudrate = rospy.get_param('/arduino/baudrate')
     map_boundaries = rospy.get_param('/map_boundaries')  # (x_min, y_min, x_max, y_max)
 
     rate = rospy.Rate(frequency)
