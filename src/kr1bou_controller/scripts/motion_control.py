@@ -185,16 +185,19 @@ if __name__=="__main__":
     try:
         # Initialization
         rospy.init_node('controller', anonymous=True)
+        rospy.loginfo("Init node controller")
         # Wait for the runningPhase True signal
         start = rospy.wait_for_message('runningPhase', Bool)
+        rospy.loginfo(f"Received {start} from runnningPhase")
         while not start.data:
             start = rospy.wait_for_message('runningPhase', Bool)
+            rospy.loginfo(f"Received {start} from runnningPhase")
         robot = Kr1bou()
         rate = rospy.Rate(robot.freq)
         while not rospy.is_shutdown():  
             robot.publish_speed()
             rate.sleep()
     except rospy.ROSInterruptException as e:
-        rospy.logerr(e)
+        pass
     finally:
         del robot
