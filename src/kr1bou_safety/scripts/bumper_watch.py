@@ -10,7 +10,8 @@ from typing import Tuple
 
 
 def setup_buttons(pins):
-    return [Button(pin) for pin in pins]
+    rospy.loginfo(pins)
+    return [Button(int(pin)) for pin in pins]
 
 
 def check_bumpers(buttons: Tuple[Button]):
