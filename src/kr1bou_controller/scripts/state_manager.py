@@ -23,6 +23,7 @@ def identify_arduino_ports(known_sensors):
             sensor_id = line.decode().strip()
             for known_sensor in known_sensors:
                 if sensor_id in known_sensor:
+                    rospy.loginfo(f"sensor {sensor_id} connected on {port}")
                     identified_ports[sensor_id] = port
             ser.close()
         elif len(known_sensors) == len(identified_ports):
