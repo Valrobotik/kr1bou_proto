@@ -85,6 +85,7 @@ class Kr1bou():
 
     def reset_position_camera(self):
         global cam_id, camera_position
+        rospy.loginfo("debug corection odom")
         temp = cam_id
         if temp != -1:
             while cam_id == temp: pass
