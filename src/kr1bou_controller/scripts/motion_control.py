@@ -182,7 +182,7 @@ class Kr1bou():
         else:
             self.etat = IN_PROGESS
 
-    def angleDiffRad(from_a, to_a):
+    def angleDiffRad(self, from_a, to_a):
         return atan2(sin(to_a-from_a), cos(to_a-from_a))
         
 
