@@ -187,7 +187,7 @@ if __name__=="__main__":
         rospy.init_node('controller', anonymous=True)
         rospy.loginfo("Init node controller")
         # Wait for the runningPhase True signal
-        rate = rospy.Rate(rospy.get_param('/rate'))
+        rate = rospy.Rate(rospy.get_param('/frequency'))
         start = False
         def run(data):
             start = data
