@@ -47,6 +47,7 @@ class WheelController():
             data = str(self.serial_port.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n', '').replace('R', '')
             self.serial_port.reset_input_buffer()
             data = data.split(';')
+            rospy.loginfo(data)
             position = Pose2D(float(data[0]), float(data[1]), float(data[2]))
             self.publisher_odometry.publish(position)
             # rospy.loginfo(f"Received ({position}) from arduino")
