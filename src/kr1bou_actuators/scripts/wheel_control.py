@@ -88,5 +88,5 @@ if __name__ == "__main__":
     except rospy.ROSInterruptException as e:
         pass
     finally:
-        wheel_controller.close
+        wheel_controller.close()
         rospy.loginfo("Wheel Controller node has stopped.")
