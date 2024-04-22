@@ -22,7 +22,10 @@ def identify_arduino_ports(known_sensors):
             if sensor_id in known_sensor:
                 rospy.loginfo(f"Identified {sensor_id} at {port}")
                 identified_ports[sensor_id] = port
+            rospy.loginfo("coucou111")
+        rospy.loginfo("coucou222")
         ser.close()
+    rospy.loginfo("coucou333")
     if not identified_ports:
         rospy.logerr("No ports detected")
     else:
