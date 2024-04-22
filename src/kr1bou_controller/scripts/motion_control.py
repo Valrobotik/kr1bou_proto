@@ -16,7 +16,7 @@ IN_PROGESS = 2
 KLigne = -19.0
 KAngle = 0.1
 
-ANGLE_PRECISION = 0.05
+ANGLE_PRECISION = 0.1
 DISTANCE_PRECISION = 0.05
 KP_R = -0.1
 
@@ -43,7 +43,7 @@ class Kr1bou():
         self.y = 0
         self.theta = 0
         
-        self.objectif_x = 1.0
+        self.objectif_x = 0.5
         self.objectif_y = 0.0
         self.objectif_theta = pi/2
 
