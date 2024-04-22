@@ -70,6 +70,7 @@ class WheelController():
 start = False
 def run(data:Bool):
     global start
+    rospy.loginfo("coucou1111")
     start = data.data
     rospy.loginfo(f"Received {start} from runningPhase")
 

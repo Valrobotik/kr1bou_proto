@@ -55,11 +55,13 @@ def config_callback(msg):
         rospy.loginfo("Configuration phase completed. Identified ports dumped to ROS parameters.")
         # Transition to the next state via publisher
         pub = rospy.Publisher('configPhase', Bool, queue_size=queue_size)
+        rospy.sleep(0.2)
         pub.publish(False)
         # pub.unregister()
-        pub = rospy.Publisher('runningPhase', Bool, queue_size=queue_size)
-        pub.publish(True)
-        # pub.unregister()
+        pubrunning = rospy.Publisher('runningPhase', Bool, queue_size=queue_size)
+        rospy.sleep(0.2)
+        pubrunning.publish(True)
+        # pubrunning.unregister()
         rospy.loginfo("Published on runningPhase topic")
 
 
