@@ -36,14 +36,24 @@ def publish_bumper_event(bumper_pins):
         rate.sleep()
 
 
+start = False
+def run(data):
+    global start
+    start = data
+    rospy.loginfo(f"Received {start} from runningPhase")
+
 if __name__ == '__main__':
     try:
         # Initialization
         rospy.init_node('bumper_watch', anonymous=True)
+        rospy.loginfo("[START] Bumper Watch node has started.")
         # Wait for the runningPhase True signal
-        start = rospy.wait_for_message('runningPhase', Bool)
-        while not start.data:
-            start = rospy.wait_for_message('runningPhase', Bool)
+        frequency = rospy.get_param('/frequency')
+        rate = rospy.Rate(frequency)
+        # Wait for the runningPhase True signal
+        rospy.Subscriber('runningPhase', Bool, run)
+        while not start:
+            rate.sleep()
         bumper_pins = rospy.get_param('/gpio/bumper_pins')
         frequency = rospy.get_param('/frequency')
         queue_size = rospy.get_param('/queue_size')

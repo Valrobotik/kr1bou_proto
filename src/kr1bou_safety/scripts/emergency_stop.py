@@ -12,15 +12,24 @@ def on_button_press():
     rospy.loginfo("Emergency button pressed!")
     pub.publish(True)
 
+start = False
+def run(data):
+    global start
+    start = data
+    rospy.loginfo(f"Received {start} from runningPhase")
 
 if __name__ == '__main__':
     try:
         # Initialization
-        rospy.init_node('emergency_stop')
+        rospy.init_node('emergency_stop', anonymous=True)
+        rospy.loginfo("[START] Emergency Stop node has started.")
         # Wait for the runningPhase True signal
-        start = rospy.wait_for_message('runningPhase', Bool)
-        while not start.data:
-            start = rospy.wait_for_message('runningPhase', Bool)
+        frequency = rospy.get_param('/frequency')
+        rate = rospy.Rate(frequency)
+        # Wait for the runningPhase True signal
+        rospy.Subscriber('runningPhase', Bool, run)
+        while not start:
+            rate.sleep()
         # Load configuration
         button_pin = rospy.get_param('/gpio/emergency_button_pin')
 

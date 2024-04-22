@@ -66,23 +66,24 @@ class WheelController():
         self.serial_port.close()
 
 
+
+start = False
+def run(data):
+    global start
+    start = data
+    rospy.loginfo(f"Received {start} from runningPhase")
+
 if __name__ == "__main__":
     try:
         # Initialization
         rospy.init_node('wheel_controller')
+        rospy.loginfo("[START] Wheel Controller node has started.")
         # Wait for the runningPhase True signal
         rate = rospy.Rate(rospy.get_param('/frequency'))
-        start = False
-        def run(data):
-            global start
-            start = data
         rospy.Subscriber('runningPhase', Bool, run)
-        rospy.loginfo(f"Received {start} from runningPhase")
         while not start:
             rate.sleep()
         wheel_controller = WheelController()
-        rospy.loginfo("Wheel Controller node has started.")
-
         wheel_controller.run()
     except rospy.ROSInterruptException as e:
         pass

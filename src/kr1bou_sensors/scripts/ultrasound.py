@@ -54,27 +54,41 @@ def read_and_publish_sensor_data():
         rate.sleep()
 
 
+start = False
+def run(data):
+    global start
+    start = data
+    rospy.loginfo(f"Received {start} from runningPhase")
+
+# Manage robot's pose
+current_pose = None
+def pose_callback(pose_msg:Pose2D):
+    global current_pose
+    current_pose = pose_msg
+    rospy.loginfo(f"Received {current_pose} from Pose")
+
+
 if __name__ == '__main__':
     # Initialization
     rospy.init_node('ultrasound_sensor_manager')
-    # Wait for the runningPhase True signal
-    start = rospy.wait_for_message('runningPhase', Bool)
-    while not start.data:
-        start = rospy.wait_for_message('runningPhase', Bool)
+    rospy.loginfo("[START] Ultrasound Sensor node has started.")
+
     # Load configuration parameters
     frequency = rospy.get_param('/frequency')
     queue_size = rospy.get_param('/queue_size')
     baudrate = rospy.get_param('/baudrate')
     map_boundaries = rospy.get_param('/map_boundaries')  # (x_min, y_min, x_max, y_max)
+
+    rate = rospy.Rate(frequency)
+    # Wait for the runningPhase True signal
+    rospy.Subscriber('runningPhase', Bool, run)
+    while not start:
+        rate.sleep()
+    
+    # Load sensor parameters
     sensor_positions = rospy.get_param('/sensor_positions/uS')  # [(x, y, z, angle), ...]. Angle is in radians
     serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/uS')
     serial_port = serial.Serial(serial_port_param, baudrate, timeout=1)
-    
-    # Manage robot's pose
-    current_pose = None
-    def pose_callback(pose_msg:Pose2D):
-        global current_pose
-        current_pose = pose_msg
 
     # Publisher and Subscriber
     sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
