@@ -39,8 +39,8 @@ def identify_arduino_ports(known_sensors):
     return identified_ports
 
 
-def config_callback(msg):
-    if msg.data is False:  # We want the key to be released
+def config_callback(msg: Bool):
+    if msg.data:  # We want the key to be released
         rospy.loginfo("Config phase started")
 
         known_sensors = rospy.get_param('/arduino/known_sensors')

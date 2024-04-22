@@ -11,12 +11,11 @@ from std_msgs.msg import Bool
 
 def on_key_press():
     rospy.loginfo("Key inserted: True")
-    pub.publish(True)
 
 
 def on_key_release():
     rospy.loginfo("Key removed: False")
-    pub.publish(False)
+    pub.publish(True)
 
 
 if __name__ == '__main__':

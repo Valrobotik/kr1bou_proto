@@ -184,9 +184,9 @@ class Kr1bou():
 
 
 start = False
-def run(data):
+def run(data:Bool):
     global start
-    start = data
+    start = data.data
     rospy.loginfo(f"Received {start} from runningPhase")
 
 
