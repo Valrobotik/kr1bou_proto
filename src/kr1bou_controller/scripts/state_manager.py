@@ -50,7 +50,7 @@ def config_callback(msg: Bool):
         # Dump identified ports to ROS parameters
         for sensor_id, port in identified_ports.items():
             rospy.set_param(f'/arduino/arduino_serial_ports/{sensor_id}', port)
-            rospy.loginfo(f"Arduino sensor {sensor_id} connected to port {port}")
+            rospy.loginfo(f'/arduino/arduino_serial_ports/{sensor_id} : port')
 
         rospy.loginfo("Configuration phase completed. Identified ports dumped to ROS parameters.")
         # Transition to the next state via publisher
