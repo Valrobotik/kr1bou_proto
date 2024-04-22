@@ -1,6 +1,6 @@
 arduino:
   baudrate: 115200
-  known_sensors: [Motor, uS]
+  known_sensors: [Motor, US]
 
 
 gpio:

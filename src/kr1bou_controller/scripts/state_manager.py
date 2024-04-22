@@ -2,7 +2,6 @@
 """
 Manages different states of the robot (e.g., running, start, stop, emergency).
 """
-
 import rospy
 import serial.tools.list_ports
 from std_msgs.msg import Bool
@@ -19,8 +18,10 @@ def identify_arduino_ports(known_sensors):
         ser.write('NR\n'.encode())  # Send command to get sensor ID response
         line = ser.readline()
         sensor_id = line.decode().strip()
-        if sensor_id in known_sensors:
-            identified_ports[sensor_id] = port
+        for known_sensor in known_sensors:
+            if sensor_id in known_sensor:
+                rospy.loginfo(f"Identified {sensor_id} at {port}")
+                identified_ports[sensor_id] = port
         ser.close()
     return identified_ports
 

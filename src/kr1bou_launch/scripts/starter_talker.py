@@ -4,15 +4,6 @@ This script listens for a key/button press indicating the start signal for the r
 When the key/button is pressed, it publishes a True signal to the 'starter' topic, and False otherwise.
 """
 
-import socket
-hostname=socket.gethostname()
-IPAddr=socket.gethostbyname(hostname)
-print("Your Computer Name is:"+hostname)
-print("Your Computer IP Address is:"+IPAddr)
-
-# setup master uri
-
-
 import rospy
 from gpiozero import Button
 from std_msgs.msg import Bool
