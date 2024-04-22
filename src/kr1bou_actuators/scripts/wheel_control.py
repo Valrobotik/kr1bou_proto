@@ -44,6 +44,7 @@ class WheelController():
 
     def receive_odometry(self):
         if self.serial_port.in_waiting > 0:
+            rospy.loginfo("testsetetsetetet")
             data = str(self.serial_port.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n', '').replace('R', '')
             self.serial_port.reset_input_buffer()
             data = data.split(';')
@@ -59,7 +60,6 @@ class WheelController():
 
     def run(self):
         while not rospy.is_shutdown():
-            rospy.loginfo("testsetetsetetet")
             self.receive_odometry
             self.rate.sleep()
 
