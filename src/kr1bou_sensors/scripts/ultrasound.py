@@ -5,21 +5,8 @@ Manages the data of the 8 ultrasound sensors.
 import rospy
 import serial
 import math
-import tf.transformations  # This is used for converting quaternions to Euler angles
 from std_msgs.msg import Float32MultiArray, Bool
-from geometry_msgs.msg import PoseStamped
-
-
-def quaternion_to_yaw(orientation):
-    # Convert a quaternion to a yaw angle (rotation around z-axis)
-    quaternion = (
-        orientation.x,
-        orientation.y,
-        orientation.z,
-        orientation.w
-    )
-    euler = tf.transformations.euler_from_quaternion(quaternion)
-    return euler[2]  # yaw
+from geometry_msgs.msg import Pose2D
 
 
 def clamp_sensor_data(raw_data: float, sensor_position: tuple, map_boundaries: tuple):
@@ -28,14 +15,14 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple, map_boundaries: t
         return raw_data  # Return the unmodified data if no pose received
     
     # Extract the robot's yaw angle from its orientation
-    robot_yaw = quaternion_to_yaw(current_pose.orientation)
+    robot_yaw = current_pose.theta
     
     # Calculate the sensor's absolute orientation by adding its relative angle to the robot's yaw
     sensor_absolute_angle = robot_yaw + sensor_position[3]
 
     # Calculate the sensor's absolute position on the map
-    sensor_x_absolute = current_pose.position.x + sensor_position[0] * math.cos(sensor_absolute_angle) - sensor_position[1] * math.sin(sensor_absolute_angle)
-    sensor_y_absolute = current_pose.position.y + sensor_position[0] * math.sin(sensor_absolute_angle) + sensor_position[1] * math.cos(sensor_absolute_angle)
+    sensor_x_absolute = current_pose.x + sensor_position[0] * math.cos(sensor_absolute_angle) - sensor_position[1] * math.sin(sensor_absolute_angle)
+    sensor_y_absolute = current_pose.y + sensor_position[0] * math.sin(sensor_absolute_angle) + sensor_position[1] * math.cos(sensor_absolute_angle)
 
     # Calculate the x, y coordinates of the intersection between the sensor's line of sight and the map boundaries
     if sensor_absolute_angle == 0 or sensor_absolute_angle == math.pi:
@@ -85,14 +72,13 @@ if __name__ == '__main__':
     
     # Manage robot's pose
     current_pose = None
-    def pose_callback(pose_msg):
+    def pose_callback(pose_msg:Pose2D):
         global current_pose
-        current_pose = pose_msg.pose
-        rospy.loginfo(f"Received current pose at {pose_msg.header.stamp}")
+        current_pose = pose_msg
 
     # Publisher and Subscriber
     sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
-    rospy.Subscriber('pose', PoseStamped, pose_callback)
+    rospy.Subscriber('pose', Pose2D, pose_callback)
 
     try:
         read_and_publish_sensor_data()
