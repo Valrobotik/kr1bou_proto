@@ -59,6 +59,7 @@ class Kr1bou():
         self.freq = rospy.get_param('/frequency')
 
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
+        self.publisher_corect_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
         rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, self.set_max_speed)
@@ -73,6 +74,7 @@ class Kr1bou():
             self.etat = READY
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
+            self.reset_position_camera()
         else:
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
@@ -81,6 +83,14 @@ class Kr1bou():
         data.x = self.vitesse_droite
         self.publisher_speed.publish(data)
 
+    def reset_position_camera(self):
+        global cam_id, camera_position
+        temp = cam_id
+        if temp != -1:
+            while cam_id == temp: pass
+            self.publisher_corect_odom.publish(camera_position)
+        else:
+            rospy.logwarn("no conexion with cammera")
 
     def update_rotation_speed(self):
         angle_diff = self.angleDiffRad(self.objectif_theta, self.theta)
@@ -192,8 +202,12 @@ def run(data:Bool):
     start = data.data
     rospy.loginfo(f"Received {start} from runningPhase")
 
-
-
+cam_id = -1
+camera_position = Pose2D()
+def update_camera(data : Pose2D):
+    global cam_id, camera_position
+    cam_id = (cam_id+1)%2
+    camera_position = data
 
 if __name__=="__main__":
     try:
@@ -203,6 +217,7 @@ if __name__=="__main__":
         # Wait for the runningPhase True signal
         rate = rospy.Rate(rospy.get_param('/frequency'))
         rospy.Subscriber('runningPhase', Bool, run)
+        rospy.SubscribeListener('camera', Pose2D, update_camera)
         while not start:
             rate.sleep()
         robot = Kr1bou()
