@@ -65,7 +65,7 @@ current_pose = None
 def pose_callback(pose_msg:Pose2D):
     global current_pose
     current_pose = pose_msg
-    rospy.loginfo(f"Received {current_pose} from Pose")
+    # rospy.loginfo(f"Received {current_pose} from Pose")
 
 
 if __name__ == '__main__':

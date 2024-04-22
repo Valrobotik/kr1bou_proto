@@ -39,7 +39,7 @@ if __name__ == '__main__':
         # pub = rospy.Publisher('emergency', Bool, queue_size=queue_size)
 
         # # GPIO setup
-        # button = Button(button_pin)  # The emergency button
+        # button = Button(int(button_pin))  # The emergency button
         # button.when_pressed = on_button_press
 
         # # Spin to keep the script for exiting
