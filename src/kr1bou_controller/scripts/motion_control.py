@@ -37,7 +37,7 @@ WHEEL_HIGHSPEED_FACTOR = 2.0
 
 class Kr1bou():
     def __init__(self):
-        self.etat = READY
+        self.etat = IN_PROGESS
 
         self.x = 0
         self.y = 0
