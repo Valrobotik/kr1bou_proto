@@ -45,7 +45,7 @@ class Kr1bou():
         
         self.objectif_x = 0.2
         self.objectif_y = 0
-        self.objectif_theta = 0
+        self.objectif_theta = -1
 
         self.vitesse_gauche = 0
         self.vitesse_droite = 0
