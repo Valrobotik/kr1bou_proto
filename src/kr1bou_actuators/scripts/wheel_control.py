@@ -7,10 +7,9 @@ import rospy
 import serial
 from geometry_msgs.msg import Vector3, Pose2D
 from std_msgs.msg import Bool, String
-from math import pi
 
 
-class WheelController():
+class WheelController:
     def __init__(self):
         # Retrieve the serial port parameter for the Arduino controlling the wheels
         self.serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/Motor')
@@ -29,33 +28,34 @@ class WheelController():
         rospy.Subscriber('stop', String, self.stop)
 
     def motor_speed_callback(self, data):
-        # Format : Vg.gg;Vd.ddR g for gauche, d for droite in m/s
+        # Format : Vg.gg;Vd.ddR g for 'gauche', d for 'droite' in m/s
         command = f"V{data.x};{data.y}R"
         self.serial_port.write(command.encode())
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
-        rospy.loginfo(f"O{format(data.x/100, '.2f')};{format(data.y/100, '.2f')};{format(data.theta, '.2f')}R\n")
+        rospy.loginfo(f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n")
         try:
-            self.serial_port.write(f"O{format(data.x/100, '.2f')};{format(data.y/100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
-        except:
-            rospy.logwarn("Error while sending correction")
+            self.serial_port.write(
+                f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
+        except serial.SerialException as s:
+            rospy.logwarn("Error while sending correction to Arduino.")
+            rospy.logwarn(s)
 
-    def receive_odometry(self):  
+    def receive_odometry(self):
         if self.serial_port.in_waiting > 0:
-            data = str(self.serial_port.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n', '').replace('R', '')
+            data = str(self.serial_port.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n',
+                                                                                                    '').replace('R', '')
             self.serial_port.reset_input_buffer()
             data = data.split(';')
-            #rospy.loginfo(data)
+            # rospy.loginfo(data)
             position = Pose2D(float(data[0]), float(data[1]), float(data[2]))
             self.publisher_odometry.publish(position)
             # rospy.loginfo(f"Received ({position}) from arduino")
 
-
-    def stop(self, data):
+    def stop(self):
         # Format : SR
         self.serial_port.write("SR".encode())
-        
 
     def run(self):
         while not rospy.is_shutdown():
@@ -64,16 +64,18 @@ class WheelController():
 
     def close(self):
         self.serial_port.close()
+        rospy.loginfo("Serial port closed.")
 
 
-
-start = False
-def run(data:Bool):
+def run(data: Bool):
     global start
     start = data.data
     rospy.loginfo(f"Received {start} from runningPhase")
 
+
 if __name__ == "__main__":
+    start = False
+    wheel_controller = None
     try:
         # Initialization
         rospy.init_node('wheel_controller')
@@ -88,5 +90,6 @@ if __name__ == "__main__":
     except rospy.ROSInterruptException as e:
         pass
     finally:
-        wheel_controller.close()
+        if wheel_controller is not None:
+            wheel_controller.close()
         rospy.loginfo("Wheel Controller node has stopped.")

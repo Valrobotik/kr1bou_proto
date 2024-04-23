@@ -1,46 +1,63 @@
 #!/usr/bin/env python3
-#-- coding: utf-8 --
+# -- coding: utf-8 --
 
 import rospy
-from std_msgs.msg import Int16
+from std_msgs.msg import Int16, Bool
 
 import RPi.GPIO as GPIO
-import time
 
 
-#Set function to calculate percent from angle
-def angle_to_percent (angle) :
-    if angle > 180 or angle < 0 :
+# Set function to calculate percent from angle
+def angle_to_percent(angle):
+    if angle > 180 or angle < 0:
         return False
 
-    start = 4
-    end = 12.5
-    ratio = (end - start)/180 #Calcul ratio from angle to percent
+    lower = 4
+    upper = 12.5
+    ratio = (upper - lower) / 180  # Calcul ratio from angle to percent
 
     angle_as_percent = angle * ratio
 
-    return start + angle_as_percent
+    return lower + angle_as_percent
 
-def go_to(data:Int16):
+
+def go_to(data: Int16):
     global pwm
     pwm.ChangeDutyCycle(angle_to_percent(data.data))
     rospy.loginfo(data.data)
 
+
+def run(data: Bool):
+    global start
+    start = data.data
+    rospy.loginfo(f"Received {start} from runningPhase")
+
+
 if __name__ == "__main__":
-    rospy.init_node("solar_control", anonymous=True)
-    GPIO.setmode(GPIO.BOARD) #Use Board numerotation mode
-    GPIO.setwarnings(False) #Disable warnings
+    start = False
+    pwm = None
+    try:
+        # Initialization
+        rospy.init_node("solar_control", anonymous=True)
+        rospy.loginfo("[START] Wheel Controller node has started.")
+        GPIO.setmode(GPIO.BOARD)  # Use Board numeration mode
+        GPIO.setwarnings(False)  # Disable warnings
 
-    #Use pin 12 for PWM signal
-    pwm_gpio = 12
-    frequence = 50
-    GPIO.setup(pwm_gpio, GPIO.OUT)
-    pwm = GPIO.PWM(pwm_gpio, frequence)
-    rospy.Subscriber("solar_angle", Int16, go_to)
+        # Use pin 12 for PWM signal
+        pwm_gpio = 12
+        frequency = 50
+        GPIO.setup(pwm_gpio, GPIO.OUT)
+        pwm = GPIO.PWM(pwm_gpio, frequency)
+        rospy.Subscriber("solar_angle", Int16, go_to)
 
-    pwm.start(angle_to_percent(0))
+        pwm.start(angle_to_percent(0))
 
-    rospy.spin()
-    pwm.stop()
-    GPIO.cleanup()
+        rospy.spin()
 
+    except rospy.ROSInterruptException as e:
+        pass
+    finally:
+        if pwm is not None:
+            pwm.stop()
+        GPIO.cleanup()
+        rospy.loginfo("Wheel Controller node has stopped.")
