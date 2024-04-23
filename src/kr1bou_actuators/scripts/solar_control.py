@@ -23,7 +23,7 @@ def angle_to_percent (angle) :
 
 def go_to(data:Int16):
     global pwm
-    pwm.ChangeDutyCycle(angle_to_percent(data.data))
+    pwm.ChangeDutyCycle(angle_to_percent(data))
 
 if __name__ == "__main__":
     rospy.init_node("solar_control", anonymous=True)
