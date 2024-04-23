@@ -81,6 +81,7 @@ class strategie():
 
     def run(self):
         while not rospy.is_shutdown():
+            rospy.loginfo("next_obj0")
             self.go_to(1, 0)
             self.wait_until_ready()
             rospy.loginfo("next_obj1")
