@@ -89,3 +89,4 @@ class strategie():
 if __name__ == "__main__":
     strat = strategie()
     strat.run()
+
