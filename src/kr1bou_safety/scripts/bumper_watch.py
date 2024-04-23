@@ -6,7 +6,7 @@ When two front or two back buttons are held, it publishes on the 'bumper' topic.
 import rospy
 from gpiozero import Button
 from std_msgs.msg import Byte, Bool
-from typing import Tuple
+from typing import List
 
 
 def setup_buttons(pins):
@@ -14,7 +14,7 @@ def setup_buttons(pins):
     return [Button(int(pin)) for pin in pins]
 
 
-def check_bumpers(buttons: Tuple[Button]):
+def check_bumpers(buttons: List[Button]):
     # Check if both front or both back buttons are pressed
     state = Byte()
     state.data = 0
@@ -24,26 +24,26 @@ def check_bumpers(buttons: Tuple[Button]):
     return state
 
 
-def publish_bumper_event(bumper_pins):
-    buttons = setup_buttons(bumper_pins)
+def publish_bumper_event(bumpers):
+    buttons = setup_buttons(bumpers)
     
     pub = rospy.Publisher('bumper', Byte, queue_size=queue_size)
-    rate = rospy.Rate(frequency)
 
     while not rospy.is_shutdown():
         bumpers_pressed = check_bumpers(buttons)
-        #rospy.loginfo(bumpers_pressed)
+        # rospy.loginfo(bumpers_pressed)
         pub.publish(bumpers_pressed.data)
         rate.sleep()
 
 
-start = False
-def run(data:Bool):
+def run(data: Bool):
     global start
     start = data.data
     rospy.loginfo(f"Received {start} from runningPhase")
 
+
 if __name__ == '__main__':
+    start = False
     try:
         # Initialization
         rospy.init_node('bumper_watch', anonymous=True)
