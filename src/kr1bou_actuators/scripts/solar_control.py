@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
         # Use pin 12 for PWM signal
         pwm_gpio = 12
-        frequency = 60
+        frequency = 45
         GPIO.setup(pwm_gpio, GPIO.OUT)
         pwm = GPIO.PWM(pwm_gpio, frequency)
         rospy.Subscriber("solar_angle", Int16, go_to)
