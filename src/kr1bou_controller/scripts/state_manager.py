@@ -23,7 +23,7 @@ def identify_arduino_ports(known_sensors):
             rospy.sleep(0.2)
         except Exception as e:
             rospy.loginfo(e)
-        ser.write('NR\n'.encode())  # Send command to get sensor ID response
+        ser.write(b'NR\n')  # Send command to get sensor ID response
         rospy.loginfo("coucou")
         line = ser.readline()
         rospy.loginfo(line)
