@@ -82,7 +82,7 @@ class Kr1bou():
             self.update_rotation_speed()
         elif self.etat == READY_LINEAR :
             self.etat = READY
-            self.publisher_state.publish(self.etat)
+            self.publish_state()
             self.need_rst_odom = True
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
@@ -112,7 +112,7 @@ class Kr1bou():
         w = angle_diff * KP_R
         if abs(angle_diff) < ANGLE_PRECISION:
             self.etat = READY
-            self.publisher_state.publish(self.etat)
+            self.publish_state()
             self.need_rst_odom = True
             w = 0
         self.vitesse_gauche = w
@@ -155,7 +155,7 @@ class Kr1bou():
         if dist_to_base < GOTO_BASE_DISTANCE_THRESHOLD:
             m_goto_base_reached = True
             self.etat = READY_LINEAR
-            self.publisher_state.publish(self.etat)
+            self.publish_state()
         
         angle_diff = self.angleDiffRad(target_angle, self.theta)
         backward = abs(angle_diff) > pi / 2
@@ -193,7 +193,7 @@ class Kr1bou():
 
     def set_objectif(self, data:Pose2D):
         self.etat = IN_PROGESS
-        self.publisher_state.publish(self.etat)
+        self.publish_state()
         self.objectif_x = data.x
         self.objectif_y = data.y
         self.objectif_theta = data.theta
@@ -206,17 +206,21 @@ class Kr1bou():
     def stop(self, data:Bool):
         if data.data:
             self.etat = READY
-            self.publisher_state.publish(self.etat)
+            self.publish_state()
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
         else:
             self.etat = IN_PROGESS
-            self.publisher_state.publish(self.etat)
+            self.publish_state()
 
     def angleDiffRad(self, from_a, to_a):
         return atan2(sin(to_a-from_a), cos(to_a-from_a))
         
-
+    def publish_state(self):
+        temp = Int16()
+        temp.data = self.etat
+        self.publisher_state.publish(temp)
+    
 start = False
 def run(data:Bool):
     global start

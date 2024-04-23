@@ -57,8 +57,8 @@ class strategie():
     def update_us_data(self, data):
         self.US_data = data
 
-    def update_state(self, data):
-        self.etat_robot = data
+    def update_state(self, data: Int16):
+        self.etat_robot = data.data
 
     def go_to(self, x=-1, y=-1, alpha = -1, speed = 0.25):
         obj = Pose2D()
