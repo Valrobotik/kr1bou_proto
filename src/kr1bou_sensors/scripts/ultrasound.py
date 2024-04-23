@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     # Publisher and Subscriber
     sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
-    rospy.Subscriber('odometrie', Pose2D, pose_callback)
+    rospy.Subscriber('odometry', Pose2D, pose_callback)
 
     try:
         read_and_publish_sensor_data()
