@@ -18,24 +18,26 @@ def identify_arduino_ports(known_sensors):
     for port, desc, hwid in sorted(ports):
         # rospy.loginfo("coucou444")
         rospy.loginfo(port)
-        if 'ACM' in port or 'USB' in port:
-            try :
-                ser = serial.Serial(port, 115200, timeout=1)  # Open the port
-                rospy.sleep(0.2)
-            except Exception as e:
-                rospy.loginfo(e)
-            ser.write('NR\n'.encode())  # Send command to get sensor ID response
-            rospy.loginfo("coucou")
-            line = ser.readline()
-            rospy.loginfo(line)
-            sensor_id = line.decode().strip()
+        try :
+            ser = serial.Serial(port, 115200, timeout=1)  # Open the port
+            rospy.sleep(0.2)
+        except Exception as e:
+            rospy.loginfo(e)
+        ser.write('NR\n'.encode())  # Send command to get sensor ID response
+        rospy.loginfo("coucou")
+        line = ser.readline()
+        rospy.loginfo(line)
+        sensor_id = line.decode().strip()
+        if sensor_id == "": 
+            rospy.loginfo(f"no data on port : {port}")
+        else:
             for known_sensor in known_sensors:
                 if sensor_id in known_sensor:
                     rospy.loginfo(f"sensor {sensor_id} connected on {port}")
                     identified_ports[sensor_id] = port
             ser.close()
             rospy.sleep(0.1)
-        elif len(known_sensors) == len(identified_ports):
+        if len(known_sensors) == len(identified_ports):
             break
     if not identified_ports:
         rospy.logerr("No port detected")
