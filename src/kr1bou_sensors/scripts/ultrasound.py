@@ -44,7 +44,7 @@ def read_and_publish_sensor_data():
         if serial_port.in_waiting:  # If there is data to read
             raw_data = serial_port.readline()   # Read
             try:
-                sensor_readings = [float(x) for x in raw_data.decode('utf-8').strip('[]\n').split('; ')]    # Parse
+                sensor_readings = [float(x) for x in raw_data.decode('utf-8').replace('\r\n', '').replace('b', '').replace("'", '').strip('[]').split('; ')]    # Parse
                 clamped_readings = [
                     clamp_sensor_data(reading, pos, map_boundaries) for reading, pos in zip(sensor_readings, sensor_positions) # Clamp
                 ]
