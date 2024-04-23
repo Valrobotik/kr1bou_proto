@@ -3,20 +3,18 @@
 Manages different states of the robot (e.g., running, start, stop, emergency).
 """
 import rospy
-import serial.tools.list_ports
+# import serial.tools.list_ports
 from std_msgs.msg import Bool
 
 queue_size = rospy.get_param('/queue_size')
 
 
-# Identify connected Arduinos
+# Identify connected Arduino sensors
 def identify_arduino_ports(known_sensors):
-    ports = serial.tools.list_ports.comports()
-    identified_ports = {}
-    list_port = [port for port, desc, hwid in sorted(ports)]
-    identified_ports[known_sensors[0]]="/dev/ttyACM0"
-    identified_ports[known_sensors[1]]="/dev/ttyUSB0"
+    identified_ports = {known_sensors[0]: "/dev/ttyACM0", known_sensors[1]: "/dev/ttyUSB0"}
     return identified_ports
+    # ports = serial.tools.list_ports.comports()
+    # list_port = [port for port, desc, hwid in sorted(ports)]
     # rospy.loginfo(f"list of ports : {list_port}")
     # for port, desc, hwid in sorted(ports):
     #     # rospy.loginfo("coucou444")
@@ -68,10 +66,10 @@ def config_callback(msg: Bool):
         rospy.sleep(0.2)
         pub.publish(False)
         # pub.unregister()
-        pubrunning = rospy.Publisher('runningPhase', Bool, queue_size=queue_size)
+        pub_running = rospy.Publisher('runningPhase', Bool, queue_size=queue_size)
         rospy.sleep(0.2)
-        pubrunning.publish(True)
-        # pubrunning.unregister()
+        pub_running.publish(True)
+        # pub_running.unregister()
         rospy.loginfo("Published on runningPhase topic")
 
 
