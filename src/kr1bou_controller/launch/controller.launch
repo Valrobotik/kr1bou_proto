@@ -8,4 +8,8 @@
     <node name="state_manager" pkg="kr1bou_controller" type="state_manager.py" output="screen">
         <!-- Optional parameters can be added here -->
     </node>
+
+    <node name="strategie" pkg="kr1bou_controller" type="strategie.py" output="screen">
+        <!-- Optional parameters can be added here -->
+    </node>
 </launch>

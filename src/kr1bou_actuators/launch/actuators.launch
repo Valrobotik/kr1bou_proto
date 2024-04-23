@@ -3,4 +3,7 @@
     <node name="wheel_control" pkg="kr1bou_actuators" type="wheel_control.py" output="screen">
         <!-- Optional parameters can be added here -->
     </node>
+    <node name="solar_control" pkg="kr1bou_actuators" type="solar_control.py" output="screen">
+        <!-- Optional parameters can be added here -->
+    </node>
 </launch>
