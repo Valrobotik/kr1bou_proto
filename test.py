@@ -1,11 +1,44 @@
-import serial
+#!/usr/bin/env python3
+#-- coding: utf-8 --
+import RPi.GPIO as GPIO
+import time
 
-ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
-ser.write(b'NR\n')
 
-while True:
-    ser.write(b'NR\n')
-    if ser.in_waiting > 0:
-        print(ser.readline())
+#Set function to calculate percent from angle
+def angle_to_percent (angle) :
+    if angle > 180 or angle < 0 :
+        return False
 
-        
+    start = 4
+    end = 12.5
+    ratio = (end - start)/180 #Calcul ratio from angle to percent
+
+    angle_as_percent = angle * ratio
+
+    return start + angle_as_percent
+
+
+GPIO.setmode(GPIO.BOARD) #Use Board numerotation mode
+GPIO.setwarnings(False) #Disable warnings
+
+#Use pin 12 for PWM signal
+pwm_gpio = 12
+frequence = 50
+GPIO.setup(pwm_gpio, GPIO.OUT)
+pwm = GPIO.PWM(pwm_gpio, frequence)
+
+#Init at 0°
+pwm.start(angle_to_percent(0))
+time.sleep(1)
+
+#Go at 90°
+pwm.ChangeDutyCycle(angle_to_percent(90))
+time.sleep(1)
+
+#Finish at 180°
+pwm.ChangeDutyCycle(angle_to_percent(180))
+time.sleep(1)
+
+#Close GPIO & cleanup
+pwm.stop()
+GPIO.cleanup()
