@@ -50,6 +50,7 @@ def read_and_publish_sensor_data():
                 ]
                 sensor_data_pub.publish(Float32MultiArray(data=clamped_readings)) # Publish
             except ValueError:
+                rospy.logwarn(raw_data)
                 rospy.logwarn('Received malformed data from Arduino.')
         rate.sleep()
 
