@@ -32,8 +32,9 @@ class strategie():
         self.pos_ordre_pub = rospy.Publisher('next_objectif', Pose2D, queue_size=1)
         self.speed_ctrl = rospy.Publisher('max_speed', Float64, queue_size=1)
 
-    def update_bumpers(self, data):
+    def update_bumpers(self, data:Byte):
         """met à jours l'etat des 4 bumper (2 avans et 2 arierre)"""
+        data = int(data.data)
         if data>=8:
             self.bumper_1 = True
             data-=8
