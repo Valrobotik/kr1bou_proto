@@ -1,8 +1,0 @@
-prefix=/usr/local
-
-Name: kr1bou_actuators
-Description: Description of kr1bou_actuators
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

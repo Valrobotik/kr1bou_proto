@@ -1,8 +1,0 @@
-prefix=/usr/local
-
-Name: kr1bou_controller
-Description: Description of kr1bou_controller
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
