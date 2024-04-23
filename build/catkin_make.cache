@@ -1,2 +1,0 @@
-kr1bou_actuators:kr1bou_controller:kr1bou_launch:kr1bou_safety:kr1bou_sensors
--DCATKIN_DEVEL_PREFIX=/home/valrob/code/kr1bou_proto/devel -DCMAKE_INSTALL_PREFIX=/home/valrob/code/kr1bou_proto/install -G Unix Makefiles

@@ -1,8 +1,0 @@
-prefix=/home/valrob/code/kr1bou_proto/devel
-
-Name: kr1bou_sensors
-Description: Description of kr1bou_sensors
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
