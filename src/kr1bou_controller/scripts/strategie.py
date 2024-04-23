@@ -80,10 +80,13 @@ class strategie():
 
     def run(self):
         while not rospy.is_shutdown():
-            self.go_to(1, 0)
-            self.wait_until_ready()
-            rospy.loginfo("ready")
+            #self.go_to(1, 0)
+            #self.wait_until_ready()
             self.turn_servo(90)
+            rospy.sleep(3)
+            self.turn_servo(0)
+            rospy.sleep(3)
+
 
             
 
