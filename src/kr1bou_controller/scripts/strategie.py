@@ -89,9 +89,19 @@ class strategie():
 
 
             
-
+start = False
+def run(data):
+    global start
+    start = data
+    rospy.loginfo(f"Received {start} from runningPhase")
 
 if __name__ == "__main__":
     strat = strategie()
+    rate = rospy.Rate(rospy.get_param('/frequency'))
+    rospy.Subscriber('runningPhase', Bool, run)
+
+    while not start:
+        rate.sleep()
+        
     strat.run()
 
