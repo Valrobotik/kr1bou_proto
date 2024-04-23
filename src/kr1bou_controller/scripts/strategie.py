@@ -76,16 +76,22 @@ class strategie():
 
     def wait_until_ready(self):
         rospy.sleep(0.1)
-        while self.etat_robot != READY : pass
+        rate = rospy.Rate(20)
+        while self.etat_robot != READY : rate.sleep()
 
     def run(self):
         while not rospy.is_shutdown():
-            #self.go_to(1, 0)
-            #self.wait_until_ready()
+            rospy.loginfo("next_obj0")
+            self.go_to(1, 0)
+            self.wait_until_ready()
+            rospy.loginfo("next_obj1")
             self.turn_servo(90)
             rospy.sleep(3)
             self.turn_servo(0)
             rospy.sleep(3)
+            self.go_to(0, 0)
+            self.wait_until_ready()
+            rospy.loginfo("next_obj2")
 
 
             
@@ -102,6 +108,6 @@ if __name__ == "__main__":
 
     while not start:
         rate.sleep()
-        
+
     strat.run()
 
