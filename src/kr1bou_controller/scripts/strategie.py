@@ -82,6 +82,7 @@ class strategie():
         while not rospy.is_shutdown():
             self.go_to(1, 0)
             self.wait_until_ready()
+            rospy.loginfo("ready")
             self.turn_servo(90)
 
             
