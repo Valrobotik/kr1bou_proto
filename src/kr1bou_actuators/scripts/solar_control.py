@@ -39,10 +39,11 @@ if __name__ == "__main__":
 
     temp = Int16()
     temp.data = 0
+    rospy.loginfo("goto0")
     go_to(temp)
 
     rospy.sleep(5)
-        
+    rospy.loginfo("goto180")
     temp.data = 180
     go_to(temp)
 
