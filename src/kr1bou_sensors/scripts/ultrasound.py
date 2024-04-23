@@ -49,6 +49,7 @@ def read_and_publish_sensor_data():
                     clamp_sensor_data(reading, pos, map_boundaries) for reading, pos in zip(sensor_readings, sensor_positions) # Clamp
                 ]
                 sensor_data_pub.publish(Float32MultiArray(data=clamped_readings)) # Publish
+                rospy.loginfo(Float32MultiArray(data=clamped_readings))
             except ValueError:
                 rospy.logwarn(raw_data)
                 rospy.logwarn('Received malformed data from Arduino.')
