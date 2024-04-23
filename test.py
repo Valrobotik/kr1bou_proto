@@ -7,3 +7,5 @@ while True:
     ser.write(b'NR\n')
     if ser.in_waiting > 0:
         print(ser.readline())
+
+        
