@@ -37,9 +37,16 @@ if __name__ == "__main__":
     pwm = GPIO.PWM(pwm_gpio, frequence)
     rospy.Subscriber("solar_angle", Int16, go_to)
 
-    go_to(Int16())
+    temp = Int16()
+    temp.data = 0
+    go_to(temp)
 
-    rospy.spin()
+    rospy.sleep(5)
+        
+    temp.data = 180
+    go_to(temp)
+
+    #rospy.spin()
     pwm.stop()
     GPIO.cleanup()
 
