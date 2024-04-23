@@ -18,6 +18,7 @@ class WheelController:
 
         # Initialize the serial port for communication with Arduino
         self.serial_port = serial.Serial(self.serial_port_param, self.baudrate, timeout=1)
+        rospy.sleep(0.2)
 
         # Publish the received odometry
         self.publisher_odometry = rospy.Publisher('odometry', Pose2D, queue_size=1)
@@ -80,12 +81,12 @@ if __name__ == "__main__":
         # Initialization
         rospy.init_node('wheel_controller')
         rospy.loginfo("[START] Wheel Controller node has started.")
-        wheel_controller = WheelController()
         # Wait for the runningPhase True signal
         rate = rospy.Rate(rospy.get_param('/frequency'))
         rospy.Subscriber('runningPhase', Bool, run)
         while not start:
             rate.sleep()
+        wheel_controller = WheelController()
         wheel_controller.run()
     except rospy.ROSInterruptException as e:
         pass
