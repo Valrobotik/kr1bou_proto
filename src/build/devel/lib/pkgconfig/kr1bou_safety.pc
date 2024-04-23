@@ -1,8 +1,0 @@
-prefix=/home/valrob/code/kr1bou_proto/src/build/devel
-
-Name: kr1bou_safety
-Description: Description of kr1bou_safety
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
