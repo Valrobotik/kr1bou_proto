@@ -87,7 +87,7 @@ if __name__ == '__main__':
     
     # Load sensor parameters
     sensor_positions = rospy.get_param('/sensor_positions/uS')  # [(x, y, z, angle), ...]. Angle is in radians
-    serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/uS')
+    serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/US')
     serial_port = serial.Serial(serial_port_param, baudrate, timeout=1)
 
     # Publisher and Subscriber
