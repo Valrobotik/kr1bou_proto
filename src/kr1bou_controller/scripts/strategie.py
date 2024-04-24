@@ -65,10 +65,9 @@ class strategie:
         speed_data = Float64()
         speed_data.data = speed
         self.direction_pub.publish(direction_data)
-        rospy.sleep(0.01)
         self.speed_ctrl_pub.publish(speed_data)
-        rospy.sleep(0.01)
         self.pos_ordre_pub.publish(obj)
+        rospy.loginfo("go to send")
 
     
     def turn_servo(self, alpha):
