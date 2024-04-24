@@ -12,11 +12,8 @@ FORWARD = 1
 BACKWARD = -1
 BEST_DIRECTION = 0
 
-class strategie():
+class strategie:
     def __init__(self) -> None:
-        rospy.init_node("strategie")
-        rospy.loginfo("[START] strategie node has started.")
-
         self.position = Pose2D()
         rospy.Subscriber("odometry", Pose2D, self.update_position)
 
@@ -40,22 +37,11 @@ class strategie():
     def update_bumpers(self, data:Byte):
         """met à jours l'etat des 4 bumper (2 avans et 2 arierre)"""
         data = int(data.data)
-        if data>=8:
-            self.bumper_1 = True
-            data-=8
-        else : self.bumper_1 = False
-        if data >=4:
-            self.bumper_2 = True
-            data-=4
-        else : self.bumper_2 = False
-        if data >=2:
-            self.bumper_3 = True
-            data-=2
-        else : self.bumper_3 = False
-        if data >=1:
-            self.bumper_4 = True
-            data-=1
-        else : self.bumper_4 = False
+        for i in range(4):
+            if data & 2**i:
+                setattr(self, f'bumper_{i+1}', True)
+            else:
+                setattr(self, f'bumper_{i+1}', False)
 
     def update_position(self, data):
         self.position = data
@@ -110,20 +96,23 @@ class strategie():
             rospy.loginfo("next_obj2")
 
 
-            
-start = False
 def run(data):
     global start
     start = data
     rospy.loginfo(f"Received {start} from runningPhase")
 
-if __name__ == "__main__":
-    strat = strategie()
-    rate = rospy.Rate(rospy.get_param('/frequency'))
-    rospy.Subscriber('runningPhase', Bool, run)
 
+if __name__ == "__main__":
+    start = False
+    rospy.init_node("strategie")
+    rospy.loginfo("[START] strategie node has started.")
+    
+    rospy.Subscriber('runningPhase', Bool, run)
+    rate = rospy.Rate(rospy.get_param('/frequency'))
     while not start:
         rate.sleep()
-
+    
+    strat = strategie()
     strat.run()
+
 

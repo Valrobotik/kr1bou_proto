@@ -35,7 +35,7 @@ WHEEL_TURN_SPEED_BACKWARD = 0.30
 WHEEL_HIGHSPEED_FACTOR = 2.0
 
 
-class Kr1bou():
+class Kr1bou:
     def __init__(self):
         self.etat = READY
 
