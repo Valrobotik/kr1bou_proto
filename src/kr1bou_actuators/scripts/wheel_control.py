@@ -60,8 +60,11 @@ class WheelController:
             self.receive_odometry()
             while len(self.list_comande_to_send) > 0:
                 try :
-                    self.serial_port.write(self.list_comande_to_send[0].encode())
-                    self.list_comande_to_send.pop(0)
+                    str = ""
+                    for i in self.list_comande_to_send:
+                        str += i
+                        self.list_comande_to_send.pop(self.list_comande_to_send.index(i))
+                    self.serial_port.write(str)
                 except serial.SerialException as s:
                     rospy.logwarn("Error while sending correction to Arduino.")
                     rospy.logwarn(s)    
