@@ -15,6 +15,7 @@ class WheelController:
         self.serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/Motor')
         self.baudrate = rospy.get_param('/arduino/baudrate')
         self.rate = rospy.Rate(30)
+        self.list_comande_to_send = []
 
         # Initialize the serial port for communication with Arduino
         self.serial_port = serial.Serial(self.serial_port_param, self.baudrate, timeout=1)
@@ -30,18 +31,14 @@ class WheelController:
 
     def motor_speed_callback(self, data):
         # Format : Vg.gg;Vd.ddR g for 'gauche', d for 'droite' in m/s
-        command = f"V{data.x};{data.y}R"
-        self.serial_port.write(command.encode())
+        self.list_comande_to_send.append(f"V{data.x};{data.y}R")
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
         rospy.loginfo(f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n")
-        try:
-            self.serial_port.write(
-                f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
-        except serial.SerialException as s:
-            rospy.logwarn("Error while sending correction to Arduino.")
-            rospy.logwarn(s)
+
+        self.list_comande_to_send.append(f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
+
 
     def receive_odometry(self):
         if self.serial_port.in_waiting > 0:
@@ -56,11 +53,18 @@ class WheelController:
 
     def stop(self):
         # Format : SR
-        self.serial_port.write("SR".encode())
+        self.list_comande_to_send.append("SR")
 
     def run(self):
         while not rospy.is_shutdown():
             self.receive_odometry()
+            while len(self.list_comande_to_send) > 0:
+                try :
+                    self.serial_port.write(self.list_comande_to_send[0].encode())
+                    self.list_comande_to_send.pop(0)
+                except serial.SerialException as s:
+                    rospy.logwarn("Error while sending correction to Arduino.")
+                    rospy.logwarn(s)    
             self.rate.sleep()
 
     def close(self):
