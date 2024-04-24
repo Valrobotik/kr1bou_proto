@@ -8,6 +8,10 @@ READY_LINEAR = 0
 READY = 1
 IN_PROGESS = 2
 
+FORWARD = 1
+BACKWARD = -1
+BEST_DIRECTION = 0
+
 class strategie():
     def __init__(self) -> None:
         rospy.init_node("strategie")
@@ -30,7 +34,8 @@ class strategie():
 
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
         self.pos_ordre_pub = rospy.Publisher('next_objectif', Pose2D, queue_size=1)
-        self.speed_ctrl = rospy.Publisher('max_speed', Float64, queue_size=1)
+        self.direction_pub = rospy.Publisher('direction', Int16, queue_size=1)
+        self.speed_ctrl_pub = rospy.Publisher('max_speed', Float64, queue_size=1)
 
     def update_bumpers(self, data:Byte):
         """met à jours l'etat des 4 bumper (2 avans et 2 arierre)"""
@@ -61,11 +66,20 @@ class strategie():
     def update_state(self, data: Int16):
         self.etat_robot = data.data
 
-    def go_to(self, x=-1, y=-1, alpha = -1, speed = 0.25):
+    def go_to(self, x=-1, y=-1, alpha = -1, speed = 0.25, direction=0):
+        """go to position (x, y, alpha)
+        -> if alpha = -1 go to (x,y)
+        -> direction = [0 : best option, 1 : forward, -1 : backward]"""
         obj = Pose2D()
         obj.x = x
         obj.y = y
         obj.theta = alpha
+        direction_data = Int16()
+        direction_data.data = direction
+        speed_data = Float64()
+        speed_data.data = speed
+        self.direction_pub.publish(direction_data)
+        self.speed_ctrl_pub.publish(speed_data)
         self.pos_ordre_pub.publish(obj)
 
     
@@ -82,14 +96,14 @@ class strategie():
     def run(self):
         while not rospy.is_shutdown():
             rospy.loginfo("next_obj0")
-            self.go_to(1, 0)
+            self.go_to(1, 0, direction=BACKWARD)
             self.wait_until_ready()
             rospy.loginfo("next_obj1")
             self.turn_servo(90)
             rospy.sleep(3)
             self.turn_servo(0)
             rospy.sleep(3)
-            self.go_to(0, 0)
+            self.go_to(0, 0,  direction=BACKWARD)
             self.wait_until_ready()
             rospy.loginfo("next_obj2")
 

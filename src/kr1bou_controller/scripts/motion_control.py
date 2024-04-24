@@ -56,6 +56,9 @@ class Kr1bou():
         self.destination_angle = 0
         self.epsilon = 0.07
 
+        self.force_forward = False
+        self.force_backward = False
+
         self.need_rst_odom = False
 
         self.freq = rospy.get_param('/frequency')
@@ -72,6 +75,7 @@ class Kr1bou():
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, self.set_max_speed)
         rospy.Subscriber('stop', Bool, self.stop)
+        rospy.Subscriber('direction', Int16, self.update_mooving_direction)
 
 
 
@@ -123,9 +127,12 @@ class Kr1bou():
         self.y = data.y
         self.theta = data.theta
 
-    def update_speed(self, allowed_backward = True):
+    def update_speed(self):
         x2 = self.objectif_x
         y2 = self.objectif_y
+
+        force_forward = self.force_forward 
+        force_backward = self.force_backward
 
         if (sqrt((self.x-x2)**2+(self.y-y2)**2) > self.epsilon) : self.destination_angle = atan2(y2 - self.y, x2 - self.x)
         destination_angle = self.destination_angle
@@ -160,7 +167,7 @@ class Kr1bou():
         angle_diff = self.angleDiffRad(target_angle, self.theta)
         backward = abs(angle_diff) > pi / 2
 
-        backward = backward and allowed_backward
+        backward = (backward or force_backward) and not(force_forward)
         if backward:
             angle_diff = self.angleDiffRad(target_angle + pi, self.theta)
 
@@ -220,6 +227,17 @@ class Kr1bou():
         temp = Int16()
         temp.data = self.etat
         self.publisher_state.publish(temp)
+
+    def update_mooving_direction(self, data:Int16):
+        if data.data == 0 :
+            self.force_backward = False
+            self.force_forward = False
+        elif data.data == 1 :
+            self.force_backward = False
+            self.force_forward = True
+        elif data.data == -1 : 
+            self.force_forward = False
+            self.force_backward = True
     
 start = False
 def run(data:Bool):
