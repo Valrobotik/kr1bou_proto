@@ -5,6 +5,7 @@ A* Pathfinding algorithm implementation
 from typing import List, Optional
 import heapq
 import random
+import time
 
 
 class Node:
@@ -41,15 +42,11 @@ def aStar(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     """
     open_list = [start_node]
     closed_list = set()
-    previous_node = start_node
 
     # Loop until the open list is empty
     while open_list:
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_list)
-        if previous_node != current_node:   # Update the parent node
-            current_node.parent = previous_node
-            previous_node = current_node
 
         if current_node == end_node:  # Path found
             path = []
@@ -76,6 +73,7 @@ def aStar(start_node: Node, end_node: Node) -> Optional[List[Node]]:
 
             if neighbor not in open_list:  # To be visited
                 heapq.heappush(open_list, neighbor)
+                neighbor.parent = current_node
 
     return None
 
@@ -97,11 +95,12 @@ def heuristic(node: Node, end_node: Node) -> float:
     :param end_node: objective node
     :return: heuristic value
     """
-    node_x, node_y = node.position
-    goal_x, goal_y = end_node.position
-    dx = abs(node_x - goal_x)
-    dy = abs(node_y - goal_y)
-    return dx + dy + (2 ** 0.5 - 2) * min(dx, dy)
+    # node_x, node_y = node.position
+    # goal_x, goal_y = end_node.position
+    # dx = abs(node_x - goal_x)
+    # dy = abs(node_y - goal_y)
+    # return dx + dy + (2 ** 0.5 - 2) * min(dx, dy)
+    return euclidian(node, end_node)
 
 
 
@@ -124,13 +123,29 @@ def generate_random_maze(height: int, width: int, density: float) -> List[List[N
                 maze[i][j].neighbors['W'] = (1, maze[i][j - 1])
             if j < width - 1:
                 maze[i][j].neighbors['E'] = (1, maze[i][j + 1])
+            if i > 0 and j > 0:
+                maze[i][j].neighbors['NW'] = (1, maze[i - 1][j - 1])
+            if i > 0 and j < width - 1:
+                maze[i][j].neighbors['NE'] = (1, maze[i - 1][j + 1])
+            if i < height - 1 and j > 0:
+                maze[i][j].neighbors['SW'] = (1, maze[i + 1][j - 1])
+            if i < height - 1 and j < width - 1:
+                maze[i][j].neighbors['SE'] = (1, maze[i + 1][j + 1])
 
-    for i in range(height):
-        for j in range(width):
-            for direction, (cost, neighbor) in maze[i][j].neighbors.items():
-                if neighbor is not None and random.random() < density:
-                    maze[i][j].neighbors[direction] = (float('inf'), None)
-
+    not_none_nodes = [node for row in maze for node in row if node is not None]
+    x_y_to_remove = random.sample(not_none_nodes, int(density * len(not_none_nodes)))
+    # remove a random number of nodes according to the density
+    for node in x_y_to_remove:
+        # remove neighbors
+        for neighbor in node.neighbors.values():
+            cost, neighbor_node = neighbor
+            if neighbor_node:
+                for direction, neighbor_neighbor in neighbor_node.neighbors.items():
+                    if neighbor_neighbor[1] and node and neighbor_neighbor[1] == node:
+                        neighbor_node.neighbors[direction] = (cost, None)
+        i, j = node.position
+        maze[i][j] = None
+    
     return maze
 
 def generate_random_start_end(maze: List[List[Node]]) -> tuple:
@@ -143,8 +158,10 @@ def generate_random_start_end(maze: List[List[Node]]) -> tuple:
     width = len(maze[0])
     start = maze[random.randint(0, height - 1)][random.randint(0, width - 1)]
     end = maze[random.randint(0, height - 1)][random.randint(0, width - 1)]
-    while start == end and start is not None and end is not None:
-        end = maze[random.randint(0, height - 1)][random.randint(0, width - 1)]
+    # Go through each node and list them. Then take a random node from the list
+    not_none_nodes = [node for row in maze for node in row if node is not None]
+    start = random.choice(not_none_nodes)
+    end = random.choice(not_none_nodes)
     return start, end
 
 
@@ -164,30 +181,45 @@ def print_maze(start, end, maze: List[List[Node]], path: Optional[List[Node]] = 
             elif node == end:
                 print("E", end=" ")
             elif path and node in path:
-                print("O", end=" ")
+                print(path.index(node), end=" ")
             else:
                 print(".", end=" ")
         print()
 
 
+def test_n(n: int = 1000, verbose: bool = False):
+    times = []
+    height = 20
+    width = 30
+    density = 0.2
+    for _ in range(n):
+        maze = generate_random_maze(height, width, density)
+        start, end = generate_random_start_end(maze)
+        print("Start and End nodes:" , start, end) if verbose else None
+        onset = time.perf_counter()
+        path = aStar(start, end)
+        offset = time.perf_counter()
+        print_maze(start, end, maze, path) if verbose else None
+        print() if verbose else None
+        print("Path:") if verbose else None
+        if path and verbose:
+            for node in path:
+                print(node, end=" ")
+        elif verbose:
+            print("No path found")
+        if verbose:
+            print()
+            print("Start:", start)
+            print("End:", end)
+            print("Density:", density)
+            print("Height:", height)
+            print("Width:", width)
+            print("Execution time:", offset - onset, "seconds")
+            print()
+        times.append(offset - onset)
+    print("Average time:", sum(times) / n, "seconds")
+
+
 if __name__ == '__main__':
-    height = 10
-    width = 10
-    density = 0.3
-    maze = generate_random_maze(height, width, density)
-    start, end = generate_random_start_end(maze)
-    path = aStar(start, end)
-    print_maze(start, end, maze, path)
-    print()
-    print("Path:")
-    if path:
-        for node in path:
-            print(node, end=" ")
-    else:
-        print("No path found")
-    print()
-    print("Start:", start)
-    print("End:", end)
-    print("Density:", density)
-    print("Height:", height)
-    print("Width:", width)
+    # test_n(1, True)
+    test_n(1000)
