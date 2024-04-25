@@ -53,7 +53,7 @@ class Strategy:
         rospy.Subscriber("odometry", Pose2D, self.update_position)
         
         # Create a heapqueue based on the distance to the objectives
-        self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2)) for
+        self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x / self.unit) ** 2 + (y - self.position.y / self.unit) ** 2)) for
                            x, y, theta in rospy.get_param('/objectives')]
         heapq.heapify(self.objectives)
 
@@ -126,13 +126,11 @@ class Strategy:
 
     def run(self):
         while not rospy.is_shutdown():
-            if self.current_objective is not None:
-                if sqrt((self.position.x - self.current_objective.x) ** 2 + (self.position.y - self.current_objective.y) ** 2) < self.unit:
-                    self.path.pop(0)
-                    if len(self.path) == 0:
-                        self.state_robot = READY
-                        self.need_for_compute = True
             if self.need_for_compute or self.path == []:
+                if self.current_objective is not None:
+                    if sqrt((self.position.x / self.unit - self.current_objective.x) ** 2 + (self.position.y / self.unit - self.current_objective.y) ** 2) < self.unit:
+                        rospy.loginfo("[NEW]")
+                        self.path.pop(0)
                 rospy.loginfo(f"Computing path again for {self.current_objective}")
                 self.update_objectives()
                 self.compute_path()
@@ -147,7 +145,7 @@ class Strategy:
     def update_objectives(self):
         """Update heapqueue depending on the new position of the robot"""
         for obj in self.objectives:
-            obj.cost = sqrt((obj.x - self.position.x) ** 2 + (obj.y - self.position.y) ** 2)
+            obj.cost = sqrt((obj.x - self.position.x / self.unit) ** 2 + (obj.y - self.position.y / self.unit) ** 2)
         heapq.heapify(self.objectives)
 
     def compute_path(self):
@@ -173,7 +171,7 @@ class Strategy:
         new_obj = heapq.heappop(self.objectives)  # Get the closest objective
         self.current_objective = new_obj
         # Compute the path. Remove first node
-        path = a_star(origin, maze[int(new_obj.x / self.unit)][int(new_obj.y / self.unit)])[1:]
+        path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:]
         self.path = [node.position for node in path]
 
     def get_discrete_obstacles(self) -> list:
