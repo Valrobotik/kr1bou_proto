@@ -62,7 +62,7 @@ def get_winner(img : np.ndarray, detector : cv2.aruco.ArucoDetector) :
 def run(data) :
     global start
     start = data
-    rospy.loginfo(f"Received {start} from runningPhase")
+    rospy.loginfo(f"{rospy.get_name()} received {start} from runningPhase")
 
 
 

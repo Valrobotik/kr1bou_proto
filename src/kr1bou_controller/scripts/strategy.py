@@ -161,7 +161,7 @@ class Strategy:
         origin = maze[int(self.position.x / self.unit)][int(self.position.y / self.unit)]
         new_obj = heapq.heappop(self.objectives)  # Get the closest objective
         # Compute the path
-        path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])
+        path = a_star(origin, maze[int(new_obj.x / self.unit)][int(new_obj.y / self.unit)])
         self.path = [node.position for node in path]
 
     def get_discrete_obstacles(self) -> list:

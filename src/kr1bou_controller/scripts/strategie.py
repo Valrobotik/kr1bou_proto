@@ -98,7 +98,7 @@ class strategie:
 def run(data):
     global start
     start = data
-    rospy.loginfo(f"Received {start} from runningPhase")
+    rospy.loginfo(f"{rospy.get_name()} received {start} from runningPhase")
 
 
 if __name__ == "__main__":

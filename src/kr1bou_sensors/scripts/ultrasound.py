@@ -67,7 +67,7 @@ def read_and_publish_sensor_data():
                                                                 for item in sublist]))
             except ValueError:
                 rospy.logwarn(raw_data)
-                rospy.logwarn('Received malformed data from Arduino.')
+                rospy.logwarn('{rospy.get_name()} received malformed data from Arduino.')
         rate.sleep()
 
 
@@ -80,7 +80,7 @@ def run(data):
 def pose_callback(pose_msg: Pose2D):
     global current_pose
     current_pose = pose_msg
-    # rospy.loginfo(f"Received {current_pose} from Pose")
+    # rospy.loginfo(f"{rospy.get_name()} received {current_pose} from Pose")
 
 
 if __name__ == '__main__':

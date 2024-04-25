@@ -49,7 +49,7 @@ class WheelController:
             # rospy.loginfo(data)
             position = Pose2D(float(data[0]), float(data[1]), float(data[2]))
             self.publisher_odometry.publish(position)
-            # rospy.loginfo(f"Received ({position}) from arduino")
+            # rospy.loginfo(f"{rospy.get_name()} received ({position}) from arduino")
 
     def stop(self):
         # Format : SR

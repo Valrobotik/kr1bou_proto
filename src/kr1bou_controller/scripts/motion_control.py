@@ -244,7 +244,7 @@ start = False
 def run(data:Bool):
     global start
     start = data.data
-    rospy.loginfo(f"Received {start} from runningPhase")
+    rospy.loginfo(f"{rospy.get_name()} received {start} from runningPhase")
 
 cam_id = -1
 camera_position = Pose2D()
