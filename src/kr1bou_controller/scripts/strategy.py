@@ -166,8 +166,8 @@ class Strategy:
         origin = maze[int(self.position.x / self.unit)][int(self.position.y / self.unit)]
         new_obj = heapq.heappop(self.objectives)  # Get the closest objective
         self.current_objective = new_obj
-        # Compute the path
-        path = a_star(origin, maze[int(new_obj.x / self.unit)][int(new_obj.y / self.unit)])[::-1]
+        # Compute the path. Remove first node
+        path = a_star(origin, maze[int(new_obj.x / self.unit)][int(new_obj.y / self.unit)])[1:]
         self.path = [node.position for node in path]
 
     def get_discrete_obstacles(self) -> list:
@@ -190,8 +190,8 @@ class Strategy:
 
     def follow_path(self):
         """Follow the path"""
-        self.go_to(self.path[0][0] / (self.unit**2), self.path[0][0] / (self.unit**2), self.position.theta, DEFAULT_MAX_SPEED, BEST_DIRECTION)
-        rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit**2)}, {self.path[0][0] / (self.unit**2)})")
+        self.go_to(self.path[0][0] / (self.unit), self.path[0][1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
+        rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
         self.path.pop(0)
 
 
