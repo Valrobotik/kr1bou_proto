@@ -115,7 +115,8 @@ if __name__ == '__main__':
     rospy.Subscriber('odometry', Pose2D, pose_callback)
 
     try:
-        read_and_publish_sensor_data()
+        # read_and_publish_sensor_data()
+        pass
     except rospy.ROSInterruptException:
         pass
     finally:
