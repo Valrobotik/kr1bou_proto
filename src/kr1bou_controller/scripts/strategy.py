@@ -85,7 +85,10 @@ class Strategy:
         self.need_for_compute = True
 
     def update_us_data(self, data):
-        self.US_data = data  # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
+        raw = data.data
+        # Unflatten the list of tuples ->
+        # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
+        self.US_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]
         self.need_for_compute = True
 
     def update_state(self, data: Int16):
@@ -125,7 +128,7 @@ class Strategy:
                 self.update_objectives()
                 self.compute_path()
                 self.need_for_compute = False
-            elif self.state_robot == READY:
+            if self.state_robot == READY:
                 self.follow_path()
             else:
                 self.wait_until_ready()
@@ -156,9 +159,9 @@ class Strategy:
                             maze[i][j].neighbors[direction] = (cost, maze[x][y])
         # Get the start and end nodes
         origin = maze[int(self.position.x / self.unit)][int(self.position.y / self.unit)]
-        new_obj = heapq.heappop(self.objectives)
+        new_obj = heapq.heappop(self.objectives)  # Get the closest objective
         # Compute the path
-        path = a_star(origin, new_obj)
+        path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])
         self.path = [node.position for node in path]
 
     def get_discrete_obstacles(self) -> list:
@@ -167,9 +170,15 @@ class Strategy:
         obstacles = []
         # Get the obstacles from the ultrasound sensors
         for i, (x, y) in enumerate(self.US_data.data):
-            if x != 0 and y != 0:
-                x, y = int(x / self.unit), int(y / self.unit)  # Convert cm to dm
-                obstacles.append((x, y))
+            if (x, y) not in [(0, 0), (-1, -1)]:
+                # Get the 4 points of the obstacle
+                x_prime = int(x / self.unit)
+                y_prime = int(y / self.unit)
+                obstacles.extend([(x_prime, y_prime), (x_prime + 1, y_prime), (x_prime, y_prime + 1),
+                                  (x_prime + 1, y_prime + 1)])
+        # TODO : Remove testing default obstacles below
+        obstacles.extend([(10, 7), (10, 14)])
+
         # TODO : Get the obstacles from the camera
         return obstacles
 

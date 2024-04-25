@@ -62,8 +62,9 @@ def read_and_publish_sensor_data():
                     clamp_sensor_data(reading, pos) for reading, pos in
                     zip(sensor_readings, sensor_positions)  # Clamp
                 ]
-                sensor_data_pub.publish(Float32MultiArray(data=
-                rospy.loginfo(
+                # Flatten the list of tuples
+                sensor_data_pub.publish(Float32MultiArray(data=[item for sublist in clamped_readings
+                                                                for item in sublist]))
             except ValueError:
                 rospy.logwarn(raw_data)
                 rospy.logwarn('Received malformed data from Arduino.')
@@ -106,10 +107,11 @@ if __name__ == '__main__':
     # Load sensor parameters
     sensor_positions = rospy.get_param('/sensor_positions')  # [(x, y, z, angle), ...]. Angle is in radians
     serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/US')
-    serial_port = serial.Serial(serial_port_param, baudrate, timeout=1)
+    # serial_port = serial.Serial(serial_port_param, baudrate, timeout=1)
+    serial_port = None
 
     # Publisher and Subscriber
-    sensor_data_pub = rospy.Publisher('ultrasound_sensor_data',
+    sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
     rospy.Subscriber('odometry', Pose2D, pose_callback)
 
     try:
@@ -117,4 +119,5 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         pass
     finally:
-        serial_port.close()
+        if serial_port is not None:
+            serial_port.close()

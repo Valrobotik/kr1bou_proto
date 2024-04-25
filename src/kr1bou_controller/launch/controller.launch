@@ -1,15 +1,9 @@
 <launch>
     <!-- Motion Control Node -->
-    <node name="motion_control" pkg="kr1bou_controller" type="motion_control.py" output="screen">
-        <!-- Optional parameters can be added here -->
-    </node>
+    <node name="motion_control" pkg="kr1bou_controller" type="motion_control.py" output="screen"></node>
 
     <!-- State Manager Node -->
-    <node name="state_manager" pkg="kr1bou_controller" type="state_manager.py" output="screen">
-        <!-- Optional parameters can be added here -->
-    </node>
+    <node name="state_manager" pkg="kr1bou_controller" type="state_manager.py" output="screen"></node>
 
-    <node name="strategie" pkg="kr1bou_controller" type="strategie.py" output="screen">
-        <!-- Optional parameters can be added here -->
-    </node>
+    <node name="strategy" pkg="kr1bou_controller" type="strategy.py" output="screen"></node>
 </launch>
