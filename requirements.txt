@@ -1,5 +1,5 @@
 actionlib==1.14.0
-angles==1.9.13
+angles>=1.9.13
 bondpy==1.8.6
 camera-calibration==1.17.0
 camera-calibration-parsers==1.12.0
