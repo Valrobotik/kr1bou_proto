@@ -177,7 +177,7 @@ class Strategy:
             new_obj = self.objectives[0]
         # Compute the path. Remove first node
         path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:]
-        self.path = [node.position for node in path]
+        self.path = [node.position for node in path if node.position != (int(self.position.x * self.unit), int(self.position.y * self.unit))]
 
     def get_discrete_obstacles(self) -> list:
         """Get the obstacles from the ultrasound sensors, the bumpers, the position of the adversary and discretize them
