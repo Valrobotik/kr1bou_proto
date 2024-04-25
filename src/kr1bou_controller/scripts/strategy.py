@@ -184,7 +184,7 @@ class Strategy:
 
     def follow_path(self):
         """Follow the path"""
-        self.go_to(self.path[0].x, self.path[0].y, self.path[0].theta, DEFAULT_MAX_SPEED, BEST_DIRECTION)
+        self.go_to(self.path[0][0], self.path[0][0], self.position.theta, DEFAULT_MAX_SPEED, BEST_DIRECTION)
         self.path.pop(0)
 
 
