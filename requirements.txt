@@ -3,3 +3,4 @@ PyYaml
 rospkg
 gpiozero
 serial
+RPi.GPIO
