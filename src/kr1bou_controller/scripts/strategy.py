@@ -133,7 +133,7 @@ class Strategy:
                     if sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2) < (5 / self.unit):
                         rospy.loginfo("[NEW]")
                         self.path.pop(0)
-                rospy.loginfo(f"Computing path for {self.path[0] if self.path else None}")
+                rospy.loginfo(f"Computing path for {self.path[0]}") if self.path else None
                 self.update_objectives()
                 self.compute_path()
                 self.need_for_compute = False
