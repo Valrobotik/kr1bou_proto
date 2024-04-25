@@ -31,7 +31,7 @@ class WheelController:
 
     def motor_speed_callback(self, data):
         # Format : Vg.gg;Vd.ddR g for 'gauche', d for 'droite' in m/s
-        self.list_comande_to_send.append(f"V{data.x};{data.y}R")
+        self.list_comande_to_send.append(f"V{format(data.x, '.2f')};{format(data.y, '.2f')}R")
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
