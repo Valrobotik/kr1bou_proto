@@ -126,11 +126,12 @@ class Strategy:
 
     def run(self):
         while not rospy.is_shutdown():
-            if sqrt((self.position.x - self.current_objective.x) ** 2 + (self.position.y - self.current_objective.y) ** 2) < self.unit:
-                self.path.pop(0)
-                if len(self.path) == 0:
-                    self.state_robot = READY
-                    self.need_for_compute = True
+            if self.current_objective is not None:
+                if sqrt((self.position.x - self.current_objective.x) ** 2 + (self.position.y - self.current_objective.y) ** 2) < self.unit:
+                    self.path.pop(0)
+                    if len(self.path) == 0:
+                        self.state_robot = READY
+                        self.need_for_compute = True
             if self.need_for_compute or self.path == []:
                 rospy.loginfo(f"Computing path again for {self.current_objective}")
                 self.update_objectives()
