@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import rospy
-from geometry_msgs.msg import Pose2D, Vector3
+from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float64, Bool, Int16, Float32MultiArray, Byte
 from search_path import Node, a_star
 
-from math import cos, sin, pi, sqrt
+from math import sqrt
 import heapq
 
 READY_LINEAR = 0
@@ -182,12 +182,12 @@ class Strategy:
 def run(data):
     global start
     start = data
-    rospy.loginfo(f"Received {start} from runningPhase")
+    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
 
 
 if __name__ == "__main__":
     start = False
-    rospy.init_node("strategie")
+    rospy.init_node("strategy")
     rospy.loginfo("[START] Strategy node has started.")
 
     rospy.Subscriber('runningPhase', Bool, run)
