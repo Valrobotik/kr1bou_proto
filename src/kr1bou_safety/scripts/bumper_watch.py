@@ -39,7 +39,7 @@ def publish_bumper_event(bumpers):
 def run(data: Bool):
     global start
     start = data.data
-    rospy.loginfo(f"Received {start} from runningPhase")
+    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
 
 
 if __name__ == '__main__':

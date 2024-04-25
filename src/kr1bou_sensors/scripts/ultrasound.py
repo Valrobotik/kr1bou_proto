@@ -5,15 +5,12 @@ Manages the data of the 8 ultrasound sensors.
 import rospy
 import serial
 import math
-from std_msgs.msg import Float32MultiArray, Bool
+from std_msgs.msg import Bool, Float32MultiArray
 from geometry_msgs.msg import Pose2D
+from typing import Tuple
 
 
-def clamp_sensor_data(raw_data: float, sensor_position: tuple):
-    if current_pose is None:
-        rospy.logwarn("Current pose not yet received.")
-        return raw_data  # Return the unmodified data if no pose received
-
+def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, float]:
     # Extract the robot's yaw angle from its orientation
     robot_yaw = current_pose.theta
 
@@ -37,7 +34,20 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple):
 
     # Calculate the distance between the sensor and the intersection point
     distance = math.sqrt((sensor_x_absolute - x_intersection) ** 2 + (sensor_y_absolute - y_intersection) ** 2)
-    return min(raw_data, distance)
+    if distance < raw_data:
+        return -1, -1
+
+    # Else return the absolute coordinates of the raw data
+    if sensor_absolute_angle == 0:
+        x_obstacle = sensor_x_absolute + raw_data
+        y_obstacle = sensor_y_absolute  # No change in y
+    elif sensor_absolute_angle == math.pi:
+        x_obstacle = sensor_x_absolute - raw_data
+        y_obstacle = sensor_y_absolute
+    else:
+        x_obstacle = sensor_x_absolute + raw_data * math.cos(sensor_absolute_angle)
+        y_obstacle = sensor_y_absolute + raw_data * math.sin(sensor_absolute_angle)
+    return x_obstacle, y_obstacle
 
 
 def read_and_publish_sensor_data():
@@ -46,31 +56,24 @@ def read_and_publish_sensor_data():
             raw_data = serial_port.readline()  # Read
             try:
                 sensor_readings = [float(x) for x in
-                                   raw_data.decode('utf-8').replace('\r\n', '').replace('b', '').replace("'", '').strip(
-                                       '[]').split('; ')]  # Parse
+                                   raw_data.decode('utf-8').replace('\r\n', '').replace('b', '')
+                                   .replace("'", '').strip('[]').split('; ')]  # Parse
                 clamped_readings = [
                     clamp_sensor_data(reading, pos) for reading, pos in
                     zip(sensor_readings, sensor_positions)  # Clamp
                 ]
-                sensor_data_pub.publish(Float32MultiArray(data=clamped_readings))  # Publish
-                rospy.loginfo(Float32MultiArray(data=clamped_readings))
+                sensor_data_pub.publish(Float32MultiArray(data=
+                rospy.loginfo(
             except ValueError:
                 rospy.logwarn(raw_data)
                 rospy.logwarn('Received malformed data from Arduino.')
         rate.sleep()
 
 
-start = False
-
-
 def run(data):
     global start
     start = data
-    rospy.loginfo(f"Received {start} from runningPhase")
-
-
-# Manage robot's pose
-current_pose = None
+    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
 
 
 def pose_callback(pose_msg: Pose2D):
@@ -84,17 +87,21 @@ if __name__ == '__main__':
     rospy.init_node('ultrasound_sensor_manager')
     rospy.loginfo("[START] Ultrasound Sensor node has started.")
 
+    start = False
+    # Wait for the runningPhase True signal
+    rospy.Subscriber('runningPhase', Bool, run)
+    while not start:
+        rospy.sleep(0.1)
+
+    # Manage robot's pose
+    current_pose = Pose2D()
+
     # Load configuration parameters
     frequency = rospy.get_param('/frequency')
     queue_size = rospy.get_param('/queue_size')
     baudrate = rospy.get_param('/arduino/baudrate')
     map_boundaries = rospy.get_param('/map_boundaries')  # (x_min, y_min, x_max, y_max)
-
     rate = rospy.Rate(frequency)
-    # Wait for the runningPhase True signal
-    rospy.Subscriber('runningPhase', Bool, run)
-    while not start:
-        rate.sleep()
 
     # Load sensor parameters
     sensor_positions = rospy.get_param('/sensor_positions')  # [(x, y, z, angle), ...]. Angle is in radians
@@ -102,7 +109,7 @@ if __name__ == '__main__':
     serial_port = serial.Serial(serial_port_param, baudrate, timeout=1)
 
     # Publisher and Subscriber
-    sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
+    sensor_data_pub = rospy.Publisher('ultrasound_sensor_data',
     rospy.Subscriber('odometry', Pose2D, pose_callback)
 
     try:
