@@ -3,4 +3,3 @@ PyYaml
 rospkg
 gpiozero
 serial
-RPi
