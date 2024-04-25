@@ -47,8 +47,6 @@ class Strategy:
         self.path = []  # List of waypoints to follow
         self.custom_waiting_rate = rospy.Rate(20)
 
-        self.current_objective = None
-
         self.position = Pose2D()
         rospy.Subscriber("odometry", Pose2D, self.update_position)
         
@@ -127,15 +125,15 @@ class Strategy:
     def run(self):
         while not rospy.is_shutdown():
             if self.need_for_compute or self.path == []:
-                if self.current_objective is not None:
+                if self.path == []:
                     rospy.loginfo(self.position)
-                    rospy.loginfo(self.current_objective)
+                    rospy.loginfo()
                     rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2)}")
                     rospy.loginfo(f"precision: {self.unit}")
                     if sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2) < (5 / self.unit):
                         rospy.loginfo("[NEW]")
                         self.path.pop(0)
-                rospy.loginfo(f"Computing path again for {self.current_objective}")
+                rospy.loginfo(f"Computing path for {self.path[0] if self.path else None}")
                 self.update_objectives()
                 self.compute_path()
                 self.need_for_compute = False
@@ -172,8 +170,10 @@ class Strategy:
                             maze[i][j].neighbors[direction] = (cost, maze[x][y])
         # Get the start and end nodes
         origin = maze[int(self.position.x * self.unit)][int(self.position.y * self.unit)]
-        new_obj = heapq.heappop(self.objectives)  # Get the closest objective
-        self.current_objective = new_obj
+        if self.path == []:
+            new_obj = heapq.heappop(self.objectives)  # Get new closest objective
+        else :
+            new_obj = self.objectives[0]
         # Compute the path. Remove first node
         path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:]
         self.path = [node.position for node in path]
