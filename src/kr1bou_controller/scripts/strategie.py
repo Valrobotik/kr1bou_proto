@@ -65,10 +65,9 @@ class strategie:
         speed_data = Float64()
         speed_data.data = speed
         self.direction_pub.publish(direction_data)
-        rospy.sleep(0.01)
         self.speed_ctrl_pub.publish(speed_data)
-        rospy.sleep(0.01)
         self.pos_ordre_pub.publish(obj)
+        rospy.loginfo("go to send")
 
     
     def turn_servo(self, alpha):
@@ -84,14 +83,14 @@ class strategie:
     def run(self):
         while not rospy.is_shutdown():
             rospy.loginfo("next_obj0")
-            self.go_to(1, 0)
+            self.go_to(1, 0, direction=BACKWARD)
             self.wait_until_ready()
             rospy.loginfo("next_obj1")
             #self.turn_servo(90)
             #rospy.sleep(3)
             #self.turn_servo(0)
             #rospy.sleep(3)
-            self.go_to(0, 0)
+            self.go_to(0, 0, direction=BACKWARD)
             self.wait_until_ready()
             rospy.loginfo("next_obj2")
 
