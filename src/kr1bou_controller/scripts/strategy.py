@@ -130,9 +130,9 @@ class Strategy:
                 if self.current_objective is not None:
                     rospy.loginfo(self.position)
                     rospy.loginfo(self.current_objective)
-                    rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.current_objective.x) ** 2 + (self.position.y * self.unit - self.current_objective.y) ** 2)}")
+                    rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.self.path[0][1]) ** 2)}")
                     rospy.loginfo(f"precision: {self.unit}")
-                    if sqrt((self.position.x * self.unit - self.current_objective.x) ** 2 + (self.position.y * self.unit - self.current_objective.y) ** 2) < .5:
+                    if sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2) < (5 / self.unit):
                         rospy.loginfo("[NEW]")
                         self.path.pop(0)
                 rospy.loginfo(f"Computing path again for {self.current_objective}")
