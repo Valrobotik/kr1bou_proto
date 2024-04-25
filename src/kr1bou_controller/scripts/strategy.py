@@ -124,9 +124,9 @@ class Strategy:
 
     def run(self):
         while not rospy.is_shutdown():
+            rospy.loginfo(self.position)
             if self.need_for_compute or self.path == []:
                 if self.path == []:
-                    rospy.loginfo(self.position)
                     rospy.loginfo(f"precision: {self.unit}")
                     if len(self.path) > 0 :
                         rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2)}")
