@@ -47,13 +47,13 @@ class Strategy:
         self.path = []  # List of waypoints to follow
         self.custom_waiting_rate = rospy.Rate(20)
 
+        self.position = Pose2D()
+        rospy.Subscriber("odometry", Pose2D, self.update_position)
+        
         # Create a heapqueue based on the distance to the objectives
         self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2)) for
                            x, y, theta in rospy.get_param('/objectives')]
         heapq.heapify(self.objectives)
-
-        self.position = Pose2D()
-        rospy.Subscriber("odometry", Pose2D, self.update_position)
 
         self.US_data = Float32MultiArray()
         rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
