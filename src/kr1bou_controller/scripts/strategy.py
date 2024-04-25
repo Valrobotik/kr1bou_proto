@@ -130,7 +130,7 @@ class Strategy:
                     rospy.loginfo(f"precision: {self.unit}")
                     if len(self.path) > 0 :
                         rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2)}")
-                        if sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2) < (1 / self.unit):
+                        if sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2) < (0.5 / self.unit):
                             rospy.loginfo("[NEW]")
                             self.path.pop(0)
                 if self.path and len(self.path) > 0:
