@@ -43,7 +43,7 @@ class Strategy:
         self.need_for_compute = False  # Whether to ask for a new path
         # Map boundaries in decimeters [x_min, y_min, x_max, y_max]. Example: [0, 0, 200, 300]
         self.unit = 10  # 1 dm = 10 cm
-        self.map_boundaries = rospy.get_param('/map_boundaries') / self.unit
+        self.map_boundaries = [ m / self.unit for m in rospy.get_param('/map_boundaries') ]
         self.path = []  # List of waypoints to follow
         self.custom_waiting_rate = rospy.Rate(20)
 
