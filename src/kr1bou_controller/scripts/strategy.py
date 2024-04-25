@@ -135,7 +135,7 @@ class Strategy:
             if self.state_robot == READY:
                 self.follow_path()
             else:
-                rospy.loginfo(" [state] :", self.state_robot)
+                rospy.loginfo(f" [state] : {self.state_robot}")
                 self.wait_until_ready()
 
     def update_objectives(self):
