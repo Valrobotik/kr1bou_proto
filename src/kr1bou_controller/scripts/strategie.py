@@ -13,7 +13,7 @@ BACKWARD = -1
 BEST_DIRECTION = 0
 
 class strategie:
-    def __init__(self) -> None:
+    def __init__(self) -> None:        
         self.position = Pose2D()
         rospy.Subscriber("odometry", Pose2D, self.update_position)
 

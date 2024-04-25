@@ -37,7 +37,7 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple):
 
     # Calculate the distance between the sensor and the intersection point
     distance = math.sqrt((sensor_x_absolute - x_intersection) ** 2 + (sensor_y_absolute - y_intersection) ** 2)
-    return min(raw_data, distance)
+    return min(raw_data, distance) if raw_data != 0 else distance
 
 
 def read_and_publish_sensor_data():
@@ -46,8 +46,8 @@ def read_and_publish_sensor_data():
             raw_data = serial_port.readline()  # Read
             try:
                 sensor_readings = [float(x) for x in
-                                   raw_data.decode('utf-8').replace('\r\n', '').replace('b', '').replace("'", '').strip(
-                                       '[]').split('; ')]  # Parse
+                                   raw_data.decode('utf-8').replace('\r\n', '').replace('b', '')
+                                   .replace("'", '').strip('[]').split('; ')]  # Parse
                 clamped_readings = [
                     clamp_sensor_data(reading, pos) for reading, pos in
                     zip(sensor_readings, sensor_positions)  # Clamp

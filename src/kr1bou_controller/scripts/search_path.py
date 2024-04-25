@@ -12,6 +12,7 @@ class Node:
     """
     Node class
     """
+
     def __init__(self, position: tuple, neighbors: dict):
         self.position = position
         self.neighbors = neighbors
@@ -33,7 +34,7 @@ class Node:
         return f"({self.position})"
 
 
-def aStar(start_node: Node, end_node: Node) -> Optional[List[Node]]:
+def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     """
     A* Pathfinding algorithm implementation
     :param start_node: the starting node / points
@@ -56,7 +57,7 @@ def aStar(start_node: Node, end_node: Node) -> Optional[List[Node]]:
                 current = current.parent
             return path[::-1]
 
-        closed_list.add(current_node)   # Mark as visited
+        closed_list.add(current_node)  # Mark as visited
 
         # Explore neighbors
         for cost, neighbor in current_node.neighbors.values():
@@ -103,7 +104,6 @@ def heuristic(node: Node, end_node: Node) -> float:
     return euclidian(node, end_node)
 
 
-
 def generate_random_maze(height: int, width: int, density: float) -> List[List[Node]]:
     """
     Generate a random maze
@@ -145,8 +145,8 @@ def generate_random_maze(height: int, width: int, density: float) -> List[List[N
                         neighbor_node.neighbors[direction] = (cost, None)
         i, j = node.position
         maze[i][j] = None
-    
     return maze
+
 
 def generate_random_start_end(maze: List[List[Node]]) -> tuple:
     """
@@ -154,10 +154,6 @@ def generate_random_start_end(maze: List[List[Node]]) -> tuple:
     :param maze: the maze
     :return: a tuple of start and end nodes
     """
-    height = len(maze)
-    width = len(maze[0])
-    start = maze[random.randint(0, height - 1)][random.randint(0, width - 1)]
-    end = maze[random.randint(0, height - 1)][random.randint(0, width - 1)]
     # Go through each node and list them. Then take a random node from the list
     not_none_nodes = [node for row in maze for node in row if node is not None]
     start = random.choice(not_none_nodes)
@@ -168,6 +164,8 @@ def generate_random_start_end(maze: List[List[Node]]) -> tuple:
 def print_maze(start, end, maze: List[List[Node]], path: Optional[List[Node]] = None):
     """
     Print the maze
+    :param start: the start node
+    :param end: the end node
     :param maze: the maze
     :param path: the path to be printed
     """
@@ -195,9 +193,9 @@ def test_n(n: int = 1000, verbose: bool = False):
     for _ in range(n):
         maze = generate_random_maze(height, width, density)
         start, end = generate_random_start_end(maze)
-        print("Start and End nodes:" , start, end) if verbose else None
+        print("Start and End nodes:", start, end) if verbose else None
         onset = time.perf_counter()
-        path = aStar(start, end)
+        path = a_star(start, end)
         offset = time.perf_counter()
         print_maze(start, end, maze, path) if verbose else None
         print() if verbose else None
