@@ -47,6 +47,8 @@ class Strategy:
         self.path = []  # List of waypoints to follow
         self.custom_waiting_rate = rospy.Rate(20)
 
+        self.current_objective = None
+
         self.position = Pose2D()
         rospy.Subscriber("odometry", Pose2D, self.update_position)
         
@@ -125,9 +127,11 @@ class Strategy:
     def run(self):
         while not rospy.is_shutdown():
             if self.need_for_compute or self.path == []:
+                rospy.loginfo(f"Computing path again for {self.current_objective}")
                 self.update_objectives()
                 self.compute_path()
                 self.need_for_compute = False
+                rospy.loginfo(f"New path: {self.path}")
             if self.state_robot == READY:
                 self.follow_path()
             else:
@@ -160,6 +164,7 @@ class Strategy:
         # Get the start and end nodes
         origin = maze[int(self.position.x / self.unit)][int(self.position.y / self.unit)]
         new_obj = heapq.heappop(self.objectives)  # Get the closest objective
+        self.current_objective = new_obj
         # Compute the path
         path = a_star(origin, maze[int(new_obj.x / self.unit)][int(new_obj.y / self.unit)])
         self.path = [node.position for node in path]
