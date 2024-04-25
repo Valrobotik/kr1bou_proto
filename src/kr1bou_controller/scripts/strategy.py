@@ -126,6 +126,11 @@ class Strategy:
 
     def run(self):
         while not rospy.is_shutdown():
+            if sqrt((self.position.x - self.current_objective.x) ** 2 + (self.position.y - self.current_objective.y) ** 2) < self.unit:
+                self.path.pop(0)
+                if len(self.path) == 0:
+                    self.state_robot = READY
+                    self.need_for_compute = True
             if self.need_for_compute or self.path == []:
                 rospy.loginfo(f"Computing path again for {self.current_objective}")
                 self.update_objectives()
@@ -192,7 +197,6 @@ class Strategy:
         """Follow the path"""
         self.go_to(self.path[0][0] / (self.unit), self.path[0][1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
         rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
-        self.path.pop(0)
 
 
 def run(data):
