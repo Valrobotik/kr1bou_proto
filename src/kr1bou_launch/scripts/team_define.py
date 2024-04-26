@@ -42,7 +42,7 @@ if __name__ == '__main__':
         # Wait for the runningPhase True signal
         rospy.Subscriber('runningPhase', Bool, run)
 
-        rospy.sleep(0.1)
+        rospy.sleep(2)
 
         if button.is_pressed :
             rospy.loginfo("true c'est blue")
