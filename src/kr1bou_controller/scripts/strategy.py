@@ -16,6 +16,9 @@ FORWARD = 1
 BACKWARD = -1
 BEST_DIRECTION = 0
 
+TEAM_BLUE = 1
+TEAM_YELLOW = 0
+
 DEFAULT_MAX_SPEED = 0.25
 
 MAX_COST = 1000000
@@ -68,6 +71,10 @@ class Strategy:
 
         self.state_robot = READY
         rospy.Subscriber('state', Int16, self.update_state)
+
+        self.team = -1
+        rospy.Subscriber('Team', Bool, self.update_team)
+        while self.team == -1 : rospy.sleep(0.05)
 
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
         self.pos_ordre_pub = rospy.Publisher('next_objectif', Pose2D, queue_size=1)
@@ -159,6 +166,17 @@ class Strategy:
         for obj in self.objectives:
             obj.cost = sqrt((obj.x - self.position.x * self.unit) ** 2 + (obj.y - self.position.y * self.unit) ** 2)
         heapq.heapify(self.objectives)
+
+    def update_team(self, data:Bool):
+        if self.team == -1 :
+            if data.data : 
+                self.team = TEAM_BLUE
+            else :
+                self.team = TEAM_YELLOW
+        else : 
+            rospy.logwarn("/!\\ CAN NOT CHANGE TEAM DURING THE MATCH /!\\")
+
+            
 
     def compute_path(self):
         """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
