@@ -33,7 +33,7 @@ if __name__ == '__main__':
         # Initialization
         rospy.init_node('UI_controler', anonymous=True)
 
-        ser = serial.Serial("/dev/ttyUSB1", 115200, timeout=1)
+        ser = serial.Serial("/dev/ttyUSB1", 115200)
         rospy.Subscriber("Team", Bool, update_team)
 
         rospy.Subscriber('runningPhase', Bool, run)
