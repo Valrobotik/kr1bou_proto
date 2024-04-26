@@ -14,17 +14,17 @@ start = 0
 def run(data: Bool):
     global start, ser
     start = data.data
-    if start : ser.write(b'RDY')
+    if start : ser.write(b'RDY\r')
     rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
 
 team = -1
 def update_team(data : Bool):
     global team, ser
     if data.data : 
-        ser.write(b'B')
+        ser.write(b'B\r')
         team = TEAM_BLUE
     else :
-        ser.write(b'Y')
+        ser.write(b'Y\r')
         team = TEAM_YELLOW
 
 if __name__ == '__main__':
