@@ -5,6 +5,8 @@
     <!-- Start the starter_talker node -->
     <node name="starter_talker" pkg="kr1bou_launch" type="starter_talker.py" output="screen" />
 
+    <node name="team_define" pkg="kr1bou_launch" type="team_define.py" output="screen" />
+
     <!-- Include Controller Package Launch File -->
     <include file="$(find kr1bou_controller)/launch/controller.launch"/>
 

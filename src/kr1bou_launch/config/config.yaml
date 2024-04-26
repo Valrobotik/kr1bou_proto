@@ -4,7 +4,7 @@ arduino:
 
 gpio:
   start_button_pin: 4
-  emergency_button_pin: 26
+  team_button_pin: 26
   bumper_pins: [0, 1, 5, 6]
 
 frequency: 10  # Rate 
