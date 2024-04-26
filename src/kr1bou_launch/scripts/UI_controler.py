@@ -38,5 +38,6 @@ if __name__ == '__main__':
 
         rospy.Subscriber('runningPhase', Bool, run)
         rospy.spin()
-    except:
-        pass
+    except Exception as e:
+        rospy.logerr("erreur on ui controleur")
+        rospy.logerr(e)
