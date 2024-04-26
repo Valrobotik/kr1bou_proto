@@ -179,7 +179,7 @@ class Strategy:
         path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:]
         # Remove node if the robot is already on it
         rospy.loginfo(f"dist to first cell : {(self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2}")
-        if sqrt((self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2) < (0.7 / self.unit):
+        if sqrt((self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2) < (0.7):
             rospy.loginfo("supression de la premierre cell")
             path.pop(0)
         self.path = [node.position for node in path]
