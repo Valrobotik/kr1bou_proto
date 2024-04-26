@@ -12,6 +12,9 @@ def on_button_press():
     rospy.loginfo("Team selected to blue")
     pub.publish(True)
 
+def on_button_released():
+    rospy.loginfo("Team selected to yellow")
+    pub.publish(False)
 
 def run(data: Bool):
     global start
@@ -38,18 +41,9 @@ if __name__ == '__main__':
         rate = rospy.Rate(frequency)
         # Wait for the runningPhase True signal
         rospy.Subscriber('runningPhase', Bool, run)
-        while not start:
-            rate.sleep()
-        # Load configuration
 
-        rospy.loginfo("Choosen Team : ")
-
-        if button.is_pressed:
-            rospy.loginfo("TEAM BLUE")
-            pub.publish(True)
-        else : 
-            rospy.loginfo("TEAM YELLOW")
-            pub.publish(False)
+        button.when_pressed = on_button_press
+        button.when_released = on_button_released
 
         # Spin to keep the script for exiting
         rospy.spin()
@@ -57,4 +51,4 @@ if __name__ == '__main__':
         # rospy.logerr(e)
         pass
     finally:
-        rospy.loginfo("[STOP] Emergency Stop node has stopped.")
+        rospy.loginfo("[STOP] team selector node has stopped.")
