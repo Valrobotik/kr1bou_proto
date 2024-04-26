@@ -42,6 +42,8 @@ if __name__ == '__main__':
             rate.sleep()
         # Load configuration
 
+        rospy.loginfo("Choosen Team : ")
+
         if button.is_pressed:
             rospy.loginfo("TEAM BLUE")
             pub.publish(True)
