@@ -24,7 +24,7 @@ if __name__ == '__main__':
     try:
         # Initialization
         rospy.init_node('team_define', anonymous=True)
-        rospy.loginfo("[START] Emergency Stop node has started.")
+        rospy.loginfo("[START] Team Selector node has started.")
         # Wait for the runningPhase True signal
 
         queue_size = rospy.get_param('/queue_size')
