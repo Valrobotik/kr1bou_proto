@@ -204,8 +204,11 @@ class Strategy:
 
     def follow_path(self):
         """Follow the path"""
-        self.go_to(self.path[0][0] / (self.unit), self.path[0][1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
-        rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
+        if self.path and len(self.path) !=0 :
+            self.go_to(self.path[0][0] / (self.unit), self.path[0][1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
+            rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
+        else :
+            rospy.loginfo("no path found")
 
 
 def run(data):
