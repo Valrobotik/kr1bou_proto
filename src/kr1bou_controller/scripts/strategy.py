@@ -129,7 +129,6 @@ class Strategy:
             if (sqrt((self.next_pos_obj[0]-self.position.x)**2+(self.next_pos_obj[1]-self.position.y)**2) < 0.7 and self.next_pos_obj[2] == -1) : break
         self.need_for_compute = True
 
-
     def run(self):
         while not rospy.is_shutdown():
             rospy.loginfo(self.position)
