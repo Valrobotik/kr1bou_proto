@@ -41,6 +41,10 @@ class Objective:
 class Strategy:
     def __init__(self) -> None:
         self.need_for_compute = False  # Whether to ask for a new path
+        self.need_for_send = False
+
+        self.next_pos_obj = [0, 0, 0]
+
         # Map boundaries in decimeters [x_min, y_min, x_max, y_max]. Example: [0, 0, 200, 300]
         self.unit = 10  # 1 dm = 10 cm
         self.map_boundaries = [ int(m / self.unit) for m in rospy.get_param('/map_boundaries') ]
@@ -103,6 +107,7 @@ class Strategy:
         obj.x = x
         obj.y = y
         obj.theta = alpha
+        self.next_pos_obj = [x, y, alpha]
         direction_data = Int16()
         direction_data.data = direction
         speed_data = Float64()
@@ -121,6 +126,9 @@ class Strategy:
     def wait_until_ready(self):
         while self.state_robot != READY:
             self.custom_waiting_rate.sleep()
+            if (sqrt((self.next_pos_obj[0]-self.position.x)**2+(self.next_pos_obj[1]-self.position.y)**2) < 0.7 and self.next_pos_obj[2] == -1) : break
+        self.need_for_compute = True
+
 
     def run(self):
         while not rospy.is_shutdown():
@@ -138,9 +146,11 @@ class Strategy:
                 self.update_objectives()
                 self.compute_path()
                 self.need_for_compute = False
+                self.need_for_send = True
                 rospy.loginfo(f"New path: {self.path}")
-            if self.state_robot == READY:
+            if self.state_robot == READY or self.need_for_send:
                 self.follow_path()
+                self.need_for_send = False
             else:
                 rospy.loginfo(f" [state] : {self.state_robot}")
                 self.wait_until_ready()
