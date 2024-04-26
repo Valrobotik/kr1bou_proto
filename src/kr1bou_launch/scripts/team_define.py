@@ -42,6 +42,11 @@ if __name__ == '__main__':
         # Wait for the runningPhase True signal
         rospy.Subscriber('runningPhase', Bool, run)
 
+        if button.is_pressed :
+            pub.publish(True)
+        else:
+            pub.publish(False)
+
         button.when_pressed = on_button_press
         button.when_released = on_button_released
 
