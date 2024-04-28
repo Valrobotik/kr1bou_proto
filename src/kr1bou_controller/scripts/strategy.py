@@ -141,24 +141,25 @@ class Strategy:
             rospy.loginfo(self.position)
             if self.need_for_compute or self.path == []:
                 if self.path == []:
-                    rospy.loginfo(f"precision: {self.unit}")
+                    #rospy.loginfo(f"precision: {self.unit}")
                     if len(self.path) > 0 :
-                        rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2)}")
+                        #rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2)}")
                         if sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2) < (0.5):
-                            rospy.loginfo("[NEW]")
+                            #rospy.loginfo("[NEW]")
                             self.path.pop(0)
                 if self.path and len(self.path) > 0:
-                    rospy.loginfo(f"Computing path for {self.path[0]}")
+                    #rospy.loginfo(f"Computing path for {self.path[0]}")
+                    pass
                 self.update_objectives()
                 self.compute_path()
                 self.need_for_compute = False
                 self.need_for_send = True
-                rospy.loginfo(f"New path: {self.path}")
+                #rospy.loginfo(f"New path: {self.path}")
             if self.state_robot == READY or self.need_for_send:
                 self.follow_path()
                 self.need_for_send = False
             else:
-                rospy.loginfo(f" [state] : {self.state_robot}")
+                #rospy.loginfo(f" [state] : {self.state_robot}")
                 self.wait_until_ready()
 
     def update_objectives(self):
