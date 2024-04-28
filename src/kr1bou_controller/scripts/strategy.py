@@ -43,7 +43,7 @@ class Objective:
 
 class Strategy:
     def __init__(self) -> None:
-        self.need_for_compute = False  # Whether to ask for a new path
+        self.need_for_compute = True  # Whether to ask for a new path
         self.need_for_send = False
 
         self.next_pos_obj = [0, 0, 0]
@@ -74,8 +74,7 @@ class Strategy:
 
         self.team = -1
         rospy.Subscriber('TeamFinal', Bool, self.update_team)
-        while self.team == -1 : rospy.sleep(0.05)
-
+        
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
         self.pos_ordre_pub = rospy.Publisher('next_objectif', Pose2D, queue_size=1)
         self.direction_pub = rospy.Publisher('direction', Int16, queue_size=1)
@@ -138,6 +137,7 @@ class Strategy:
 
     def run(self):
         while not rospy.is_shutdown():
+            while self.team == -1 : rospy.sleep(0.05)
             rospy.loginfo(self.position)
             if self.need_for_compute or self.path == []:
                 if self.path == []:
