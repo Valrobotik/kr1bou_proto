@@ -23,12 +23,11 @@ def update_team(data : Bool):
     if data.data : 
         ser.write(b'B\r')
         team = TEAM_BLUE
-        rospy.loginfo("send team blue")
     else :
         ser.write(b'Y\r')
         team = TEAM_YELLOW
-        rospy.loginfo("send team yellow")
 
+    
 if __name__ == '__main__':
     start = False
     try:

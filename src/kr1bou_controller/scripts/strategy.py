@@ -73,7 +73,7 @@ class Strategy:
         rospy.Subscriber('state', Int16, self.update_state)
 
         self.team = -1
-        rospy.Subscriber('Team', Bool, self.update_team)
+        rospy.Subscriber('TeamFinal', Bool, self.update_team)
         while self.team == -1 : rospy.sleep(0.05)
 
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     rospy.init_node("strategy")
     rospy.loginfo("[START] Strategy node has started.")
     strategy_manager = Strategy()
-    
+
     rospy.Subscriber('runningPhase', Bool, run)
     rate = rospy.Rate(rospy.get_param('/frequency'))
     while not start:
