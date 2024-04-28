@@ -55,6 +55,22 @@ if __name__ == '__main__':
         button.when_released = on_button_released
 
         # Spin to keep the script for exiting
+
+
+        rospy.Subscriber('runningPhase', Bool, run)
+        rate = rospy.Rate(rospy.get_param('/frequency'))
+        while not start:
+            rate.sleep()
+        
+        rospy.sleep(0.1)
+        
+        if button.is_pressed :
+            rospy.loginfo("START MATCH WITH TEAM BLUE")
+            pub.publish(True)
+        else:
+            rospy.loginfo("START MATCH WITH TEAM YELLOW")
+            pub.publish(False)
+
         rospy.spin()
     except rospy.ROSInterruptException as e:
         # rospy.logerr(e)
