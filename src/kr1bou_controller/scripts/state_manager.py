@@ -11,7 +11,7 @@ queue_size = rospy.get_param('/queue_size')
 
 # Identify connected Arduino sensors
 def identify_arduino_ports(known_sensors):
-    identified_ports = {known_sensors[0]: "/dev/ttyACM0", known_sensors[1]: "/dev/ttyUSB0"}
+    identified_ports = {known_sensors[0]: "/dev/ttyACM0", known_sensors[1]: "/dev/ttyUSB1"}
     return identified_ports
     # ports = serial.tools.list_ports.comports()
     # list_port = [port for port, desc, hwid in sorted(ports)]
