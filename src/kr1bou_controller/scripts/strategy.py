@@ -138,7 +138,7 @@ class Strategy:
     def run(self):
         while not rospy.is_shutdown():
             while self.team == -1 : rospy.sleep(0.05)
-            rospy.loginfo(self.position)
+            #rospy.loginfo(self.position)
             if self.need_for_compute or self.path == []:
                 if self.path == []:
                     #rospy.loginfo(f"precision: {self.unit}")
@@ -206,10 +206,10 @@ class Strategy:
         # Compute the path. Remove first node
         path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:]
         # Remove node if the robot is already on it
-        rospy.loginfo(f"dist to first cell : {(self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2}")
+        #rospy.loginfo(f"dist to first cell : {(self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2}")
         if len(path) > 0:
             if sqrt((self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2) < (0.7):
-                rospy.loginfo("supression de la premierre cell")
+                #rospy.loginfo("supression de la premierre cell")
                 path.pop(0)
         self.path = [node.position for node in path]
 
@@ -235,7 +235,7 @@ class Strategy:
         """Follow the path"""
         if self.path and len(self.path) !=0 :
             self.go_to(self.path[0][0] / (self.unit), self.path[0][1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
-            rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
+            #rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
         else :
             rospy.loginfo("no path found")
 
