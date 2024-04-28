@@ -249,11 +249,11 @@ if __name__ == "__main__":
     start = False
     rospy.init_node("strategy")
     rospy.loginfo("[START] Strategy node has started.")
-
+    strategy_manager = Strategy()
+    
     rospy.Subscriber('runningPhase', Bool, run)
     rate = rospy.Rate(rospy.get_param('/frequency'))
     while not start:
         rate.sleep()
 
-    strategy_manager = Strategy()
     strategy_manager.run()
