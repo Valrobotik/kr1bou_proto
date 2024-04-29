@@ -18,7 +18,7 @@ NO_EMERGENCY = 0
 front_sensor = [8,9]
 back_sensor = [6,7]
 
-EMERGENCY_THREASHOLD = 15
+EMERGENCY_THREASHOLD = 25
 
 def emergency_stop_needed(US_data: list):
     data = Int16()
