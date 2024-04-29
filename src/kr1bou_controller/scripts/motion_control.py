@@ -84,11 +84,8 @@ class Kr1bou:
         rospy.Subscriber('direction', Int16, self.update_mooving_direction)
         rospy.Subscriber('Emergency_stop', Int16, self.stop_move)
 
-    def stop_move(data : Int16):
-        temp = data.data
-
-
-
+    def stop_move(self, data : Int16):
+        self.emergency_current = data.data
 
     def publish_speed(self):
         if self.etat == IN_PROGESS :
