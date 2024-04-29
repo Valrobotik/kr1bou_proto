@@ -83,14 +83,14 @@ class strategie:
     def run(self):
         while not rospy.is_shutdown():
             rospy.loginfo("next_obj0")
-            self.go_to(1, 0, direction=BACKWARD)
+            self.go_to(1, 0)
             self.wait_until_ready()
             rospy.loginfo("next_obj1")
             #self.turn_servo(90)
             #rospy.sleep(3)
             #self.turn_servo(0)
             #rospy.sleep(3)
-            self.go_to(0, 0, direction=BACKWARD)
+            self.go_to(0, 0)
             self.wait_until_ready()
             rospy.loginfo("next_obj2")
 
