@@ -62,7 +62,7 @@ class Strategy:
                            x, y, theta in rospy.get_param('/objectives')]
         heapq.heapify(self.objectives)
 
-        self.US_data = Float32MultiArray()
+        self.US_data = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
         rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
 
         for i in range(1, 5):
@@ -218,7 +218,7 @@ class Strategy:
         """
         obstacles = []
         # Get the obstacles from the ultrasound sensors
-        for i, (x, y) in enumerate(self.US_data.data):
+        for i, (x, y) in enumerate(self.US_data):
             if (x, y) not in [(0, 0), (-1, -1)]:
                 # Get the 4 points of the obstacle
                 x_prime = int(x / self.unit)
