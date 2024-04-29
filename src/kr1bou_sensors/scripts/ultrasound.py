@@ -5,9 +5,33 @@ Manages the data of the 8 ultrasound sensors.
 import rospy
 import serial
 import math
-from std_msgs.msg import Bool, Float32MultiArray
+from std_msgs.msg import Bool, Float32MultiArray, Int16
 from geometry_msgs.msg import Pose2D
 from typing import Tuple
+
+
+EMERGENCY_FRONT = 1
+EMERGENCY_BACK = 2 
+EMERGENCY_BOTH = 3
+NO_EMERGENCY = 0
+
+front_sensor = [8,9]
+back_sensor = [6,7]
+
+EMERGENCY_THREASHOLD = 15
+
+def emergency_stop_needed(US_data: list):
+    data = Int16()
+    data.data = NO_EMERGENCY
+    for i in range(0, len(US_data)):
+        if i in front_sensor : 
+            if US_data[i]<EMERGENCY_THREASHOLD : 
+                data.data = EMERGENCY_FRONT
+        elif i in back_sensor :
+            if US_data[i]<EMERGENCY_THREASHOLD :
+                if data.data == NO_EMERGENCY: data.data = EMERGENCY_BACK
+                else : data.data = EMERGENCY_BOTH
+    emergency_stop_pub.publish(data)
 
 
 def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, float]:
@@ -62,6 +86,7 @@ def read_and_publish_sensor_data():
                 #     clamp_sensor_data(reading, pos) for reading, pos in
                 #     zip(sensor_readings, sensor_positions)  # Clamp
                 # ]
+                emergency_stop_needed(sensor_readings)
                 clamped_readings = [
                     calcul_absolut_position(reading, pos) for reading, pos in
                      zip(sensor_readings, sensor_positions)  # Clamp
@@ -142,6 +167,7 @@ if __name__ == '__main__':
 
     # Publisher and Subscriber
     sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
+    emergency_stop_pub = rospy.Publisher('Emergency_stop', Int16, queue_size=queue_size)
     rospy.Subscriber('odometry', Pose2D, pose_callback)
 
     try:

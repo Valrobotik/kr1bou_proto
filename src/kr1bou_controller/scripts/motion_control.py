@@ -34,6 +34,10 @@ WHEEL_TURN_SPEED_BACKWARD = 0.30
 
 WHEEL_HIGHSPEED_FACTOR = 2.0
 
+EMERGENCY_FRONT = 1
+EMERGENCY_BACK = 2
+EMERGENCY_BOTH = 3
+NO_EMERGENCY = 0
 
 class Kr1bou:
     def __init__(self):
@@ -61,6 +65,8 @@ class Kr1bou:
 
         self.need_rst_odom = False
 
+        self.emergency_current = EMERGENCY_BACK
+
         self.freq = rospy.get_param('/frequency')
 
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
@@ -76,6 +82,11 @@ class Kr1bou:
         rospy.Subscriber('max_speed', Float64, self.set_max_speed)
         rospy.Subscriber('stop', Bool, self.stop)
         rospy.Subscriber('direction', Int16, self.update_mooving_direction)
+        rospy.Subscriber('Emergency_stop', Int16, self.stop_move)
+
+    def stop_move(data : Int16):
+        temp = data.data
+
 
 
 
@@ -96,6 +107,17 @@ class Kr1bou:
         data = Vector3()
         data.x = self.vitesse_gauche
         data.y = self.vitesse_droite
+
+        if (data.x > 0 or data.y > 0) and self.emergency_current == EMERGENCY_FRONT : 
+            data.x = 0
+            data.y = 0
+        elif (data.x < 0 or data.y < 0) and self.emergency_current == EMERGENCY_BACK : 
+            data.x = 0
+            data.y = 0
+        elif self.emergency_current == EMERGENCY_BOTH : 
+            data.x = 0
+            data.y = 0
+
         self.publisher_speed.publish(data)
         if(self.need_rst_odom): self.reset_position_camera()
 
