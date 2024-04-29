@@ -65,7 +65,7 @@ def read_and_publish_sensor_data():
                 # Flatten the list of tuples
                 sensor_data_pub.publish(Float32MultiArray(data=[item for sublist in clamped_readings
                                                                 for item in sublist]))
-                rospy.loginfo(f" US DATA : {[item for sublist in clamped_readings for item in sublist]}")
+                #rospy.loginfo(f" US DATA : {[item for sublist in clamped_readings for item in sublist]}")
             except ValueError:
                 rospy.logwarn(raw_data)
                 rospy.logwarn('{rospy.get_name()} received malformed data from US Arduino.')

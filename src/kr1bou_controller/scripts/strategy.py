@@ -99,6 +99,7 @@ class Strategy:
         # Unflatten the list of tuples ->
         # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
         self.US_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]
+        rospy.loginfo(self.US_data)
         self.need_for_compute = True
 
     def update_state(self, data: Int16):
