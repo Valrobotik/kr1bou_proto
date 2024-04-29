@@ -24,9 +24,9 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, f
                          math.cos(sensor_absolute_angle))
 
     # Calculate the x, y coordinates of the intersection between the sensor's line of sight and the map boundaries
-    if sensor_absolute_angle == 0 or sensor_absolute_angle == math.pi:
+    if near(sensor_absolute_angle, 0) or near(sensor_absolute_angle, math.pi):
         x_intersection = sensor_x_absolute
-        y_intersection = map_boundaries[2] if sensor_absolute_angle == 0 else map_boundaries[0]
+        y_intersection = map_boundaries[2] if near(sensor_absolute_angle, 0) else map_boundaries[0]
     else:
         slope = math.tan(sensor_absolute_angle)
         x_intersection = (map_boundaries[1] - sensor_y_absolute + slope * sensor_x_absolute) / slope
@@ -38,10 +38,10 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, f
         return -1, -1
 
     # Else return the absolute coordinates of the raw data
-    if sensor_absolute_angle == 0:
+    if near(sensor_absolute_angle, 0):
         x_obstacle = sensor_x_absolute + raw_data
         y_obstacle = sensor_y_absolute  # No change in y
-    elif sensor_absolute_angle == math.pi:
+    elif near(sensor_absolute_angle, math.pi):
         x_obstacle = sensor_x_absolute - raw_data
         y_obstacle = sensor_y_absolute
     else:
@@ -83,6 +83,9 @@ def pose_callback(pose_msg: Pose2D):
     current_pose = pose_msg
     # rospy.loginfo(f"{rospy.get_name()} received {current_pose} from Pose")
 
+def near(x, y, epsilon = 0.01):
+    if (abs(x-y) < epsilon): return True
+    else : return False
 
 if __name__ == '__main__':
     # Initialization
