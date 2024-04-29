@@ -62,7 +62,7 @@ class Strategy:
                            x, y, theta in rospy.get_param('/objectives')]
         heapq.heapify(self.objectives)
 
-        self.US_data = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+        self.US_data = [(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1),(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)]
         rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
 
         for i in range(1, 5):
