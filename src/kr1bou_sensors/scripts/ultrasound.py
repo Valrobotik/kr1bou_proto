@@ -58,9 +58,13 @@ def read_and_publish_sensor_data():
                 sensor_readings = [float(x) for x in
                                    raw_data.decode('utf-8').replace('\r\n', '').replace('b', '')
                                    .replace("'", '').strip('[]').split('; ')]  # Parse
+                # clamped_readings = [
+                #     clamp_sensor_data(reading, pos) for reading, pos in
+                #     zip(sensor_readings, sensor_positions)  # Clamp
+                # ]
                 clamped_readings = [
-                    clamp_sensor_data(reading, pos) for reading, pos in
-                    zip(sensor_readings, sensor_positions)  # Clamp
+                    calcul_absolut_position(reading, pos) for reading, pos in
+                     zip(sensor_readings, sensor_positions)  # Clamp
                 ]
                 # Flatten the list of tuples
                 sensor_data_pub.publish(Float32MultiArray(data=[item for sublist in clamped_readings
@@ -70,6 +74,28 @@ def read_and_publish_sensor_data():
                 rospy.logwarn(raw_data)
                 rospy.logwarn('{rospy.get_name()} received malformed data from US Arduino.')
         rate.sleep()
+
+
+def calcul_absolut_position(raw_data: float, sensor_position: tuple) -> Tuple[float, float]:
+    global current_pose
+    #repere du robot :
+
+    x_cap = sensor_position[0]
+    y_cap = sensor_position[1]
+    a_cap = sensor_position[3]
+
+    x1 = x_cap+raw_data*math.cos(a_cap)
+    y1 = y_cap+raw_data*math.sin(a_cap)
+
+    #alignement avec le repere absolue :
+
+    d = math.sqrt(x1**2+y1**2)
+    a = math.atan2(y1, x1)
+
+    x_obs = current_pose.x+d*math.cos(a+current_pose.theta)
+    y_obs = current_pose.y+d*math.sin(a+current_pose.theta)
+
+    return(x_obs, y_obs)
 
 
 def run(data):
