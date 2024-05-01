@@ -218,10 +218,9 @@ class Kr1bou:
         #self.last_right_speed = right_speed
 
     def set_objectif(self, data:Pose2D):
-        rospy.loginfo("new objecif set")
+        rospy.loginfo(f"new objecif set to ({data.x};{data.y};{data.theta})")
         self.etat = IN_PROGESS
         self.publish_state()
-        rospy.loginfo("new objecif set")
         self.objectif_x = data.x
         self.objectif_y = data.y
         self.objectif_theta = data.theta
@@ -230,6 +229,7 @@ class Kr1bou:
         global WHEEL_FORWARD_SPEED, WHEEL_BACKWARD_SPEED
         WHEEL_FORWARD_SPEED = data.data
         WHEEL_BACKWARD_SPEED = data.data
+        rospy.loginfo(f"new speed set to {data.data}")
 
     def stop(self, data:Bool):
         if data.data:
@@ -250,6 +250,7 @@ class Kr1bou:
         self.publisher_state.publish(temp)
 
     def update_mooving_direction(self, data:Int16):
+        rospy.loginfo("forced dir set")
         if data.data == 0 :
             self.force_backward = False
             self.force_forward = False
