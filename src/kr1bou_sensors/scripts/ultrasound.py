@@ -142,12 +142,12 @@ def pose_callback(pose_msg: Pose2D):
     data.data = NO_EMERGENCY
     for i in front_sensor:
         dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
-        if dist_robot_obstacle < EMERGENCY_THREASHOLD :
+        if dist_robot_obstacle < EMERGENCY_THREASHOLD and sensor_readings[i] != 0:
             rospy.logwarn(f"/!\ ATTENTION : OBSTACLE AVANT A {dist_robot_obstacle} CM sur {i} (recalculer) dist mesurée precedement : {sensor_readings[i]}")
             data.data = EMERGENCY_FRONT
     for i in back_sensor:
         dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
-        if dist_robot_obstacle < EMERGENCY_THREASHOLD :
+        if dist_robot_obstacle < EMERGENCY_THREASHOLD and sensor_readings[i] != 0:
             rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {dist_robot_obstacle} CM sur {i} (recalculer) dist mesurée precedement : {sensor_readings[i]}")
             if data.data == EMERGENCY_FRONT:
                 data.data = EMERGENCY_BOTH
