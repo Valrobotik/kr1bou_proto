@@ -88,11 +88,11 @@ if __name__ == "__main__":
         rospy.init_node('wheel_controller')
         rospy.loginfo("[START] Wheel Controller node has started.")
         # Wait for the runningPhase True signal
+        wheel_controller = WheelController()
         rate = rospy.Rate(rospy.get_param('/frequency'))
         rospy.Subscriber('runningPhase', Bool, run)
         while not start:
             rate.sleep()
-        wheel_controller = WheelController()
         wheel_controller.run()
     except rospy.ROSInterruptException as e:
         rospy.logerr(e)
