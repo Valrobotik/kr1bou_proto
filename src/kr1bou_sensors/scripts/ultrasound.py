@@ -133,7 +133,9 @@ def run(data):
 
 def pose_callback(pose_msg: Pose2D):
     global current_pose
-    current_pose = pose_msg
+    current_pose.x = pose_msg.x*100
+    current_pose.y = pose_msg.y*100
+    current_pose.theta = pose_msg.theta
     data = Int16()
     data.data = NO_EMERGENCY
     for i in front_sensor:
