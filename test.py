@@ -33,11 +33,11 @@ time.sleep(1)
 
 #Go at 90°
 pwm.ChangeDutyCycle(angle_to_percent(90))
-time.sleep(1)
+time.sleep(10)
 
 #Finish at 180°
 pwm.ChangeDutyCycle(angle_to_percent(180))
-time.sleep(1)
+time.sleep(10)
 
 #Close GPIO & cleanup
 pwm.stop()
