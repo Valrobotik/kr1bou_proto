@@ -33,6 +33,7 @@ class WheelController:
     def motor_speed_callback(self, data):
         # Format : Vg.gg;Vd.ddR g for 'gauche', d for 'droite' in m/s
         self.list_comande_to_send.append(f"V{format(data.x, '.2f')};{format(data.y, '.2f')}R")
+        rospy.loginfo("speed cmd receive")
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
