@@ -220,10 +220,10 @@ class Kr1bou:
     def set_objectif(self, data:Pose2D):
         self.etat = IN_PROGESS
         self.publish_state()
+        rospy.loginfo("new objecif set")
         self.objectif_x = data.x
         self.objectif_y = data.y
         self.objectif_theta = data.theta
-        rospy.loginfo("new objecif set")
 
     def set_max_speed(self, data:Float64):
         global WHEEL_FORWARD_SPEED, WHEEL_BACKWARD_SPEED
