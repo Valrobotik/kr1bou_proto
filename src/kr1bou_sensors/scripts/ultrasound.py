@@ -75,9 +75,9 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, f
         y_obstacle = sensor_y_absolute + raw_data * math.sin(sensor_absolute_angle)
     return x_obstacle, y_obstacle
 
-clamped_readings = [(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1)]
+clamped_readings = [(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000)]
 def read_and_publish_sensor_data():
-    global clamped_readings
+    global clamped_readings, sensor_readings
     while not rospy.is_shutdown():
         if serial_port.in_waiting:  # If there is data to read
             raw_data = serial_port.readline()  # Read
@@ -147,7 +147,7 @@ def pose_callback(pose_msg: Pose2D):
     for i in back_sensor:
         dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
         if dist_robot_obstacle < EMERGENCY_THREASHOLD :
-            rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {dist_robot_obstacle} CM sur {i} (recalculer)")
+            rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {dist_robot_obstacle} CM sur {i} (recalculer) ")
             if data.data == EMERGENCY_FRONT:
                 data.data = EMERGENCY_BOTH
             else:
