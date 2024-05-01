@@ -77,6 +77,7 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, f
 
 clamped_readings = [(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1)]
 def read_and_publish_sensor_data():
+    global clamped_readings
     while not rospy.is_shutdown():
         if serial_port.in_waiting:  # If there is data to read
             raw_data = serial_port.readline()  # Read
