@@ -51,15 +51,6 @@ def config_callback(msg: Bool):
     if msg.data:  # We want the key to be released
         rospy.loginfo("Config phase started")
 
-        known_sensors = rospy.get_param('/arduino/known_sensors')
-        rospy.loginfo("Identifying connected Arduino sensors...")
-        identified_ports = identify_arduino_ports(known_sensors)
-
-        # Dump identified ports to ROS parameters
-        for sensor_id, port in identified_ports.items():
-            rospy.set_param(f'/arduino/arduino_serial_ports/{sensor_id}', port)
-            rospy.loginfo(f'/arduino/arduino_serial_ports/{sensor_id} : {port}')
-
         rospy.loginfo("Configuration phase completed. Identified ports dumped to ROS parameters.")
         # Transition to the next state via publisher
         pub = rospy.Publisher('configPhase', Bool, queue_size=queue_size)
@@ -97,4 +88,13 @@ if __name__ == '__main__':
     rospy.Subscriber('stop', Bool, stop_callback)
     rospy.Subscriber('emergencyStop', Bool, emergency_callback)
 
+
+    known_sensors = rospy.get_param('/arduino/known_sensors')
+    rospy.loginfo("Identifying connected Arduino sensors...")
+    identified_ports = identify_arduino_ports(known_sensors)
+
+    # Dump identified ports to ROS parameters
+    for sensor_id, port in identified_ports.items():
+        rospy.set_param(f'/arduino/arduino_serial_ports/{sensor_id}', port)
+        rospy.loginfo(f'/arduino/arduino_serial_ports/{sensor_id} : {port}')
     rospy.spin()
