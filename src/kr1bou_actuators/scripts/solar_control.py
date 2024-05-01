@@ -3,7 +3,7 @@
 
 import rospy
 from std_msgs.msg import Int16, Bool
-
+import time
 import RPi.GPIO as GPIO
 
 
@@ -20,10 +20,11 @@ def angle_to_percent(angle):
 
     return lower + angle_as_percent
 
-
+time_run = 0
 def go_to(data: Int16):
-    global pwm
-    pwm.ChangeDutyCycle(angle_to_percent(data.data))
+    global pwm, time_run
+    pwm.start(angle_to_percent(0))
+    time_run = time.time()
     rospy.loginfo(data.data)
 
 
@@ -32,6 +33,12 @@ def run(data: Bool):
     start = data.data
     rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
 
+def loop():
+    global time_run, pwm
+    while not rospy.is_shutdown():
+        if time_run < time.time()-3:
+            pwm.stop()
+        rospy.sleep(0.2)
 
 if __name__ == "__main__":
     start = False
@@ -51,8 +58,9 @@ if __name__ == "__main__":
         rospy.Subscriber("solar_angle", Int16, go_to)
 
         pwm.start(angle_to_percent(0))
-
-        rospy.spin()
+        rospy.sleep(1)
+        pwm.stop()
+        loop()
 
     except rospy.ROSInterruptException as e:
         pass
