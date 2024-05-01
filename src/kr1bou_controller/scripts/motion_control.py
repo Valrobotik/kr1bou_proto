@@ -218,6 +218,7 @@ class Kr1bou:
         #self.last_right_speed = right_speed
 
     def set_objectif(self, data:Pose2D):
+        rospy.loginfo("new objecif set")
         self.etat = IN_PROGESS
         self.publish_state()
         rospy.loginfo("new objecif set")
