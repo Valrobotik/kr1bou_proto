@@ -81,10 +81,6 @@ class Kr1bou:
         rospy.Subscriber('direction', Int16, self.update_mooving_direction)
         rospy.Subscriber('Emergency_stop', Int16, self.stop_move)
 
-
-        rospy.sleep(0.1)
-        self.reset_position_camera()
-
     def stop_move(self, data : Int16):
         self.emergency_current = data.data
 
@@ -289,9 +285,12 @@ if __name__=="__main__":
         rate = rospy.Rate(rospy.get_param('/frequency'))
         rospy.Subscriber('runningPhase', Bool, run)
         rospy.Subscriber('camera', Pose2D, update_camera)
+        robot = Kr1bou()
         while not start:
             rate.sleep()
-        robot = Kr1bou()
+
+        rospy.sleep(0.2)
+        robot.reset_position_camera()
         while not rospy.is_shutdown():  
             robot.publish_speed()
             rate.sleep()
