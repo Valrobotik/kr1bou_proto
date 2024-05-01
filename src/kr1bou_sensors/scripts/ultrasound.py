@@ -25,11 +25,11 @@ def emergency_stop_needed(US_data: list):
     data.data = NO_EMERGENCY
     for i in range(0, len(US_data)):
         if i in front_sensor : 
-            if US_data[i]<EMERGENCY_THREASHOLD : 
+            if US_data[i]<EMERGENCY_THREASHOLD and US_data[i] !=0 : 
                 data.data = EMERGENCY_FRONT
                 rospy.logwarn(f"/!\ ATTENTION : OBSTACLE AVANT A {US_data[i]} CM sur {i}")
         elif i in back_sensor :
-            if US_data[i]<EMERGENCY_THREASHOLD :
+            if US_data[i]<EMERGENCY_THREASHOLD and US_data[i] !=0:
                 rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {US_data[i]} CM sur {i}")
                 if data.data == NO_EMERGENCY: data.data = EMERGENCY_BACK
                 else : data.data = EMERGENCY_BOTH
