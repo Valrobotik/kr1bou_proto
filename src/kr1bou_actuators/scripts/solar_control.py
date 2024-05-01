@@ -23,8 +23,8 @@ def angle_to_percent(angle):
 time_run = 0
 def go_to(data: Int16):
     global pwm, time_run
-    pwm.start(angle_to_percent(0))
     time_run = time.time()
+    pwm.start(angle_to_percent(data.data))
     rospy.loginfo(data.data)
 
 
@@ -36,7 +36,7 @@ def run(data: Bool):
 def loop():
     global time_run, pwm
     while not rospy.is_shutdown():
-        if time_run < time.time()-3:
+        if time.time()-time_run < 3:
             pwm.stop()
         rospy.sleep(0.2)
 
