@@ -93,9 +93,6 @@ if __name__ == "__main__":
         rospy.sleep(2)
         wheel_controller = WheelController()
         rate = rospy.Rate(rospy.get_param('/frequency'))
-        rospy.Subscriber('runningPhase', Bool, run)
-        while not start:
-            rate.sleep()
         wheel_controller.run()
     except rospy.ROSInterruptException as e:
         rospy.logerr(e)
