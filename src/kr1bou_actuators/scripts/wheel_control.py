@@ -12,6 +12,8 @@ from std_msgs.msg import Bool, String
 class WheelController:
     def __init__(self):
         # Retrieve the serial port parameter for the Arduino controlling the wheels
+
+        rospy.sleep(2)
         self.serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/Motor')
         self.baudrate = rospy.get_param('/arduino/baudrate')
         self.rate = rospy.Rate(30)
