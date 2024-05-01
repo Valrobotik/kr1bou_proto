@@ -64,7 +64,7 @@ class WheelController:
                         str += i
                         self.list_comande_to_send.pop(self.list_comande_to_send.index(i))
                     self.serial_port.write(str.encode())
-                    #rospy.loginfo(f"send_data : {str}")
+                    rospy.loginfo(f"send_data : {str}")
                 except serial.SerialException as s:
                     rospy.logwarn("Error while sending correction to Arduino.")
                     rospy.logwarn(s)    
