@@ -75,7 +75,7 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, f
         y_obstacle = sensor_y_absolute + raw_data * math.sin(sensor_absolute_angle)
     return x_obstacle, y_obstacle
 
-
+clamped_readings = [(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1),(-1,-1)]
 def read_and_publish_sensor_data():
     while not rospy.is_shutdown():
         if serial_port.in_waiting:  # If there is data to read
@@ -134,6 +134,23 @@ def run(data):
 def pose_callback(pose_msg: Pose2D):
     global current_pose
     current_pose = pose_msg
+    data = Int16()
+    data.data = NO_EMERGENCY
+    for i in front_sensor:
+        dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
+        if dist_robot_obstacle < EMERGENCY_THREASHOLD :
+            data.data = EMERGENCY_FRONT
+    for i in back_sensor:
+        dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
+        if dist_robot_obstacle < EMERGENCY_THREASHOLD :
+            if data.data == EMERGENCY_FRONT:
+                data.data = EMERGENCY_BOTH
+            else:
+                data.data = EMERGENCY_BACK
+    if data.data != NO_EMERGENCY :
+        emergency_stop_pub.publish(data)
+
+
     # rospy.loginfo(f"{rospy.get_name()} received {current_pose} from Pose")
 
 def near(x, y, epsilon = 0.01):
