@@ -150,6 +150,7 @@ class Kr1bou:
         x2 = self.objectif_x
         y2 = self.objectif_y
 
+        rospy.loginfo(f"going to : {x2} ; {y2}")
         force_forward = self.force_forward 
         force_backward = self.force_backward
 
