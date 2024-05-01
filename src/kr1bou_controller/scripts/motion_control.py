@@ -74,15 +74,16 @@ class Kr1bou:
 
         self.publisher_state = rospy.Publisher('state', Int16, queue_size=1)
         
-        rospy.sleep(0.1)
-        self.reset_position_camera()
-
         rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, self.set_max_speed)
         rospy.Subscriber('stop', Bool, self.stop)
         rospy.Subscriber('direction', Int16, self.update_mooving_direction)
         rospy.Subscriber('Emergency_stop', Int16, self.stop_move)
+
+
+        rospy.sleep(0.1)
+        self.reset_position_camera()
 
     def stop_move(self, data : Int16):
         self.emergency_current = data.data
