@@ -24,6 +24,7 @@ time_run = 0
 def go_to(data: Int16):
     global pwm, time_run
     time_run = time.time()
+    pwm = GPIO.PWM(pwm_gpio, frequency)
     pwm.start(angle_to_percent(data.data))
     rospy.loginfo(data.data)
 
