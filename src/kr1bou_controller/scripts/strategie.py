@@ -67,6 +67,7 @@ class strategie:
         self.direction_pub.publish(direction_data)
         self.speed_ctrl_pub.publish(speed_data)
         self.pos_ordre_pub.publish(obj)
+        self.etat_robot = IN_PROGESS
         rospy.loginfo("go to send")
 
     
