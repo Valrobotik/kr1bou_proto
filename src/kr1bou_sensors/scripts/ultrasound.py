@@ -15,8 +15,8 @@ EMERGENCY_BACK = 2
 EMERGENCY_BOTH = 3
 NO_EMERGENCY = 0
 
-front_sensor = [8,9]
-back_sensor = [6,7]
+front_sensor = [8, 9]
+back_sensor = [6, 7, 1, 3]
 
 EMERGENCY_THREASHOLD = 25
 
