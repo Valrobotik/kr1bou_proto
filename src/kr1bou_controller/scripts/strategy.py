@@ -188,7 +188,7 @@ class Strategy:
         :return: the path to follow
         """
         # Create a matrix of nodes
-        maze = [[Node((x, y), {}) for y in range(self.map_boundaries[3])]
+        maze = [[Node((x, y), 0, {}) for y in range(self.map_boundaries[3])]
                 for x in range(self.map_boundaries[2])]
         obstacles = self.get_discrete_obstacles()
         # Set the neighbors for each i, j. If any obstacle is in neighborhood, set the cost to MAX_COST
