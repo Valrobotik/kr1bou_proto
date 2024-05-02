@@ -100,7 +100,6 @@ class Strategy:
         # Unflatten the list of tuples ->
         # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
         self.US_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]
-        rospy.loginfo(f"(STRATEGY) {self.US_data}")
         self.need_for_compute = True
 
     def update_state(self, data: Int16):
@@ -153,7 +152,6 @@ class Strategy:
                 self.follow_path()
                 self.need_for_send = False
             else:
-                #rospy.loginfo(f" [state] : {self.state_robot}")
                 self.wait_until_ready()
 
     def update_objectives(self):
@@ -171,7 +169,6 @@ class Strategy:
         else : 
             rospy.logwarn("(STRATEGY) /!\\ CAN NOT CHANGE TEAM DURING THE MATCH /!\\")
 
-            
 
     def compute_path(self):
         """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
@@ -199,12 +196,14 @@ class Strategy:
         else :
             new_obj = self.objectives[0] # recompute path to current objective
         # Compute the path
-        if not self.still_exists():
-            path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:] # Remove current position node
-            path = clean_path(path)
-        else:
+        if self.still_exists():
             rospy.loginfo("(STRATEGY) Path still exists")
             path = self.path # Keep the current path
+        else:
+            rospy.loginfo("(STRATEGY) Recompute path")
+            path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:] # Remove current position node
+            path = clean_path(path)
+            rospy.loginfo(f"(STRATEGY) New path : {path}")
         
         # Remove node if the robot is already on it
         if len(path) > 0:
@@ -234,10 +233,12 @@ class Strategy:
         """Check if the current path is still valid, i.e no obstacles on the path"""
         if self.path == []:
             return False
-        superposed = [node.position if node.position in self.get_discrete_obstacles() else None for node in self.path]
-        for obstacle_position in superposed:
-            rospy.loginfo(f"Obstacle at {obstacle_position}")
-        return not superposed
+        superposed = []
+        for node in self.path:
+            if node.position in self.get_discrete_obstacles():
+                superposed.append(node.position)
+            rospy.loginfo(f"Obstacle at {node.position}")
+        return superposed == []
 
     def follow_path(self):
         """Follow the path"""
