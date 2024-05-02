@@ -241,8 +241,10 @@ class Strategy:
     
     def still_exists(self):
         """Check if the current path is still valid, i.e no obstacles on the path"""
-        return not any(position in self.get_discrete_obstacles() for position in [node.position for node in self.path])
-
+        superposed = all(position in self.get_discrete_obstacles() for position in [node.position for node in self.path])
+        for obstacle_position in superposed:
+            rospy.loginfo(f"Obstacle at {obstacle_position}")
+        return not superposed
 
     def follow_path(self):
         """Follow the path"""
