@@ -49,9 +49,9 @@ def identify_arduino_ports(known_sensors):
 
 def config_callback(msg: Bool):
     if msg.data:  # We want the key to be released
-        rospy.loginfo("Config phase started")
+        rospy.loginfo("(STATE MANAGER) Config phase started")
 
-        rospy.loginfo("Configuration phase completed. Identified ports dumped to ROS parameters.")
+        rospy.loginfo("(STATE MANAGER) Configuration phase completed. Identified ports dumped to ROS parameters.")
         # Transition to the next state via publisher
         pub = rospy.Publisher('configPhase', Bool, queue_size=queue_size)
         rospy.sleep(0.2)
@@ -61,7 +61,7 @@ def config_callback(msg: Bool):
         rospy.sleep(0.2)
         pub_running.publish(True)
         # pub_running.unregister()
-        rospy.loginfo("Published on runningPhase topic")
+        rospy.loginfo("(STATE MANAGER) Published on runningPhase topic")
 
 
 def running_callback(msg):
@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
 
     known_sensors = rospy.get_param('/arduino/known_sensors')
-    rospy.loginfo("Identifying connected Arduino sensors...")
+    rospy.loginfo("(STATE MANAGER) Identifying connected Arduino sensors...")
     identified_ports = identify_arduino_ports(known_sensors)
 
     # Dump identified ports to ROS parameters
