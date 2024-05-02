@@ -1,5 +1,8 @@
 <launch>
     <!-- Lidar Sensor Node -->
+    <node name="Lidar" pkg="kr1bou_sensors" type="lidar.py" output="screen">
+        <!-- Optional parameters can be added here -->
+    </node>
 
     <!-- Ultrasound Sensor Node -->
     <node name="ultrasound_sensor_manager" pkg="kr1bou_sensors" type="ultrasound.py" output="screen">

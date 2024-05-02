@@ -11,12 +11,12 @@ from std_msgs.msg import Bool
 
 # Logic for key press and release are reversed because of the hardware architecture.
 def on_key_press():
-    rospy.loginfo("Key removed: True")
+    rospy.loginfo("(STARTER TALKER) Key removed: True")
     pub.publish(True)
 
 
 def on_key_release():
-    rospy.loginfo("Key inserted: False")
+    rospy.loginfo("(STARTER TALKER) Key inserted: False")
 
 
 if __name__ == '__main__':
