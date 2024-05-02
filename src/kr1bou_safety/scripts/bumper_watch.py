@@ -25,9 +25,8 @@ def check_bumpers(buttons: List[Button]):
 
 
 def publish_bumper_event(bumpers):
+    global pub
     buttons = setup_buttons(bumpers)
-    
-    pub = rospy.Publisher('bumper', Byte, queue_size=queue_size)
 
     while not rospy.is_shutdown():
         bumpers_pressed = check_bumpers(buttons)
@@ -53,11 +52,12 @@ if __name__ == '__main__':
         rate = rospy.Rate(frequency)
         # Wait for the runningPhase True signal
         rospy.Subscriber('runningPhase', Bool, run)
-        while not start:
-            rate.sleep()
         bumper_pins = rospy.get_param('/gpio/bumper_pins')
         frequency = rospy.get_param('/frequency')
         queue_size = rospy.get_param('/queue_size')
+        pub = rospy.Publisher('bumper', Byte, queue_size=queue_size)
+        while not start:
+            rate.sleep()
         publish_bumper_event(bumper_pins)
     except rospy.ROSInterruptException as e:
         rospy.logerr(e)
