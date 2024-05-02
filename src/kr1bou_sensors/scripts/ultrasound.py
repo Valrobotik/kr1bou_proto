@@ -28,11 +28,13 @@ def emergency_stop_needed(US_data: list):
             if US_data[i]<EMERGENCY_THREASHOLD and US_data[i] !=0 : 
                 data.data = EMERGENCY_FRONT
                 rospy.logwarn(f"/!\ ATTENTION : OBSTACLE AVANT A {US_data[i]} CM sur {i}")
+            else : rospy.loginfo(f"NO WARN ON {i} : {US_data[i]} CM ")
         elif i in back_sensor :
             if US_data[i]<EMERGENCY_THREASHOLD and US_data[i] !=0:
                 rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {US_data[i]} CM sur {i}")
                 if data.data == NO_EMERGENCY: data.data = EMERGENCY_BACK
                 else : data.data = EMERGENCY_BOTH
+            else : rospy.loginfo(f"NO WARN ON {i} : {US_data[i]} CM ")
     emergency_stop_pub.publish(data)
 
 
@@ -143,18 +145,19 @@ def pose_callback(pose_msg: Pose2D):
     for i in front_sensor:
         dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
         if dist_robot_obstacle < EMERGENCY_THREASHOLD and sensor_readings[i] != 0:
-            rospy.logwarn(f"/!\ ATTENTION : OBSTACLE AVANT A {dist_robot_obstacle} CM sur {i} (recalculer) dist mesurée precedement : {sensor_readings[i]}")
+            #rospy.logwarn(f"/!\ ATTENTION : OBSTACLE AVANT A {dist_robot_obstacle} CM sur {i} (recalculer) dist mesurée precedement : {sensor_readings[i]}")
             data.data = EMERGENCY_FRONT
     for i in back_sensor:
         dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
         if dist_robot_obstacle < EMERGENCY_THREASHOLD and sensor_readings[i] != 0:
-            rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {dist_robot_obstacle} CM sur {i} (recalculer) dist mesurée precedement : {sensor_readings[i]}")
+            #rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {dist_robot_obstacle} CM sur {i} (recalculer) dist mesurée precedement : {sensor_readings[i]}")
             if data.data == EMERGENCY_FRONT:
                 data.data = EMERGENCY_BOTH
             else:
                 data.data = EMERGENCY_BACK
     if data.data != NO_EMERGENCY :
-        emergency_stop_pub.publish(data)
+        #emergency_stop_pub.publish(data)
+        pass
 
 
     # rospy.loginfo(f"{rospy.get_name()} received {current_pose} from Pose")
