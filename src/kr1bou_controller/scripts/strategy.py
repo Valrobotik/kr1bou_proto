@@ -8,6 +8,8 @@ from search_path import Node, a_star
 from math import sqrt
 import heapq
 
+from typing import List
+
 READY_LINEAR = 0
 READY = 1
 IN_PROGRESS = 2
@@ -200,12 +202,18 @@ class Strategy:
                             maze[i][j].neighbors[direction] = (cost, maze[x][y])
         # Get the start and end nodes
         origin = maze[int(self.position.x * self.unit)][int(self.position.y * self.unit)]
+        origin.orientation = self.position.theta
         if self.path == []:
             new_obj = heapq.heappop(self.objectives)  # Get new closest objective
         else :
-            new_obj = self.objectives[0]
-        # Compute the path. Remove first node
-        path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:]
+            new_obj = self.objectives[0] # recompute path to current objective
+        # Compute the path
+        if not self.still_exists(self.path):
+            path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:] # Remove current position node
+        else:
+            rospy.loginfo("Path still exists")
+            path = self.path # Keep the current path
+        
         # Remove node if the robot is already on it
         #rospy.loginfo(f"dist to first cell : {(self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2}")
         if len(path) > 0:
@@ -231,6 +239,11 @@ class Strategy:
 
         # TODO : Get the obstacles from the camera
         return obstacles
+    
+    def still_exists(self):
+        """Check if the current path is still valid, i.e no obstacles on the path"""
+        return any(position in self.get_discrete_obstacles() for position in self.path)
+            
 
     def follow_path(self):
         """Follow the path"""

@@ -6,6 +6,7 @@ from typing import List, Optional
 import heapq
 import random
 import time
+from math import atan2, pi
 
 
 class Node:
@@ -13,11 +14,13 @@ class Node:
     Node class
     """
 
-    def __init__(self, position: tuple, neighbors: dict):
+    def __init__(self, position: tuple, orientation: float, neighbors: dict):
         self.position = position
+        self.orientation = orientation
         self.neighbors = neighbors
-        self.g = 0
-        self.h = 0
+        self.g = 0  # distance to previous position
+        self.h = 0  # estimated distance
+        self.o = 0  # orientation
         self.f = 0
         self.parent = None
 
@@ -36,9 +39,10 @@ class Node:
 
 def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     """
-    A* Pathfinding algorithm implementation
+    A* Pathfinding algorithm implementation. Minimizes distance and changes of orientation
     :param start_node: the starting node / points
     :param end_node: the objective node / points
+    :param starting_angle: 
     :return: a list of nodes from start to end, or None if no path is found
     """
     open_list = [start_node]
@@ -67,7 +71,9 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
             # Compute the new cost
             neighbor.g = current_node.g + euclidian(neighbor, current_node)  # update g value
             neighbor.h = heuristic(neighbor, end_node)
-            neighbor.f = cost * neighbor.g + neighbor.h  # f = alpha * g + beta * h. Here alpha = cost and beta = 1
+            neighbor.o = orientation_change(current_node, neighbor)
+            # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma = 1 
+            neighbor.f = cost * neighbor.g + neighbor.h  
 
             if neighbor in closed_list:  # Skip if already visited
                 continue
@@ -89,6 +95,30 @@ def euclidian(node1: Node, node2: Node) -> float:
     return ((node1.position[0] - node2.position[0]) ** 2 + (node1.position[1] - node2.position[1]) ** 2) ** 0.5
 
 
+def manhattan(node1: Node, node2: Node) -> float:
+    """
+    Manhattan distance between two nodes.
+    :param node1: node 1
+    :param node2: node 2
+    :return: manhattan distance between the two nodes
+    """
+    return abs(node1.position[0] - node2.position[0]) + abs(node1.position[1] - node2.position[1])
+
+
+def other(node1: Node, node2: Node) -> float:
+    """
+    Another way to measure distance between two nodes.
+    :param node1: node 1
+    :param node2: node 2
+    :return: manhattan distance between the two nodes
+    """
+    node_x, node_y = node1.position
+    goal_x, goal_y = node2.position
+    dx = abs(node_x - goal_x)
+    dy = abs(node_y - goal_y)
+    return dx + dy + (2 ** 0.5 - 2) * min(dx, dy)
+
+
 def heuristic(node: Node, end_node: Node) -> float:
     """
     Heuristic function
@@ -96,12 +126,37 @@ def heuristic(node: Node, end_node: Node) -> float:
     :param end_node: objective node
     :return: heuristic value
     """
-    # node_x, node_y = node.position
-    # goal_x, goal_y = end_node.position
-    # dx = abs(node_x - goal_x)
-    # dy = abs(node_y - goal_y)
-    # return dx + dy + (2 ** 0.5 - 2) * min(dx, dy)
-    return euclidian(node, end_node)
+    # return euclidian(node, end_node)
+    return manhattan(node, end_node)
+
+
+def orientation_change(node1: Node, node2: Node) -> float:
+    """
+    Compute the change in orientation between 2 nodes.
+    :param node1: current node
+    :param node2: next node
+    :return: the angle between the orientation of node1 and the segment between node1 and node2
+    """
+    # get angle between node1 and node2
+    x1, y1 = node1.position
+    x2, y2 = node2.position
+    angle = 0
+    if x1 == x2:
+        if y1 < y2:
+            angle = 0
+        else:
+            angle = 180
+    elif y1 == y2:
+        if x1 < x2:
+            angle = 90
+        else:
+            angle = 270
+    else:
+        angle = atan2(y2 - y1, x2 - x1) * 180 / pi
+    
+    # update node2's orientation
+    node2.orientation = angle
+    return abs(node1.orientation - node2.orientation) # Compute the change
 
 
 def generate_random_maze(height: int, width: int, density: float) -> List[List[Node]]:
