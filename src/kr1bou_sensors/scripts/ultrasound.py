@@ -34,7 +34,8 @@ def emergency_stop_needed(US_data: list):
                 rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {US_data[i]} CM sur {i}")
                 if data.data == NO_EMERGENCY: data.data = EMERGENCY_BACK
                 else : data.data = EMERGENCY_BOTH
-            else : rospy.loginfo(f"NO WARN ON {i} : {US_data[i]} CM ")
+            else : #rospy.loginfo(f"NO WARN ON {i} : {US_data[i]} CM ")
+                pass
     emergency_stop_pub.publish(data)
 
 
