@@ -10,7 +10,7 @@ from typing import List
 
 
 def setup_buttons(pins):
-    rospy.loginfo(pins)
+    rospy.loginfo(f"(BUMPER WATCH) {pins}")
     return [Button(int(pin)) for pin in pins]
 
 
