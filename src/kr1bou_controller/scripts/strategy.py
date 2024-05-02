@@ -208,7 +208,7 @@ class Strategy:
         else :
             new_obj = self.objectives[0] # recompute path to current objective
         # Compute the path
-        if not self.still_exists(self.path):
+        if not self.still_exists():
             path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:] # Remove current position node
             path = clean_path(path)
         else:
