@@ -3,6 +3,7 @@ import serial
 from hokuyo.driver import hokuyo
 from hokuyo.tools import serial_port
 
+import matplotlib.pyplot as plt
 import math
 
 import time
@@ -11,53 +12,30 @@ from sklearn.cluster import DBSCAN
 import numpy as np
 
 
-import rospy
-
-from geometry_msgs.msg import PoseArray, Pose, Pose2D
-from std_msgs.msg import Bool
-
 uart_port = '/dev/ttyACM0'
 uart_speed = 19200
 
-def get_position(data: Pose2D):
-    global x_robot, y_robot, theta_robot
-    x_robot = data.x
-    y_robot = data.y
-    theta_robot = data.theta
-    
-def run(data: Bool):
-    global start
-    start = data.data
 
 if __name__ == '__main__':
-
-    rospy.init_node("Lidar", anonymous=True)
-    pub_data = rospy.Publisher("lidar_data", PoseArray, queue_size=1)
-    rospy.Subscriber("pose", Pose2D, get_position)
-
-    
-    rospy.loginfo("[START] Lidar node has started.")
 
     laser_serial = serial.Serial(port=uart_port, baudrate=uart_speed, timeout=0.5)
     port = serial_port.SerialPort(laser_serial)
 
     laser = hokuyo.Hokuyo(port)
+    laser.laser_off()
+
     x = []
     y = []
 
-    x_robot = 0.0
-    y_robot = 0.0
+    x_robot = 0.5
+    y_robot = 0.5
     theta_robot = 0.0
-    start = False
-    rospy.Subscriber("runningPhase", Bool, run)
-    while not start:
-        rospy.sleep(0.1)
+
+    fig = plt.figure()
+    plt.ion()  # Active le mode interactif
     laser.laser_off()
     laser.laser_on()
-
-    rate = rospy.Rate(10)
-
-    while not rospy.is_shutdown():
+    while True:
         dict = laser.get_scan()
         x = []
         y = []
@@ -87,12 +65,20 @@ if __name__ == '__main__':
         except:
             groups = []
 
-        PoseArray_msg = PoseArray()
-        PoseArray_msg.header.stamp = rospy.Time.now()
+        # Afficher les groupes
+
+        plt.plot(x, y, '.', color='b')
         for group in groups:
-            Pose_msg = Pose()
-            Pose_msg.position.x = group[0]
-            Pose_msg.position.y = group[1]
-            PoseArray_msg.poses.append(Pose_msg)
-        pub_data.publish(PoseArray_msg)
-        rate.sleep()
+            plt.plot(group[0], group[1], 'o', color='r')
+            c1 = plt.Circle((group[0], group[1]), 0.2)
+            plt.gca().add_artist(c1)
+
+        plt.xlim((-0.1, 3.1))
+        plt.ylim((-0.1, 2.1))
+        plt.draw()  # Dessine la figure sans bloquer l'exécution
+        plt.pause(0.01)  # Pause de 2 secondes
+        plt.clf()  # Efface la figure pour le prochain tour de boucle
+        
+
+    plt.ioff()  # Désactive le mode interactif
+    plt.show()
