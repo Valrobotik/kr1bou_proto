@@ -1,6 +1,8 @@
 arduino:
   baudrate: 115200
-  known_sensors: [Motor, US]
+  arduino_serial_ports:
+    Motor: "/dev/ttyACM0"
+    US: "/dev/ttyUSB1"
 
 gpio:
   start_button_pin: 4
