@@ -241,6 +241,8 @@ class Strategy:
     
     def still_exists(self):
         """Check if the current path is still valid, i.e no obstacles on the path"""
+        if self.path == []:
+            return False
         superposed = [node.position if node.position in self.get_discrete_obstacles() else None for node in self.path]
         for obstacle_position in superposed:
             rospy.loginfo(f"Obstacle at {obstacle_position}")
