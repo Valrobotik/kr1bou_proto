@@ -142,17 +142,12 @@ class Strategy:
         while not rospy.is_shutdown():
             while self.team == -1 : rospy.sleep(0.05)
             #rospy.loginfo(self.position)
-            if self.need_for_compute or self.path == []:
-                if self.path == []:
-                    #rospy.loginfo(f"precision: {self.unit}")
-                    if len(self.path) > 0 :
-                        #rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2)}")
-                        if sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2) < (0.5):
-                            #rospy.loginfo("[NEW]")
-                            self.path.pop(0)
-                if self.path and len(self.path) > 0:
-                    #rospy.loginfo(f"Computing path for {self.path[0]}")
-                    pass
+            if self.need_for_compute:
+                if len(self.path) > 0 :
+                    #rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2)}")
+                    if sqrt((self.position.x * self.unit - self.path[0].position[0]) ** 2 + (self.position.y * self.unit - self.path[0].position[1]) ** 2) < (0.5):
+                        #rospy.loginfo("[NEW]")
+                        self.path.pop(0)
                 self.update_objectives()
                 self.compute_path()
                 self.need_for_compute = False
@@ -224,7 +219,7 @@ class Strategy:
             if sqrt((self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2) < (0.7):
                 #rospy.loginfo("supression de la premierre cell")
                 path.pop(0)
-        self.path = [node.position for node in path]
+        self.path = path
 
     def get_discrete_obstacles(self) -> list:
         """Get the obstacles from the ultrasound sensors, the bumpers, the position of the adversary and discretize them
