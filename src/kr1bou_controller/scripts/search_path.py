@@ -37,7 +37,7 @@ class Node:
         return f"({self.position})"
     
     def __repr__(self):
-        return f"Node({self.position}, {self.orientation}, {self.neighbors})"
+        return f"Node({self.position}, {self.orientation})"
 
 
 def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
