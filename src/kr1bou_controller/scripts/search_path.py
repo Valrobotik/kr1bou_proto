@@ -159,6 +159,22 @@ def orientation_change(node1: Node, node2: Node) -> float:
     return abs(node1.orientation - node2.orientation) # Compute the change
 
 
+def clean_path(path: List[Node]) -> List[Node]:
+    """
+    Clean the path by removing intermediate nodes. Only keep the start, end, and turning points.
+    :param path: the path to clean
+    :return: the cleaned path
+    """
+    if len(path) < 3:
+        return path
+    cleaned_path = [path[0]]
+    for i in range(1, len(path) - 1):
+        if orientation_change(path[i - 1], path[i]) != orientation_change(path[i], path[i + 1]):
+            cleaned_path.append(path[i])
+    cleaned_path.append(path[-1])
+    return cleaned_path
+
+
 def generate_random_maze(height: int, width: int, density: float) -> List[List[Node]]:
     """
     Generate a random maze
@@ -242,9 +258,9 @@ def print_maze(start, end, maze: List[List[Node]], path: Optional[List[Node]] = 
 
 def test_n(n: int = 1000, verbose: bool = False):
     times = []
-    height = 200
-    width = 300
-    density = 0.2
+    height = 20
+    width = 30
+    density = 0.1
     for _ in range(n):
         maze = generate_random_maze(height, width, density)
         start, end = generate_random_start_end(maze)
@@ -258,6 +274,10 @@ def test_n(n: int = 1000, verbose: bool = False):
         if path and verbose:
             for node in path:
                 print(node, end=" ")
+            cleaned_path = clean_path(path)
+            for node in cleaned_path:
+                print(node, end=" ")
+            print()
         elif verbose:
             print("No path found")
         if verbose:
@@ -274,5 +294,5 @@ def test_n(n: int = 1000, verbose: bool = False):
 
 
 if __name__ == '__main__':
-    # test_n(1, True)
-    test_n(100)
+    test_n(1, True)
+    # test_n(1000)

@@ -3,7 +3,7 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float64, Bool, Int16, Float32MultiArray, Byte
-from search_path import Node, a_star
+from search_path import Node, a_star, clean_path
 
 from math import sqrt
 import heapq
@@ -210,6 +210,7 @@ class Strategy:
         # Compute the path
         if not self.still_exists(self.path):
             path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:] # Remove current position node
+            path = clean_path(path)
         else:
             rospy.loginfo("(STRATEGY) Path still exists")
             path = self.path # Keep the current path
