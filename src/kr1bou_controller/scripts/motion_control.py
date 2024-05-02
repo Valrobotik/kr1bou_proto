@@ -147,7 +147,7 @@ class Kr1bou:
         x2 = self.objectif_x
         y2 = self.objectif_y
 
-        rospy.loginfo(f"(MOTION CONTROL) going to : {x2} ; {y2}")
+        #rospy.loginfo(f"(MOTION CONTROL) going to : {x2} ; {y2}")
         force_forward = self.force_forward 
         force_backward = self.force_backward
 
@@ -216,7 +216,7 @@ class Kr1bou:
         #self.last_right_speed = right_speed
 
     def set_objectif(self, data:Pose2D):
-        rospy.loginfo(f"(MOTION CONTROL) New objective set to ({data.x};{data.y};{data.theta})")
+        #rospy.loginfo(f"(MOTION CONTROL) New objective set to ({data.x};{data.y};{data.theta})")
         self.etat = IN_PROGESS
         self.publish_state()
         self.objectif_x = data.x
@@ -227,7 +227,7 @@ class Kr1bou:
         global WHEEL_FORWARD_SPEED, WHEEL_BACKWARD_SPEED
         WHEEL_FORWARD_SPEED = data.data
         WHEEL_BACKWARD_SPEED = data.data
-        rospy.loginfo(f"(MOTION CONTROL) New speed set to {data.data}")
+        #rospy.loginfo(f"(MOTION CONTROL) New speed set to {data.data}")
 
     def stop(self, data:Bool):
         if data.data:
