@@ -242,8 +242,8 @@ def print_maze(start, end, maze: List[List[Node]], path: Optional[List[Node]] = 
 
 def test_n(n: int = 1000, verbose: bool = False):
     times = []
-    height = 20
-    width = 30
+    height = 200
+    width = 300
     density = 0.2
     for _ in range(n):
         maze = generate_random_maze(height, width, density)
@@ -275,4 +275,4 @@ def test_n(n: int = 1000, verbose: bool = False):
 
 if __name__ == '__main__':
     # test_n(1, True)
-    test_n(1000)
+    test_n(100)
