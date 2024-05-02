@@ -167,7 +167,7 @@ def generate_random_maze(height: int, width: int, density: float) -> List[List[N
     :param density: density of the maze
     :return: a list of nodes representing the maze
     """
-    maze = [[Node((i, j), {}) for j in range(width)] for i in range(height)]
+    maze = [[Node((i, j), 0, {}) for j in range(width)] for i in range(height)]
     for i in range(height):
         for j in range(width):
             if i > 0:
