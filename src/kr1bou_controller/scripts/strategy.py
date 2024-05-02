@@ -51,7 +51,7 @@ class Strategy:
         self.next_pos_obj = [0, 0, 0]
 
         # Map boundaries in decimeters [x_min, y_min, x_max, y_max]. Example: [0, 0, 200, 300]
-        self.unit = 10  # 1 dm = 10 cm
+        self.unit = rospy.get_param('/unit')  # 1 dm = 10 cm
         self.map_boundaries = [ int(m / self.unit) for m in rospy.get_param('/map_boundaries') ]
         self.path = []  # List of waypoints to follow
         self.custom_waiting_rate = rospy.Rate(20)
