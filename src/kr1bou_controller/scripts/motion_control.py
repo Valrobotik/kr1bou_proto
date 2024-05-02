@@ -117,14 +117,14 @@ class Kr1bou:
 
     def reset_position_camera(self):
         global cam_id, camera_position
-        rospy.loginfo("debug corection odom")
+        rospy.loginfo("(MOTION CONTROL) Debug odom correction")
         temp = cam_id
         if temp != -1:
             while cam_id == temp: pass
             self.publisher_corect_odom.publish(camera_position)
-            rospy.loginfo("odometrie corected")
+            rospy.loginfo("(MOTION CONTROL) Odometry corrected")
         else:
-            rospy.logwarn("no conexion with cammera")
+            rospy.logwarn("(MOTION CONTROL) No connexion with camera")
         self.need_rst_odom = False
 
     def update_rotation_speed(self):
@@ -147,7 +147,7 @@ class Kr1bou:
         x2 = self.objectif_x
         y2 = self.objectif_y
 
-        rospy.loginfo(f"going to : {x2} ; {y2}")
+        rospy.loginfo(f"(MOTION CONTROL) going to : {x2} ; {y2}")
         force_forward = self.force_forward 
         force_backward = self.force_backward
 
@@ -216,7 +216,7 @@ class Kr1bou:
         #self.last_right_speed = right_speed
 
     def set_objectif(self, data:Pose2D):
-        rospy.loginfo(f"new objecif set to ({data.x};{data.y};{data.theta})")
+        rospy.loginfo(f"(MOTION CONTROL) New objective set to ({data.x};{data.y};{data.theta})")
         self.etat = IN_PROGESS
         self.publish_state()
         self.objectif_x = data.x
@@ -227,7 +227,7 @@ class Kr1bou:
         global WHEEL_FORWARD_SPEED, WHEEL_BACKWARD_SPEED
         WHEEL_FORWARD_SPEED = data.data
         WHEEL_BACKWARD_SPEED = data.data
-        rospy.loginfo(f"new speed set to {data.data}")
+        rospy.loginfo(f"(MOTION CONTROL) New speed set to {data.data}")
 
     def stop(self, data:Bool):
         if data.data:
@@ -248,7 +248,7 @@ class Kr1bou:
         self.publisher_state.publish(temp)
 
     def update_mooving_direction(self, data:Int16):
-        rospy.loginfo("forced dir set")
+        rospy.loginfo("(WHEEL CONTROL) Forced dir set")
         if data.data == 0 :
             self.force_backward = False
             self.force_forward = False
@@ -269,11 +269,11 @@ cam_id = -1
 camera_position = Pose2D()
 def update_camera(data : Pose2D):
     global cam_id, camera_position
-    rospy.loginfo("camera receive")
+    rospy.loginfo("(MOTION CONTROL) Camera received")
     camera_position = data
     if(camera_position.theta < 0):camera_position.theta = camera_position.theta+2*pi
     camera_position.theta = 2*pi-camera_position.theta
-    rospy.loginfo(camera_position)
+    rospy.loginfo(f"(MOTION CONTROL) {camera_position}")
     cam_id = (cam_id+1)%2
 
 if __name__=="__main__":

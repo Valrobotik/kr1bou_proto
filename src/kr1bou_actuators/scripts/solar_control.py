@@ -26,7 +26,7 @@ def go_to(data: Int16):
     time_run = time.time()
     pwm = GPIO.PWM(pwm_gpio, frequency)
     pwm.start(angle_to_percent(data.data))
-    rospy.loginfo(data.data)
+    rospy.loginfo(f"(SOLAR_CONTROL) {data.data}")
 
 
 def run(data: Bool):

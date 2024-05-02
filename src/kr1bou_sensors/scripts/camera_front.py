@@ -85,11 +85,10 @@ if __name__ == "__main__" :
 
     rate = rospy.Rate(frequency)
     rospy.Subscriber("runningPhase", Bool, run)
-
+    cam_front_pub = rospy.Publisher("camera_front", Int8, queue_size=queue_size)
+    
     while not start :
         rate.sleep()
-
-    cam_front_pub = rospy.Publisher("camera_front", Int8, queue_size=queue_size)
 
     while not rospy.is_shutdown() :
         ret, frame = cam.read()

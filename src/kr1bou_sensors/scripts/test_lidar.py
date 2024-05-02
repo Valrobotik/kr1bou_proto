@@ -12,7 +12,7 @@ from sklearn.cluster import DBSCAN
 import numpy as np
 
 
-uart_port = 'COM11'
+uart_port = '/dev/ttyACM0'
 uart_speed = 19200
 
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         x = []
         y = []
         for i in range(0,len(dict[0])):
-            if(dict[1][i]>10):
+            if(dict[1][i]>90):
                 x_temp = dict[1][i]/1000*math.sin(math.radians(dict[0][i])-theta_robot+math.pi/2)+x_robot
                 y_temp = dict[1][i]/1000*math.cos(math.radians(dict[0][i])-theta_robot+math.pi/2)+y_robot
                 if x_temp>0 and x_temp<3 and y_temp>0 and y_temp<2:
@@ -50,17 +50,20 @@ if __name__ == '__main__':
         points = np.array([x, y]).T
 
         # Appliquer DBSCAN sur les points. eps est la distance maximale entre deux échantillons pour qu'ils soient considérés comme dans le même voisinage.
-        db = DBSCAN(eps=0.06, min_samples=3).fit(points)
+        try :
+            db = DBSCAN(eps=0.06, min_samples=3).fit(points)
 
-        labels = db.labels_
+            labels = db.labels_
 
-        # Pour chaque groupe, calculer le point moyen et l'ajouter à la liste des groupes.
-        groups = []
-        for group_id in set(labels):
-            if group_id != -1:  # Ignorer le bruit
-                group_points = points[labels == group_id]
-                group_mean = group_points.mean(axis=0)
-                groups.append(group_mean)
+            # Pour chaque groupe, calculer le point moyen et l'ajouter à la liste des groupes.
+            groups = []
+            for group_id in set(labels):
+                if group_id != -1:  # Ignorer le bruit
+                    group_points = points[labels == group_id]
+                    group_mean = group_points.mean(axis=0)
+                    groups.append(group_mean)
+        except:
+            groups = []
 
         # Afficher les groupes
 

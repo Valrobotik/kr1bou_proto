@@ -37,7 +37,7 @@ class WheelController:
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
-        rospy.loginfo(f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n")
+        rospy.loginfo(f"(WHEEL CONTROL) O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n")
 
         self.list_comande_to_send.append(f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
 
@@ -66,15 +66,15 @@ class WheelController:
                         str += i
                         self.list_comande_to_send.pop(self.list_comande_to_send.index(i))
                     self.serial_port.write(str.encode())
-                    rospy.loginfo(f"send_data : {str}")
+                    rospy.loginfo(f"(WHEEL CONTROL) send_data : {str}")
                 except serial.SerialException as s:
-                    rospy.logwarn("Error while sending correction to Arduino.")
+                    rospy.logwarn("(WHEEL CONTROL) Error while sending correction to Arduino.")
                     rospy.logwarn(s)    
             self.rate.sleep()
 
     def close(self):
         self.serial_port.close()
-        rospy.loginfo("Serial port closed.")
+        rospy.loginfo("(WHEEL CONTROL) Serial port closed.")
 
 
 def run(data: Bool):

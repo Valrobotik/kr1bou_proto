@@ -171,8 +171,6 @@ if __name__ == '__main__':
     start = False
     # Wait for the runningPhase True signal
     rospy.Subscriber('runningPhase', Bool, run)
-    while not start:
-        rospy.sleep(0.1)
 
     # Manage robot's pose
     current_pose = Pose2D()
@@ -194,7 +192,8 @@ if __name__ == '__main__':
     sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
     emergency_stop_pub = rospy.Publisher('Emergency_stop', Int16, queue_size=queue_size)
     rospy.Subscriber('odometry', Pose2D, pose_callback)
-
+    while not start:
+        rospy.sleep(0.1)
     try:
         read_and_publish_sensor_data()
         pass

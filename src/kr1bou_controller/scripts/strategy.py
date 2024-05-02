@@ -101,7 +101,7 @@ class Strategy:
         # Unflatten the list of tuples ->
         # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
         self.US_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]
-        rospy.loginfo(self.US_data)
+        rospy.loginfo(f"(STRATEGY) {self.US_data}")
         self.need_for_compute = True
 
     def update_state(self, data: Int16):
@@ -178,7 +178,7 @@ class Strategy:
             else :
                 self.team = TEAM_YELLOW
         else : 
-            rospy.logwarn("/!\\ CAN NOT CHANGE TEAM DURING THE MATCH /!\\")
+            rospy.logwarn("(STRATEGY) /!\\ CAN NOT CHANGE TEAM DURING THE MATCH /!\\")
 
             
 
@@ -211,7 +211,7 @@ class Strategy:
         if not self.still_exists(self.path):
             path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:] # Remove current position node
         else:
-            rospy.loginfo("Path still exists")
+            rospy.loginfo("(STRATEGY) Path still exists")
             path = self.path # Keep the current path
         
         # Remove node if the robot is already on it
@@ -251,7 +251,7 @@ class Strategy:
             self.go_to(self.path[0][0] / (self.unit), self.path[0][1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
             #rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
         else :
-            rospy.loginfo("no path found")
+            rospy.loginfo("(STRATEGY) No path found")
 
 
 def run(data):
