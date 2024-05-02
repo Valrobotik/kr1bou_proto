@@ -217,8 +217,10 @@ class Strategy:
         
         # Remove node if the robot is already on it
         #rospy.loginfo(f"dist to first cell : {(self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2}")
-        rospy.loginfo(f"Path: {path}")
         if len(path) > 0:
+            rospy.loginfo(f"Path: {path}")
+            for node in path:
+                rospy.loginfo(f"[DEBUG] Node: {node.position}")
             if sqrt((self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2) < (0.7):
                 #rospy.loginfo("supression de la premierre cell")
                 path.pop(0)
