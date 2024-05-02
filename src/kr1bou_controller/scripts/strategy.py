@@ -241,13 +241,13 @@ class Strategy:
     
     def still_exists(self):
         """Check if the current path is still valid, i.e no obstacles on the path"""
-        return any(position in self.get_discrete_obstacles() for position in self.path)
+        return any(position in self.get_discrete_obstacles() for position in [node.position for node in self.path])
             
 
     def follow_path(self):
         """Follow the path"""
         if self.path and len(self.path) !=0 :
-            self.go_to(self.path[0][0] / (self.unit), self.path[0][1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
+            self.go_to(self.path[0].position[0] / (self.unit), self.path[0].position[1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
             #rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
         else :
             rospy.loginfo("(STRATEGY) No path found")
