@@ -3,7 +3,7 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float64, Bool, Int16, Float32MultiArray, Byte
-from search_path import Node, a_star
+from search_path import Node, a_star, clean_path
 
 from math import sqrt
 import heapq
@@ -50,9 +50,8 @@ class Strategy:
 
         self.next_pos_obj = [0, 0, 0]
 
-        # Map boundaries in decimeters [x_min, y_min, x_max, y_max]. Example: [0, 0, 200, 300]
-        self.unit = rospy.get_param('/unit')  # 1 dm = 10 cm
-        self.map_boundaries = [ int(m / self.unit) for m in rospy.get_param('/map_boundaries') ]
+        # Map boundaries in centimeters [x_min, y_min, x_max, y_max]. Example: [0, 0, 200, 300]
+        self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries') ]
         self.path = []  # List of waypoints to follow
         self.custom_waiting_rate = rospy.Rate(20)
 
@@ -60,7 +59,7 @@ class Strategy:
         rospy.Subscriber("odometry", Pose2D, self.update_position)
         
         # Create a heapqueue based on the distance to the objectives
-        self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x * self.unit) ** 2 + (y - self.position.y * self.unit) ** 2)) for
+        self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2)) for
                            x, y, theta in rospy.get_param('/objectives')]
         heapq.heapify(self.objectives)
 
@@ -101,7 +100,6 @@ class Strategy:
         # Unflatten the list of tuples ->
         # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
         self.US_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]
-        rospy.loginfo(f"(STRATEGY) {self.US_data}")
         self.need_for_compute = True
 
     def update_state(self, data: Int16):
@@ -141,34 +139,25 @@ class Strategy:
     def run(self):
         while not rospy.is_shutdown():
             while self.team == -1 : rospy.sleep(0.05)
-            #rospy.loginfo(self.position)
-            if self.need_for_compute or self.path == []:
-                if self.path == []:
-                    #rospy.loginfo(f"precision: {self.unit}")
-                    if len(self.path) > 0 :
-                        #rospy.loginfo(f"Distance to objective: {sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2)}")
-                        if sqrt((self.position.x * self.unit - self.path[0][0]) ** 2 + (self.position.y * self.unit - self.path[0][1]) ** 2) < (0.5):
-                            #rospy.loginfo("[NEW]")
-                            self.path.pop(0)
-                if self.path and len(self.path) > 0:
-                    #rospy.loginfo(f"Computing path for {self.path[0]}")
-                    pass
-                self.update_objectives()
+            if self.need_for_compute:   # New sensor data
+                if len(self.path) > 0 :  # If the robot is already following a path
+                    if sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < (0.5):
+                        self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
+                # get new path
+                self.update_objectives() # update heapqueue
                 self.compute_path()
                 self.need_for_compute = False
                 self.need_for_send = True
-                #rospy.loginfo(f"New path: {self.path}")
             if self.state_robot == READY or self.need_for_send:
                 self.follow_path()
                 self.need_for_send = False
             else:
-                #rospy.loginfo(f" [state] : {self.state_robot}")
                 self.wait_until_ready()
 
     def update_objectives(self):
         """Update heapqueue depending on the new position of the robot"""
         for obj in self.objectives:
-            obj.cost = sqrt((obj.x - self.position.x * self.unit) ** 2 + (obj.y - self.position.y * self.unit) ** 2)
+            obj.cost = sqrt((obj.x - self.position.x) ** 2 + (obj.y - self.position.y) ** 2)
         heapq.heapify(self.objectives)
 
     def update_team(self, data:Bool):
@@ -180,7 +169,6 @@ class Strategy:
         else : 
             rospy.logwarn("(STRATEGY) /!\\ CAN NOT CHANGE TEAM DURING THE MATCH /!\\")
 
-            
 
     def compute_path(self):
         """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
@@ -201,26 +189,27 @@ class Strategy:
                             cost = MAX_COST if (x, y) in obstacles else 1
                             maze[i][j].neighbors[direction] = (cost, maze[x][y])
         # Get the start and end nodes
-        origin = maze[int(self.position.x * self.unit)][int(self.position.y * self.unit)]
+        origin = maze[int(self.position.x)][int(self.position.y)]
         origin.orientation = self.position.theta
         if self.path == []:
             new_obj = heapq.heappop(self.objectives)  # Get new closest objective
         else :
             new_obj = self.objectives[0] # recompute path to current objective
         # Compute the path
-        if not self.still_exists(self.path):
-            path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:] # Remove current position node
-        else:
+        if self.still_exists():
             rospy.loginfo("(STRATEGY) Path still exists")
             path = self.path # Keep the current path
+        else:
+            rospy.loginfo("(STRATEGY) Recompute path")
+            path = a_star(origin, maze[int(new_obj.x)][int(new_obj.y)])[1:] # Remove current position node
+            path = clean_path(path)
+            rospy.loginfo(f"(STRATEGY) New path : {path}")
         
         # Remove node if the robot is already on it
-        #rospy.loginfo(f"dist to first cell : {(self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2}")
         if len(path) > 0:
-            if sqrt((self.position.x * self.unit - path[0].position[0]) ** 2 + (self.position.y * self.unit - path[0].position[1]) ** 2) < (0.7):
-                #rospy.loginfo("supression de la premierre cell")
+            if sqrt((self.position.x - path[0].position[0]) ** 2 + (self.position.y - path[0].position[1]) ** 2) < (0.7):
                 path.pop(0)
-        self.path = [node.position for node in path]
+        self.path = path
 
     def get_discrete_obstacles(self) -> list:
         """Get the obstacles from the ultrasound sensors, the bumpers, the position of the adversary and discretize them
@@ -230,8 +219,8 @@ class Strategy:
         for i, (x, y) in enumerate(self.US_data):
             if (x, y) not in [(0, 0), (-1, -1)]:
                 # Get the 4 points of the obstacle
-                x_prime = int(x / self.unit)
-                y_prime = int(y / self.unit)
+                x_prime = int(x)
+                y_prime = int(y)
                 obstacles.extend([(x_prime, y_prime), (x_prime + 1, y_prime), (x_prime, y_prime + 1),
                                   (x_prime + 1, y_prime + 1)])
         # TODO : Remove testing default obstacles below
@@ -242,14 +231,19 @@ class Strategy:
     
     def still_exists(self):
         """Check if the current path is still valid, i.e no obstacles on the path"""
-        return any(position in self.get_discrete_obstacles() for position in self.path)
-            
+        if self.path == []:
+            return False
+        superposed = []
+        for node in self.path:
+            if node.position in self.get_discrete_obstacles():
+                superposed.append(node.position)
+            rospy.loginfo(f"Obstacle at {node.position}")
+        return superposed == []
 
     def follow_path(self):
         """Follow the path"""
         if self.path and len(self.path) !=0 :
-            self.go_to(self.path[0][0] / (self.unit), self.path[0][1] / (self.unit), -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
-            #rospy.loginfo(f"Going to ({self.path[0][0] / (self.unit)}, {self.path[0][1] / (self.unit)})")
+            self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
         else :
             rospy.loginfo("(STRATEGY) No path found")
 

@@ -98,7 +98,7 @@ if __name__ == "__main__" :
         winner = get_winner(frame, detector)
         if winner is not None :
             cam_front_pub.publish(Int8(data=winner))
-            rospy.loginfo("[CAMERA_FRONT] winner : " + str(winner))
+            rospy.loginfo("(CAMERA_FRONT) winner : " + str(winner))
         rate.sleep()
 
     cam.release()

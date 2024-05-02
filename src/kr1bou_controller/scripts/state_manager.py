@@ -80,21 +80,22 @@ def emergency_callback(msg):
 
 
 if __name__ == '__main__':
-    rospy.init_node('state_manager')
-    rospy.loginfo("[START] State Manager node has started.")
+    # rospy.init_node('state_manager')
+    # rospy.loginfo("[START] State Manager node has started.")
 
-    rospy.Subscriber('configPhase', Bool, config_callback)
-    rospy.Subscriber('runningPhase', Bool, running_callback)
-    rospy.Subscriber('stop', Bool, stop_callback)
-    rospy.Subscriber('emergencyStop', Bool, emergency_callback)
+    # rospy.Subscriber('configPhase', Bool, config_callback)
+    # rospy.Subscriber('runningPhase', Bool, running_callback)
+    # rospy.Subscriber('stop', Bool, stop_callback)
+    # rospy.Subscriber('emergencyStop', Bool, emergency_callback)
 
 
-    known_sensors = rospy.get_param('/arduino/known_sensors')
-    rospy.loginfo("(STATE MANAGER) Identifying connected Arduino sensors...")
-    identified_ports = identify_arduino_ports(known_sensors)
+    # known_sensors = rospy.get_param('/arduino/known_sensors')
+    # rospy.loginfo("(STATE MANAGER) Identifying connected Arduino sensors...")
+    # identified_ports = identify_arduino_ports(known_sensors)
 
-    # Dump identified ports to ROS parameters
-    for sensor_id, port in identified_ports.items():
-        rospy.set_param(f'/arduino/arduino_serial_ports/{sensor_id}', port)
-        rospy.loginfo(f'/arduino/arduino_serial_ports/{sensor_id} : {port}')
-    rospy.spin()
+    # # Dump identified ports to ROS parameters
+    # for sensor_id, port in identified_ports.items():
+    #     rospy.set_param(f'/arduino/arduino_serial_ports/{sensor_id}', port)
+    #     rospy.loginfo(f'/arduino/arduino_serial_ports/{sensor_id} : {port}')
+    # rospy.spin()
+    pass

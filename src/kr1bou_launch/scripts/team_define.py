@@ -46,10 +46,10 @@ if __name__ == '__main__':
         rospy.sleep(2)
 
         if button.is_pressed :
-            rospy.loginfo("true c'est blue")
+            rospy.loginfo("True - Is Blue")
             pub.publish(True)
         else:
-            rospy.loginfo("false c'est yellow")
+            rospy.loginfo("False - Is Yellow")
             pub.publish(False)
 
         button.when_pressed = on_button_press
