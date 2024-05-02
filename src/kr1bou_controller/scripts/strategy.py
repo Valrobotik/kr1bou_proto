@@ -241,8 +241,8 @@ class Strategy:
     
     def still_exists(self):
         """Check if the current path is still valid, i.e no obstacles on the path"""
-        return any(position in self.get_discrete_obstacles() for position in [node.position for node in self.path])
-            
+        return not any(position in self.get_discrete_obstacles() for position in [node.position for node in self.path])
+
 
     def follow_path(self):
         """Follow the path"""
