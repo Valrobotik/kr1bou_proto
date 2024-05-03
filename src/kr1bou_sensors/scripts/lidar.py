@@ -112,6 +112,7 @@ def get_position(data: Pose2D):
 def run(data: Bool):
     global start
     start = data.data
+    rospy.loginfo(f"{rospy.get_name()} received {start} from runningPhase")
 
 
 if __name__ == '__main__':
@@ -121,6 +122,11 @@ if __name__ == '__main__':
         rospy.Subscriber("pose", Pose2D, get_position)
 
         rospy.loginfo("[START] Lidar node has started.")
+        start = False
+        rospy.Subscriber("runningPhase", Bool, run)
+        while not start:
+            rospy.sleep(0.1)
+
 
         laser_serial = serial.Serial(port=uart_port, baudrate=uart_speed, timeout=0.5)
         port = serial_port.SerialPort(laser_serial)
@@ -132,10 +138,7 @@ if __name__ == '__main__':
         x_robot = 0.0
         y_robot = 0.0
         theta_robot = 0.0
-        start = False
-        rospy.Subscriber("runningPhase", Bool, run)
-        while not start:
-            rospy.sleep(0.1)
+
         laser.laser_off()
         laser.laser_on()
 

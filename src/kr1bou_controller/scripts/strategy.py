@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 import rospy
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D, PoseArray
 from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 
 import time
 from math import sqrt, pi
 
 from search_path import Node, a_star, clean_path
-from utils import setup_maze, is_path_valid, Objective
+from utils import setup_maze, is_path_valid, Objective, get_discrete_obstacles
 
 READY_LINEAR = 0
 READY = 1
@@ -26,6 +26,7 @@ DEFAULT_MAX_SPEED = 0.25
 
 class Strategy:
     def __init__(self) -> None:
+        # -- Robot related --
         self.need_for_compute = True  # Whether to ask for a new path
         self.next_pos_obj = [0, 0, 0]  # Next position to go to / Intermediate objective
         self.current_objective: Objective = Objective(0, 0, 0, 0)  # Current objective
@@ -41,12 +42,11 @@ class Strategy:
         self.custom_waiting_rate = rospy.Rate(20)
 
         # -- Subscribers --
-        self.position = Pose2D()  # Get the initial position of the robot
+        self.position = Pose2D()    # Get the initial position of the robot
+        self.lidar_data = None      # Get the lidar data
         # Get the ultrasound sensor data
-        self.us_data = [(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1),
-                        (-1, -1)]
-        # Get the back camera data
-        self.latest_solar_winner = 0
+        self.us_data = [(-1, -1) for _ in range(10)]
+        self.latest_solar_winner = 0  # Get the back camera data
         # Get the camera data
         self.need_rst_odom = False
         self.last_time_cam = time.time()
@@ -104,7 +104,8 @@ class Strategy:
         :return: the path to follow
         """
         rospy.loginfo("(STRATEGY) IN COMPUTE PATH FUNCTION")
-        self.maze = setup_maze(self.maze, self.us_data, self.resolution)
+        obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
+        self.maze = setup_maze(self.maze, obstacles)
         # Get the start and end nodes
         origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
@@ -113,7 +114,7 @@ class Strategy:
             self.objectives.pop(0)
 
         rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
-        if is_path_valid(self.path, self.us_data, self.resolution):  # Check if the path is still valid
+        if is_path_valid(self.path, obstacles):  # Check if the path is still valid
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
             rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
@@ -170,6 +171,7 @@ class Strategy:
             
     def setup_subscribers(self):
         rospy.Subscriber('odometry', Pose2D, self.update_position)
+        rospy.Subscriber('lidar_data', PoseArray, self.update_lidar_data)
         rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
         rospy.Subscriber('camera', Pose2D, self.update_camera)
         rospy.Subscriber('bumper', Byte, self.update_bumpers)
@@ -204,11 +206,13 @@ class Strategy:
         self.position = data
         self.need_for_compute = True
 
+    def update_lidar_data(self, data):
+        self.lidar_data = data
+        self.need_for_compute = True
+
     def update_us_data(self, data):
         raw = data.data
-        # Unflatten the list of tuples ->
-        # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
-        self.us_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]
+        self.us_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)] # Unflatten the data
         self.need_for_compute = True
 
     def update_camera(self, data: Pose2D):

@@ -25,9 +25,8 @@ class Objective:
         return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
 
 
-def setup_maze(maze: list, us_data: list, resolution: int) -> list:
+def setup_maze(maze: list, obstacles: set) -> list:
     """Create the maze with the obstacles"""
-    obstacles = set(get_discrete_obstacles(us_data, resolution))
     # update obstacles in the maze
     for i in range(len(maze)):
         for j in range(len(maze[0])):
@@ -43,7 +42,7 @@ def setup_maze(maze: list, us_data: list, resolution: int) -> list:
     return maze
 
 
-def get_discrete_obstacles(us_data: list, resolution: int) -> list:
+def get_discrete_obstacles(lidar_data: list, us_data: list, resolution: int) -> list:
     """Get the obstacles from the ultrasound sensors, the bumpers, the position of the adversary and discretize them
     """
     obstacles = []
@@ -60,13 +59,13 @@ def get_discrete_obstacles(us_data: list, resolution: int) -> list:
     return obstacles
 
 
-def is_path_valid(path: list, us_data: list, resolution: int) -> bool:
+def is_path_valid(path: list, obstacles: set) -> bool:
     """Check if the current path is still valid, i.e. no obstacles on the path"""
     if not path:
         return False
     superposed = []
     for node in path:
-        if node.position in get_discrete_obstacles(us_data, resolution):
+        if node.position in obstacles:
             superposed.append(node.position)
             rospy.loginfo(f"Obstacle at {node.position}")
     return superposed == []
