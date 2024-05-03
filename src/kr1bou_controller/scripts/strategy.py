@@ -36,8 +36,12 @@ class Strategy:
         self.path = []  # List of waypoints to follow
         self.obstacles = set()  # List of obstacles
         self.previous_obstacles = set()  # Previous obstacles
-        self.maze = setup_maze((int(self.map_boundaries[3] * self.resolution), int(self.map_boundaries[2] * self.resolution)), self.obstacles)
-
+        self.maze = setup_maze((int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), self.obstacles)
+        print(self.maze.shape)
+        for i in range(self.maze.shape[0]):
+            for j in range(self.maze.shape[1]):
+                if self.maze[i][j] is None:
+                    print(i, j)
         self.custom_waiting_rate = rospy.Rate(20)
 
         # -- Subscribers --
@@ -104,6 +108,11 @@ class Strategy:
         """
         self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
+        print(self.maze.shape)
+        for i in range(self.maze.shape[0]):
+            for j in range(self.maze.shape[1]):
+                if self.maze[i][j] is None:
+                    print(i, j)
         self.previous_obstacles = self.obstacles
         
         if self.path == [] and self.objectives != []:  # Get new closest objective
