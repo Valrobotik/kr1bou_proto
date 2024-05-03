@@ -3,7 +3,7 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float64, Bool, Int16, Float32MultiArray, Byte
-from search_path import Node, a_star, clean_path, print_maze
+from search_path import Node, a_star, clean_path
 
 from math import sqrt
 import heapq
@@ -200,7 +200,7 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
-        rospy.loginfo("(STRATEGY) IN")
+        rospy.loginfo("(STRATEGY) IN COMPUTE PATH FUNCTION")
         # Create a matrix of nodes
         maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[3] * self.resolution))]
                 for x in range(int(self.map_boundaries[2] * self.resolution))]
@@ -227,7 +227,7 @@ class Strategy:
 
         rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         print("Maze :")
-        print_maze(origin, Node((int(self.current_objective.x * self.resolution), int(self.current_objective.y * self.resolution)), 0), maze)
+        # print_maze(origin, Node((int(new_obj.x * self.resolution), int(new_obj.y * self.resolution)), 0), maze)
         
         # Compute the path
         if self.is_path_valid():
