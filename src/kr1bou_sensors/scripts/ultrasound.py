@@ -18,7 +18,7 @@ NO_EMERGENCY = 0
 front_sensor = [8, 9]
 back_sensor = [6, 7, 1, 3]
 
-EMERGENCY_THREASHOLD = 25
+EMERGENCY_THREASHOLD = 0.30
 
 def emergency_stop_needed(US_data: list):
     data = Int16()
@@ -86,7 +86,7 @@ def read_and_publish_sensor_data():
         if serial_port.in_waiting:  # If there is data to read
             raw_data = serial_port.readline()  # Read
             try:
-                sensor_readings = [float(x) for x in
+                sensor_readings = [float(x)/100 for x in
                                    raw_data.decode('utf-8').replace('\r\n', '').replace('b', '')
                                    .replace("'", '').strip('[]').split('; ')]  # Parse
                 # clamped_readings = [
@@ -138,8 +138,8 @@ def run(data):
 
 def pose_callback(pose_msg: Pose2D):
     global current_pose
-    current_pose.x = pose_msg.x*100
-    current_pose.y = pose_msg.y*100
+    current_pose.x = pose_msg.x
+    current_pose.y = pose_msg.y
     current_pose.theta = pose_msg.theta
     data = Int16()
     data.data = NO_EMERGENCY

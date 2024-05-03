@@ -9,10 +9,10 @@ gpio:
   team_button_pin: 26
   bumper_pins: [0, 1, 5, 6]
 
-unit: 10
 frequency: 10  # Rate 
 queue_size: 1
-map_boundaries: [0, 0, 200, 300]  # in cm
+map_boundaries: [0, 0, 2, 3]  # in m
+resolution: 100  # for cm
 sensor_positions: [
                    [0, -12.5, 0, 4.712388],
                    [-8, 10, 0, 2.3561294],
@@ -26,4 +26,4 @@ sensor_positions: [
                    [8, -5, 0, 0]]
 
 # An objective is a list of waypoints with (x, y, theta) coordinates
-objectives: [[15, 10, 0], [7.5, 5.0, 0], [11.5, 15.0, 0], [15.0, 10.0, 0], [5.0, 5.0, 0]]
+objectives: [[1.5, 1.0, 0], [0.75, 0.50, 0], [1.15, 1.50, 0], [1.50, 1.00, 0], [0.50, 0.50, 0]]
