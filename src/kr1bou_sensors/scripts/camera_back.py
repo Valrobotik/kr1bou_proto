@@ -85,7 +85,7 @@ if __name__ == "__main__" :
 
     rate = rospy.Rate(frequency)
     rospy.Subscriber("runningPhase", Bool, run)
-    cam_back_pub = rospy.Publisher("camera_back", Int8, queue_size=queue_size)
+    cam_back_pub = rospy.Publisher("solar_aruco", Int8, queue_size=queue_size)
     
     while not start :
         rate.sleep()

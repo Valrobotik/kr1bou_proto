@@ -2,7 +2,7 @@
 
 import rospy
 from geometry_msgs.msg import Pose2D
-from std_msgs.msg import Float64, Bool, Int16, Float32MultiArray, Byte
+from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 from search_path import Node, a_star, clean_path
 
 from math import sqrt
@@ -67,6 +67,9 @@ class Strategy:
 
         self.US_data = [(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1),(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)]
         rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
+
+        self.latest_solar_winner = 0
+        rospy.Subscriber('solar_aruco', Int8, self.update_solar_winner)
 
         for i in range(1, 5):
             setattr(self, f'bumper_{i}', False)
@@ -174,6 +177,10 @@ class Strategy:
                 self.team = TEAM_YELLOW
         else : 
             rospy.logwarn("(STRATEGY) /!\\ CAN NOT CHANGE TEAM DURING THE MATCH /!\\")
+
+    def update_solar_winner(self, winner: Int8):
+        """Updates the solar panel winner from the solar panel node."""
+        self.latest_solar_winner = winner.data
 
 
     def compute_path(self):
