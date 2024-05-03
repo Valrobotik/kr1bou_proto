@@ -247,15 +247,18 @@ def run(data):
 
 
 if __name__ == "__main__":
-    start = False
-    rospy.init_node("strategy")
-    rospy.loginfo("[START] Strategy node has started.")
-    strategy_manager = Strategy()
+    try:
+        start = False
+        rospy.init_node("strategy")
+        rospy.loginfo("[START] Strategy node has started.")
+        strategy_manager = Strategy()
 
-    rospy.Subscriber('runningPhase', Bool, run)
-    rate = rospy.Rate(rospy.get_param('/frequency'))
-    while not start:
-        rate.sleep()
+        rospy.Subscriber('runningPhase', Bool, run)
+        rate = rospy.Rate(rospy.get_param('/frequency'))
+        while not start:
+            rate.sleep()
 
-    strategy_manager.reset_position_from_camera()
-    strategy_manager.run()
+        strategy_manager.reset_position_from_camera()
+        strategy_manager.run()
+    finally:
+        rospy.loginfo("[STOP] Strategy node has stopped.")
