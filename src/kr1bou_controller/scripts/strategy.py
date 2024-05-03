@@ -68,7 +68,7 @@ class Strategy:
         # Create a heapqueue based on the distance to the objectives
         self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2)) for
                            x, y, theta in rospy.get_param('/objectives')]
-        heapq.heapify(self.objectives)
+        # heapq.heapify(self.objectives)
 
         self.US_data = [(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1),(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)]
         rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
@@ -136,9 +136,7 @@ class Strategy:
         speed_data = Float64()
         speed_data.data = speed
         self.direction_pub.publish(direction_data)
-        rospy.sleep(0.01)
         self.speed_ctrl_pub.publish(speed_data)
-        rospy.sleep(0.01)
         self.pos_ordre_pub.publish(obj)
 
     def turn_servo(self, alpha):
@@ -159,8 +157,8 @@ class Strategy:
 
     def run(self):
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
+        while self.team == -1 and not rospy.is_shutdown(): rospy.sleep(0.05)
         while not rospy.is_shutdown():
-            while self.team == -1 and not rospy.is_shutdown(): rospy.sleep(0.05)
             if self.need_for_compute:   # New sensor data
                 while len(self.path) > 0 and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < 5.0 / self.resolution: # example : 5 cm
                     rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2)}")
@@ -169,7 +167,7 @@ class Strategy:
                     self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
                 
                 # get new path
-                self.update_objectives() # update heapqueue
+                # self.update_objectives() # update heapqueue
                 rospy.loginfo(f"(STRATEGY) Objectives : {self.objectives}")
                 self.compute_path()
                 rospy.loginfo(f"(STRATEGY) Path : {self.path}")
@@ -221,8 +219,9 @@ class Strategy:
         # Get the start and end nodes
         origin = maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
-        if self.path == [] and self.objectives != []:
-            self.current_objective  = heapq.heappop(self.objectives)  # Get new closest objective
+        if self.path == [] and self.objectives != []: # Get new closest objective
+            self.current_objective  = self.objectives[0]
+            self.objectives.pop(0)
 
         rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")        
         # Compute the path
