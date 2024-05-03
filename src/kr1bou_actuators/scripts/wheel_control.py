@@ -16,7 +16,7 @@ class WheelController:
         self.serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/Motor')
         self.baudrate = rospy.get_param('/arduino/baudrate')
         self.rate = rospy.Rate(30)
-        self.list_comande_to_send = []
+        self.list_command_to_send = []
 
         # Initialize the serial port for communication with Arduino
         self.serial_port = serial.Serial(self.serial_port_param, self.baudrate, timeout=1)
@@ -32,44 +32,44 @@ class WheelController:
 
     def motor_speed_callback(self, data):
         # Format : Vg.gg;Vd.ddR g for 'gauche', d for 'droite' in m/s
-        self.list_comande_to_send.append(f"V{format(data.x, '.2f')};{format(data.y, '.2f')}R")
-        #rospy.loginfo(f"speed cmd receive : {self.list_comande_to_send}")
+        self.list_command_to_send.append(f"V{format(data.x, '.2f')};{format(data.y, '.2f')}R")
+        # rospy.loginfo(f"speed cmd receive : {self.list_command_to_send}")
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
         rospy.loginfo(f"(WHEEL CONTROL) O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n")
-
-        self.list_comande_to_send.append(f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
-
+        self.list_command_to_send.append(
+            f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
 
     def receive_odometry(self):
         if self.serial_port.in_waiting > 0:
-            data = str(self.serial_port.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n','').replace('R', '')
+            data = str(self.serial_port.read_until(b'R')).replace('b', '').replace("'", '').replace('\\r\\n',
+                                                                                                    '').replace('R', '')
             self.serial_port.reset_input_buffer()
             data = data.split(';')
-            #rospy.loginfo(data)
+            # rospy.loginfo(data)
             position = Pose2D(float(data[0]), float(data[1]), float(data[2]))
             self.publisher_odometry.publish(position)
             # rospy.loginfo(f"{rospy.get_name()} received ({position}) from arduino")
 
     def stop(self):
         # Format : SR
-        self.list_comande_to_send.append("SR")
+        self.list_command_to_send.append("SR")
 
     def run(self):
         while not rospy.is_shutdown():
             self.receive_odometry()
-            while len(self.list_comande_to_send) > 0:
-                try :
-                    str = ""
-                    for i in self.list_comande_to_send:
-                        str += i
-                        self.list_comande_to_send.pop(self.list_comande_to_send.index(i))
-                    self.serial_port.write(str.encode())
-                    #rospy.loginfo(f"(WHEEL CONTROL) send_data : {str}")
+            while len(self.list_command_to_send) > 0:
+                try:
+                    str_ = ""
+                    for i in self.list_command_to_send:
+                        str_ += i
+                        self.list_command_to_send.pop(self.list_command_to_send.index(i))
+                    self.serial_port.write(str_.encode())
+                    # rospy.loginfo(f"(WHEEL CONTROL) send_data : {str}")
                 except serial.SerialException as s:
                     rospy.logwarn("(WHEEL CONTROL) Error while sending correction to Arduino.")
-                    rospy.logwarn(s)    
+                    rospy.logwarn(s)
             self.rate.sleep()
 
     def close(self):
@@ -81,6 +81,7 @@ def run(data: Bool):
     global start
     start = data.data
     rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
+
 
 if __name__ == "__main__":
     start = False
@@ -94,8 +95,6 @@ if __name__ == "__main__":
         wheel_controller = WheelController()
         rate = rospy.Rate(rospy.get_param('/frequency'))
         wheel_controller.run()
-    except rospy.ROSInterruptException as e:
-        rospy.logerr(e)
     finally:
         if wheel_controller is not None:
             wheel_controller.close()

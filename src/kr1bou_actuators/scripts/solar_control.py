@@ -20,7 +20,7 @@ def angle_to_percent(angle):
 
     return lower + angle_as_percent
 
-time_run = 0
+
 def go_to(data: Int16):
     global pwm, time_run
     time_run = time.time()
@@ -29,11 +29,6 @@ def go_to(data: Int16):
     rospy.loginfo(f"(SOLAR_CONTROL) {data.data}")
 
 
-def run(data: Bool):
-    global start
-    start = data.data
-    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
-
 def loop():
     global time_run, pwm
     while not rospy.is_shutdown():
@@ -41,13 +36,21 @@ def loop():
             pwm.stop()
         rospy.sleep(0.2)
 
+
+def run(data: Bool):
+    global start
+    start = data.data
+    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
+
+
 if __name__ == "__main__":
     start = False
     pwm = None
+    time_run = 0
     try:
         # Initialization
         rospy.init_node("solar_control", anonymous=True)
-        rospy.loginfo("[START] Wheel Controller node has started.")
+        rospy.loginfo("[START] Solar Controller node has started.")
         GPIO.setmode(GPIO.BOARD)  # Use Board numeration mode
         GPIO.setwarnings(False)  # Disable warnings
 
@@ -62,11 +65,8 @@ if __name__ == "__main__":
         rospy.sleep(1)
         pwm.stop()
         loop()
-
-    except rospy.ROSInterruptException as e:
-        pass
     finally:
         if pwm is not None:
             pwm.stop()
         GPIO.cleanup()
-        rospy.loginfo("Wheel Controller node has stopped.")
+        rospy.loginfo("[STOP] Solar Controller node has stopped.")
