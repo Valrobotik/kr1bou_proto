@@ -57,7 +57,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     while open_list:
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_list)
-        if len(open_list) + len(closed_list) == 0:
+        if len(open_list) + len(closed_list) != 0:
             print(f"Visited (%) : {len(closed_list) / (len(open_list) + len(closed_list)) * 100}")
 
         if current_node == end_node:  # Path found
