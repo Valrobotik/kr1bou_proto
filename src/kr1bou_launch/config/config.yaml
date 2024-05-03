@@ -12,7 +12,7 @@ gpio:
 
 frequency: 10  # Rate 
 queue_size: 1
-map_boundaries: [0, 0, 2, 3]  # in m
+map_boundaries: [0, 0, 3, 2]  # in m
 resolution: 100  # for cm
 sensor_positions: [
                    [0, -12.5, 0, 4.712388],

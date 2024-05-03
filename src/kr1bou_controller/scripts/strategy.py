@@ -55,7 +55,7 @@ class Strategy:
 
         self.current_objective: Objective = None
 
-        # Map boundaries in meters [x_min, y_min, x_max, y_max]. Example: [0, 0, 2, 3]
+        # Map boundaries in meters [x_min, y_min, x_max, y_max]. Example: [0, 0, 3, 2]
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries') ]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
         self.path = []  # List of waypoints to follow
