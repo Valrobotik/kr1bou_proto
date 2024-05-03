@@ -143,7 +143,7 @@ class Strategy:
             while self.team == -1 : rospy.sleep(0.05)
             if self.need_for_compute:   # New sensor data
                 if len(self.path) > 0 :  # If the robot is already following a path
-                    if sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < (0.5):
+                    if sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < 5.0 / self.resolution: # example : 5 cm
                         self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
                 # get new path
                 self.update_objectives() # update heapqueue
@@ -210,7 +210,7 @@ class Strategy:
         
         # Remove node if the robot is already on it
         if len(path) > 0:
-            if sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2) < (0.7):
+            if sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2) < 7: # example : 7 cm
                 path.pop(0)
         self.path = [Node((int(node.position[0] / self.resolution), int(node.position[1] / self.resolution)), node.orientation) for node in path]
 
