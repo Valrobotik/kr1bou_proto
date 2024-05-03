@@ -27,5 +27,4 @@ sensor_positions: [
                    [8, -5, 0, 0]]
 
 # An objective is a list of waypoints with (x, y, theta) coordinates
-# objectives: [[1.5, 1.0, 0], [0.75, 0.50, 0], [1.15, 1.50, 0], [1.50, 1.00, 0],
-objectives: [[0.50, 0.50, 0]]
+objectives: [[1.5, 1.0, 0], [0.75, 0.50, 0], [1.15, 1.50, 0], [1.50, 1.00, 0], [0.50, 0.50, 0]]
