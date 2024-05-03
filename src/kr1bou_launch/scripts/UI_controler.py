@@ -38,6 +38,8 @@ if __name__ == '__main__':
         rospy.Subscriber("Team", Bool, update_team)
 
         rospy.Subscriber('runningPhase', Bool, run)
+        rospy.sleep(6)
+        ser.write(b'INI\r')
         rospy.spin()
     except Exception as e:
         rospy.logerr("Error on UI Controler")
