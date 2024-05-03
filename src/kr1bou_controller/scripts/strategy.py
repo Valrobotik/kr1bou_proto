@@ -29,7 +29,7 @@ class Strategy:
         # -- Robot related --
         self.need_for_compute = True  # Whether to ask for a new path
         self.next_pos_obj = [0, 0, 0]  # Next position to go to / Intermediate objective
-        self.current_objective: Objective = Objective(0, 0, 0, 0)  # Current objective
+        self.current_objective: Objective = None  # Current objective
 
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
