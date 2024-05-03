@@ -108,29 +108,22 @@ class Strategy:
         """
         self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
-        print(self.maze.shape)
-        for i in range(self.maze.shape[0]):
-            for j in range(self.maze.shape[1]):
-                if self.maze[i][j] is None:
-                    print(i, j)
         self.previous_obstacles = self.obstacles
         
         if self.path == [] and self.objectives != []:  # Get new closest objective
             self.reset_position_from_camera()
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
-            
+        
         # Get the start and end nodes
         origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
-        rospy.loginfo("5")
 
-        rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
+        # rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         if is_path_valid(self.path, self.obstacles):  # Check if the path is still valid
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
-            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
-            onset = time.time()
+            # rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
             path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)]
             [int(self.current_objective.y * self.resolution)])
             path = clean_path(path)
