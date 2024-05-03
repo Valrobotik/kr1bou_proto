@@ -239,6 +239,7 @@ class Strategy:
         self.enemy_position.theta = clamp_theta(self.enemy_position.theta)
 
         self.got_cam_data = True
+        self.last_time_cam = time.time()
         rospy.loginfo(f"(STRATEGY) {self.camera_position}")
 
     def update_team(self, data: Bool):
