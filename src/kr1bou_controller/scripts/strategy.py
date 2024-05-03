@@ -83,8 +83,8 @@ class Strategy:
                 rospy.loginfo(f"(STRATEGY) Objectives : {self.objectives}")
                 self.compute_path()
                 rospy.loginfo(f"(STRATEGY) Path : {self.path}")
-                self.need_for_compute = False
                 self.follow_path()
+                self.need_for_compute = False
             else:
                 self.wait_until_ready()
 

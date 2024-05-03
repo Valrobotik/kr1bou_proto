@@ -76,8 +76,4 @@ def clamp_theta(theta: float) -> float:
     """Clamp the angle between 0 and 2pi"""
     if theta < 0:
         new_theta = 2 * pi + theta
-    elif theta >= 2 * pi:
-        new_theta = theta - 2 * pi
-    else:
-        new_theta = theta
-    return new_theta
+    return 2*pi - new_theta
