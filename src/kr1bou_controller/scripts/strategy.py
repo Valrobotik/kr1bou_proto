@@ -245,13 +245,13 @@ class Strategy:
         """
         obstacles = []
         # Get the obstacles from the ultrasound sensors (values in meters)
-        for i, (x, y) in enumerate(self.US_data):
-            if (x, y) not in [(0, 0), (-1, -1)]:
-                # Extend to a circle of radius 10 cm
-                for j in range(-int(0.1 * self.resolution), int(0.1 * self.resolution) + 1):
-                    for k in range(-int(0.1 * self.resolution), int(0.1 * self.resolution) + 1):
-                        if sqrt(j ** 2 + k ** 2) <= 0.1 * self.resolution:
-                            obstacles.append((int(x * self.resolution) + j, int(y * self.resolution) + k))
+        # for i, (x, y) in enumerate(self.US_data):
+        #     if (x, y) not in [(0, 0), (-1, -1)]:
+        #         # Extend to a circle of radius 10 cm
+        #         for j in range(-int(0.1 * self.resolution), int(0.1 * self.resolution) + 1):
+        #             for k in range(-int(0.1 * self.resolution), int(0.1 * self.resolution) + 1):
+        #                 if sqrt(j ** 2 + k ** 2) <= 0.1 * self.resolution:
+        #                     obstacles.append((int(x * self.resolution) + j, int(y * self.resolution) + k))
         # TODO : Remove testing default obstacles below
         obstacles.extend([(100, 70), (100, 140)])
 
