@@ -37,9 +37,9 @@ class WheelController:
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
-        rospy.loginfo(f"(WHEEL CONTROL) O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n")
+        rospy.loginfo(f"(WHEEL CONTROL) O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R")
         self.list_command_to_send.append(
-            f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R\n".encode())
+            f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R")
 
     def receive_odometry(self):
         if self.serial_port.in_waiting > 0:
@@ -62,9 +62,9 @@ class WheelController:
             while len(self.list_command_to_send) > 0:
                 try:
                     str_ = ""
-                    for i in self.list_command_to_send:
-                        str_ += i
-                        self.list_command_to_send.pop(self.list_command_to_send.index(i))
+                    for comande in self.list_command_to_send:
+                        str_ += comande
+                        self.list_command_to_send.pop(self.list_command_to_send.index(comande))
                     self.serial_port.write(str_.encode())
                     # rospy.loginfo(f"(WHEEL CONTROL) send_data : {str}")
                 except serial.SerialException as s:
