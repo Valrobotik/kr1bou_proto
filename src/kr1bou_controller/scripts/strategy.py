@@ -139,15 +139,19 @@ class Strategy:
         self.need_for_compute = True
 
     def run(self):
+        rospy.loginfo("(STRATEGY) Strategy running loop has started.")
         while not rospy.is_shutdown():
             while self.team == -1 : rospy.sleep(0.05)
             if self.need_for_compute:   # New sensor data
                 if len(self.path) > 0 :  # If the robot is already following a path
                     if sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < 5.0 / self.resolution: # example : 5 cm
+                        rospy.loginfo(f"(STRATEGY) Robot is close enough to the nearest waypoint. Removing {self.path[0]} from the path.")
                         self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
                 # get new path
                 self.update_objectives() # update heapqueue
+                rospy.loginfo(f"(STRATEGY) Objectives : {self.objectives}")
                 self.compute_path()
+                rospy.loginfo(f"(STRATEGY) Path : {self.path}")
                 self.need_for_compute = False
                 self.need_for_send = True
             if self.state_robot == READY or self.need_for_send:
@@ -246,7 +250,9 @@ class Strategy:
     def follow_path(self):
         """Follow the path"""
         if self.path and len(self.path) !=0 :
+            rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
+            rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
         else :
             rospy.loginfo("(STRATEGY) No path found")
 

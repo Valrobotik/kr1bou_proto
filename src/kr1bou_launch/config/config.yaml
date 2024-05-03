@@ -9,11 +9,10 @@ gpio:
   team_button_pin: 26
   bumper_pins: [0, 1, 5, 6]
 
-unit: 10
 frequency: 10  # Rate 
 queue_size: 1
 map_boundaries: [0, 0, 2, 3]  # in m
-resolution: 100  # in cm
+resolution: 100  # for cm
 sensor_positions: [
                    [0, -12.5, 0, 4.712388],
                    [-8, 10, 0, 2.3561294],
