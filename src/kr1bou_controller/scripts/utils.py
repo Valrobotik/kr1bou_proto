@@ -65,6 +65,7 @@ def update_maze(maze: list, obstacles: set, new_obstacles: set) -> list:
     for new_obstacle in new_obstacles:
         maze[new_obstacle[0]][new_obstacle[1]].obstacle = True
     rospy.loginfo(f"5")
+    return maze
 
 
 def is_path_valid(path: list, obstacles: set) -> bool:
