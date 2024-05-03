@@ -147,7 +147,11 @@ class Strategy:
     def wait_until_ready(self):
         while self.state_robot != READY:
             self.custom_waiting_rate.sleep()
-            if (sqrt((self.next_pos_obj[0]-self.position.x)**2+(self.next_pos_obj[1]-self.position.y)**2) < 0.7 and self.next_pos_obj[2] == -1) : break
+            if (sqrt((self.next_pos_obj[0]-self.position.x)**2+(self.next_pos_obj[1]-self.position.y)**2) < 0.07 and self.next_pos_obj[2] == -1) : 
+                rospy.loginfo("(STRATEGY) Robot is close enough to the node. Waiting for the next order.")
+                rospy.loginfo(f"(STRATEGY) Current dist : {sqrt((self.next_pos_obj[0]-self.position.x)**2+(self.next_pos_obj[1]-self.position.y)**2)}")
+                rospy.loginfo(f"(STRATEGY) Threshold : 0.07")
+                break
         self.need_for_compute = True
 
     def run(self):
@@ -169,10 +173,7 @@ class Strategy:
                 self.compute_path()
                 rospy.loginfo(f"(STRATEGY) Path : {self.path}")
                 self.need_for_compute = False
-                self.need_for_send = True
-            if self.state_robot == READY or self.need_for_send:
                 self.follow_path()
-                self.need_for_send = False
             else:
                 self.wait_until_ready()
 
