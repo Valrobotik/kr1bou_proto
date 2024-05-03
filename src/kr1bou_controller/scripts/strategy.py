@@ -53,6 +53,8 @@ class Strategy:
 
         self.next_pos_obj = [0, 0, 0]
 
+        self.current_objective: Objective = None
+
         # Map boundaries in meters [x_min, y_min, x_max, y_max]. Example: [0, 0, 2, 3]
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries') ]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
@@ -221,12 +223,11 @@ class Strategy:
         origin = maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
         if self.path == []:
-            new_obj = heapq.heappop(self.objectives)  # Get new closest objective
-        else :
-            new_obj = self.objectives[0] # recompute path to current objective
-        rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{new_obj}")
+            self.current_objective  = heapq.heappop(self.objectives)  # Get new closest objective
+
+        rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         print("Maze :")
-        print_maze(origin, Node((int(new_obj.x * self.resolution), int(new_obj.y * self.resolution)), 0), maze)
+        print_maze(origin, Node((int(self.current_objective.x * self.resolution), int(self.current_objective.y * self.resolution)), 0), maze)
         
         # Compute the path
         if self.is_path_valid():
@@ -235,7 +236,7 @@ class Strategy:
         else:
             rospy.loginfo("(STRATEGY) Recompute path")
             # apply resolution 
-            path = a_star(origin, maze[int(new_obj.x * self.resolution)][int(new_obj.y * self.resolution)])[1:] # Remove current position node
+            path = a_star(origin, maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])[1:] # Remove current position node
             path = clean_path(path)
             rospy.loginfo(f"(STRATEGY) New path : {path}")
         
