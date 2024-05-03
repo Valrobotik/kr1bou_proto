@@ -63,14 +63,11 @@ class Kr1bou:
         self.force_forward = False
         self.force_backward = False
 
-        self.need_rst_odom = False
-
         self.emergency_current = EMERGENCY_BACK
 
         self.freq = rospy.get_param('/frequency')
 
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
-        self.publisher_corect_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
 
         self.publisher_state = rospy.Publisher('state', Int16, queue_size=1)
         
@@ -92,7 +89,6 @@ class Kr1bou:
         elif self.etat == READY_LINEAR :
             self.etat = READY
             self.publish_state()
-            self.need_rst_odom = True
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
         else:
@@ -113,19 +109,6 @@ class Kr1bou:
             data.y = 0
 
         self.publisher_speed.publish(data)
-        if(self.need_rst_odom): self.reset_position_camera()
-
-    def reset_position_camera(self):
-        global cam_id, camera_position
-        rospy.loginfo("(MOTION CONTROL) Debug odom correction")
-        temp = cam_id
-        if temp != -1:
-            while cam_id == temp: pass
-            self.publisher_corect_odom.publish(camera_position)
-            rospy.loginfo("(MOTION CONTROL) Odometry corrected")
-        else:
-            rospy.logwarn("(MOTION CONTROL) No connexion with camera")
-        self.need_rst_odom = False
 
     def update_rotation_speed(self):
         angle_diff = self.angleDiffRad(self.objectif_theta, self.theta)
@@ -133,7 +116,6 @@ class Kr1bou:
         if abs(angle_diff) < ANGLE_PRECISION:
             self.etat = READY
             self.publish_state()
-            self.need_rst_odom = True
             w = 0
         self.vitesse_gauche = w
         self.vitesse_droite = -w
@@ -265,17 +247,6 @@ def run(data:Bool):
     start = data.data
     rospy.loginfo(f"{rospy.get_name()} received {start} from runningPhase")
 
-cam_id = -1
-camera_position = Pose2D()
-def update_camera(data : Pose2D):
-    global cam_id, camera_position
-    rospy.loginfo("(MOTION CONTROL) Camera received")
-    camera_position = data
-    if(camera_position.theta < 0):camera_position.theta = camera_position.theta+2*pi
-    camera_position.theta = 2*pi-camera_position.theta
-    rospy.loginfo(f"(MOTION CONTROL) {camera_position}")
-    cam_id = (cam_id+1)%2
-
 if __name__=="__main__":
     try:
         # Initialization
@@ -284,7 +255,6 @@ if __name__=="__main__":
         # Wait for the runningPhase True signal
         rate = rospy.Rate(rospy.get_param('/frequency'))
         rospy.Subscriber('runningPhase', Bool, run)
-        rospy.Subscriber('camera', Pose2D, update_camera)
         robot = Kr1bou()
         while not start:
             rate.sleep()
