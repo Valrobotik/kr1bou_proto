@@ -4,8 +4,8 @@ Looks out for bumpers signals on specific GPIO pins. Handles events such as the 
 When two front or two back buttons are held, it publishes on the 'bumper' topic.
 """
 import rospy
-from gpiozero import Button
 from std_msgs.msg import Byte, Bool
+from gpiozero import Button
 from typing import List
 
 
@@ -19,7 +19,7 @@ def check_bumpers(buttons: List[Button]):
     state = Byte()
     state.data = 0
     for i, button in enumerate(buttons):
-        if button.is_pressed:
+        if button.is_active:
             state.data += 2**i
     return state
 
@@ -31,7 +31,7 @@ def publish_bumper_event(bumpers):
     while not rospy.is_shutdown():
         bumpers_pressed = check_bumpers(buttons)
         pub.publish(bumpers_pressed)
-        #rospy.loginfo(f'bumper data : {bumpers_pressed.data}')
+        # rospy.loginfo(f"bumper data : {bumpers_pressed.data}")
         rate.sleep()
 
 
@@ -59,5 +59,5 @@ if __name__ == '__main__':
         while not start:
             rate.sleep()
         publish_bumper_event(bumper_pins)
-    except rospy.ROSInterruptException as e:
-        rospy.logerr(e)
+    finally:
+        rospy.loginfo("[STOP] Bumper Watch node has stopped.")

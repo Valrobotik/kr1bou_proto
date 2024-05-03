@@ -66,38 +66,41 @@ def run(data):
 
 
 if __name__ == "__main__":
-    # Initialization
-    rospy.init_node("camera_back")
-    rospy.loginfo("[START] Camera back node has started.")
+    try:
+        # Initialization
+        rospy.init_node("camera_back")
+        rospy.loginfo("[START] Camera back node has started.")
 
-    # Load configuration parameters
-    frequency = rospy.get_param("/frequency")
-    queue_size = rospy.get_param("/queue_size")
+        # Load configuration parameters
+        frequency = rospy.get_param("/frequency")
+        queue_size = rospy.get_param("/queue_size")
 
-    # Initialize camera
-    cam = cv2.VideoCapture(0)
-    arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
-    params = cv2.aruco.DetectorParameters()
-    # Make detector more lenient
-    params.detectInvertedMarker = True
-    aruco_detector = cv2.aruco.ArucoDetector(arucoDict, params)
+        # Initialize camera
+        cam = cv2.VideoCapture(0)
+        arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        params = cv2.aruco.DetectorParameters()
+        # Make detector more lenient
+        params.detectInvertedMarker = True
+        aruco_detector = cv2.aruco.ArucoDetector(arucoDict, params)
 
-    rate = rospy.Rate(frequency)
-    rospy.Subscriber("runningPhase", Bool, run)
-    cam_back_pub = rospy.Publisher("solar_aruco", Int8, queue_size=queue_size)
+        rate = rospy.Rate(frequency)
+        rospy.Subscriber("runningPhase", Bool, run)
+        cam_back_pub = rospy.Publisher("solar_aruco", Int8, queue_size=queue_size)
 
-    while not start:
-        rate.sleep()
+        while not start:
+            rate.sleep()
 
-    while not rospy.is_shutdown():
-        ret, frame = cam.read()
-        if not ret:
-            continue
+        while not rospy.is_shutdown():
+            ret, frame = cam.read()
+            if not ret:
+                continue
 
-        winner = get_winner(frame, aruco_detector)
-        if winner is not None:
-            cam_back_pub.publish(Int8(data=winner))
-            rospy.loginfo("(CAMERA_BACK) winner : " + str(winner))
-        rate.sleep()
+            winner = get_winner(frame, aruco_detector)
+            if winner is not None:
+                cam_back_pub.publish(Int8(data=winner))
+                rospy.loginfo("(CAMERA_BACK) winner : " + str(winner))
+            rate.sleep()
 
-    cam.release()
+        cam.release()
+    finally:
+        rospy.loginfo("[STOP] Camera back node has stopped.")

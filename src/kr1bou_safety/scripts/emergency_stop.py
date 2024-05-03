@@ -46,8 +46,5 @@ if __name__ == '__main__':
 
         # Spin to keep the script for exiting
         rospy.spin()
-    except rospy.ROSInterruptException as e:
-        # rospy.logerr(e)
-        pass
     finally:
         rospy.loginfo("[STOP] Emergency Stop node has stopped.")
