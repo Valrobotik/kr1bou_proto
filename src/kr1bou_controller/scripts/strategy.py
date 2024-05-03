@@ -201,7 +201,7 @@ class Strategy:
         # Create a matrix of nodes
         maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[3] * self.resolution))]
                 for x in range(int(self.map_boundaries[2] * self.resolution))]
-        rospy.loginfo("(STRATEGY) Maze created")
+        rospy.loginfo(f"(STRATEGY) Maze created : {len(maze)}x{len(maze[0])}")
         obstacles = self.get_discrete_obstacles()
         rospy.loginfo(f"(STRATEGY) Obstacles : {obstacles}")
         
@@ -229,7 +229,8 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Path still exists")
             # Keep the current path
         else:
-            rospy.loginfo("(STRATEGY) Recompute path")
+            rospy.loginfo(f"(STRATEGY) Recompute path from {origin.position} to {self.current_objective} 
+                          (int({self.current_objective.x * self.resolution}), int({self.current_objective.y * self.resolution})")
             # apply resolution 
             path = a_star(origin, maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])
             rospy.loginfo(f"(STRATEGY) Path computed : {path}")
