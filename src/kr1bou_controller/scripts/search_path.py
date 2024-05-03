@@ -79,11 +79,11 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
                 continue
 
             # Compute the new cost
-            neighbor.g = current_node.g + manhattan(neighbor, current_node)  # update g value
+            neighbor.g = current_node.g + 1 # update g value
             neighbor.h = heuristic(neighbor, end_node)
-            neighbor.o = orientation_change(current_node, neighbor)
+            #neighbor.o = orientation_change(current_node, neighbor)
             # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma -> ~radians to degrees
-            neighbor.f = cost * neighbor.g + neighbor.h  + gamma * neighbor.o
+            neighbor.f = neighbor.g + neighbor.h  #+ gamma * neighbor.o
 
             if neighbor in closed_list:  # Skip if already visited
                 continue
@@ -137,8 +137,8 @@ def heuristic(node: Node, end_node: Node) -> float:
     :return: heuristic value
     """
     #return other(node, end_node)
-    #return euclidian(node, end_node)
-    return manhattan(node, end_node)
+    return euclidian(node, end_node)
+    # return manhattan(node, end_node)
 
 
 def orientation_change(node1: Node, node2: Node) -> float:
