@@ -259,7 +259,7 @@ if __name__ == "__main__":
             rate.sleep()
 
         strategy_manager.reset_position_from_camera()
-        strategy_manager.solar_pub.publish(Int16(180))
-        strategy_manager.run()
+        strategy_manager.solar_pub.publish(Int16(45))
+        #strategy_manager.run()
     finally:
         rospy.loginfo("[STOP] Strategy node has stopped.")
