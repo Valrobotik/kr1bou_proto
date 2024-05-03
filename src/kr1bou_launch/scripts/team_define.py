@@ -11,6 +11,7 @@ speaker_state = False
 def speaker_state_callback(data: Bool):
     global speaker_state
     speaker_state = data.data
+    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from Speaker")
 
 def on_button_press():
     rospy.loginfo("Team selected to blue")
@@ -56,7 +57,6 @@ if __name__ == '__main__':
             rate.sleep()
 
         rospy.loginfo("Speaker node is ready")
-        bluetooth_choice.publish(3)
 
         if button.is_pressed :
             rospy.loginfo("True - Is Blue")
