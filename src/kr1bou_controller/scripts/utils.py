@@ -2,6 +2,7 @@ import rospy
 # from math import sqrt
 from search_path import Node
 from math import pi
+import numpy as np
 
 DIRECTIONS = {(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)}
 
@@ -46,8 +47,8 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, resolution: int) -> 
 def setup_maze(shape: tuple, obstacles: set) -> list:
     """Create the maze with the obstacles"""
     # update obstacles in the maze
+    maze = np.zeros(shape, dtype=Node)
     rospy.loginfo(f"start_1")
-    maze = [[None for _ in range(shape[1])] for _ in range(shape[0])]
     for i in range(shape[0]):
         for j in range(shape[1]):
             maze[i][j] = Node((i, j), 0, obstacle=((i, j) in obstacles))
