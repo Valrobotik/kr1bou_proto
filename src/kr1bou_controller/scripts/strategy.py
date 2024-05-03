@@ -280,7 +280,7 @@ if __name__ == "__main__":
             rate.sleep()
 
         strategy_manager.reset_position_from_camera()
-        rospy.sleep(3)
+        rospy.sleep(0.1)
         strategy_manager.run()
     finally:
         rospy.loginfo("[STOP] Strategy node has stopped.")
