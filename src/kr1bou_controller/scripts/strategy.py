@@ -154,7 +154,7 @@ class Strategy:
 
     def wait_until_ready(self):
         while self.state_robot != READY:
-            rospy.loginfo("(STRATEGY) Waiting for the robot to be ready...")
+            # rospy.loginfo("(STRATEGY) Waiting for the robot to be ready...")
             self.custom_waiting_rate.sleep()
             if (sqrt((self.next_pos_obj[0] - self.position.x) ** 2 + (
                     self.next_pos_obj[1] - self.position.y) ** 2) < 0.07 and self.next_pos_obj[2] == -1):
