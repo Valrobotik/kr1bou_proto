@@ -53,6 +53,8 @@ if __name__ == '__main__':
 
         rospy.sleep(2)
 
+        rospy.loginfo("Waiting for speaker node to be ready")
+
         while not speaker_state:
             rate.sleep()
 
