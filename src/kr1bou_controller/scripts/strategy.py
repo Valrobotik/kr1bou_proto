@@ -29,7 +29,6 @@ class Strategy:
         # -- Robot related --
         self.need_for_compute = True  # Whether to ask for a new path
         self.next_pos_obj = [0, 0, 0]  # Next position to go to / Intermediate objective
-        self.current_objective: Objective = None  # Current objective
 
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
@@ -65,6 +64,7 @@ class Strategy:
         # Set up the objectives
         self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2)) for
                            x, y, theta in rospy.get_param('/objectives')]
+        self.current_objective = self.objectives[0]
 
         # -- Publishers --
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
