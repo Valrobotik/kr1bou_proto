@@ -9,7 +9,7 @@ import time
 from math import atan2, pi
 import sys
 
-gamma = 10
+gamma = 1 # 1 for now (180/pi later)
 
 
 class Node:
