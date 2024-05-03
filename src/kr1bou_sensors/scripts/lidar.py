@@ -33,7 +33,7 @@ import rospy
 from geometry_msgs.msg import PoseArray, Pose, Pose2D
 from std_msgs.msg import Bool
 
-uart_port = '/dev/ttyACM0'
+uart_port = '/dev/ttyACM1'
 uart_speed = 19200
 
 def get_position(data: Pose2D):
