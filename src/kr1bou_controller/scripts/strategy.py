@@ -193,10 +193,12 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
+        rospy.loginfo("(STRATEGY) IN")
         # Create a matrix of nodes
         maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[3] * self.resolution))]
                 for x in range(int(self.map_boundaries[2] * self.resolution))]
-        obstacles = self.get_discrete_obstacles(resolution=self.resolution)
+        rospy.loginfo("(STRATEGY) Maze created")
+        obstacles = self.get_discrete_obstacles()
         # Set the neighbors for each i, j. 
         for i in range(len(maze)):
             for j in range(len(maze[0])):
@@ -235,7 +237,7 @@ class Strategy:
                 path.pop(0)
         self.path = [Node((int(node.position[0] / self.resolution), int(node.position[1] / self.resolution)), node.orientation) for node in path]
 
-    def get_discrete_obstacles(self, resolution) -> list:
+    def get_discrete_obstacles(self) -> list:
         """Get the obstacles from the ultrasound sensors, the bumpers, the position of the adversary and discretize them
         """
         obstacles = []
@@ -243,10 +245,10 @@ class Strategy:
         for i, (x, y) in enumerate(self.US_data):
             if (x, y) not in [(0, 0), (-1, -1)]:
                 # Extend to a circle of radius 10 cm
-                for j in range(-10, 11):
-                    for k in range(-10, 11):
-                        if sqrt(j ** 2 + k ** 2) <= 10:
-                            obstacles.append((int(x * resolution) + j, int(y * resolution) + k))
+                for j in range(-int(0.1 * self.resolution), int(0.1 * self.resolution) + 1):
+                    for k in range(-int(0.1 * self.resolution), int(0.1 * self.resolution) + 1):
+                        if sqrt(j ** 2 + k ** 2) <= 0.1 * self.resolution:
+                            obstacles.append((int(x * self.resolution) + j, int(y * self.resolution) + k))
         # TODO : Remove testing default obstacles below
         obstacles.extend([(100, 70), (100, 140)])
 
