@@ -82,17 +82,13 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
         while not rospy.is_shutdown():
-            if self.need_for_compute:
-                self.close_enough_to_waypoint()  # Remove the waypoint if the robot is close enough
-                rospy.loginfo(f"(STRATEGY) Objectives : {self.objectives}")
-                if not self.objectives and not self.path:
-                    break
-                self.compute_path()
-                rospy.loginfo(f"(STRATEGY) Path : {self.path}")
-                self.follow_path()
-                self.need_for_compute = False
-            else:
-                self.wait_until_ready()
+            self.close_enough_to_waypoint()  # Remove the waypoint if the robot is close enough
+            rospy.loginfo(f"(STRATEGY) Objectives : {self.objectives}")
+            if not self.objectives and not self.path:
+                break
+            self.compute_path()
+            rospy.loginfo(f"(STRATEGY) Path : {self.path}")
+            self.follow_path()
  
     def close_enough_to_waypoint(self, threshold=5.0):
         while (len(self.path) > 0 and sqrt((self.position.x - self.path[0].position[0]) ** 2 +
