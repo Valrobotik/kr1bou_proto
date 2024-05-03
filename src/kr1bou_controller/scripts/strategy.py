@@ -232,9 +232,11 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Recompute path")
             # apply resolution 
             path = a_star(origin, maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])
+            rospy.loginfo(f"(STRATEGY) Path computed : {path}")
             path = clean_path(path)
+            rospy.loginfo(f"(STRATEGY) Cleaned path : {path}")
             self.path = [Node((node.position[0] / self.resolution,node.position[1] / self.resolution), node.orientation) for node in path]
-            rospy.loginfo(f"(STRATEGY) New path : {path}")
+            rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
         
         # Remove node if the robot is already on it if the robot is already following a path
         while len(self.path) > 0  and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < 5.0 / self.resolution: # example : 5 cm
