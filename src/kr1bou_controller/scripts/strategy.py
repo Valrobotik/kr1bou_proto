@@ -197,14 +197,14 @@ class Strategy:
         maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[3] * self.resolution))]
                 for x in range(int(self.map_boundaries[2] * self.resolution))]
         obstacles = self.get_discrete_obstacles(resolution=self.resolution)
-        # Set the neighbors for each i, j. If any obstacle is in neighborhood, set the cost to MAX_COST
+        # Set the neighbors for each i, j. 
         for i in range(len(maze)):
             for j in range(len(maze[0])):
                 if maze[i][j] is not None:
                     for direction in [(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
                         x, y = i + direction[0], j + direction[1]
-                        if 0 <= x < len(maze) and 0 <= y < len(maze[0]) and maze[x][y]:
-                            cost = MAX_COST if (x, y) in obstacles else 1
+                        if 0 <= x < len(maze) and 0 <= y < len(maze[0]) and maze[x][y]: # If any obstacle is in neighborhood,
+                            cost = MAX_COST if (x, y) in obstacles else 1               # set the cost to MAX_COST
                             maze[i][j].neighbors[direction] = (cost, maze[x][y])
         
         # Get the start and end nodes
