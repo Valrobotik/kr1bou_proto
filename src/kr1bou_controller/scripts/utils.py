@@ -74,6 +74,7 @@ def is_path_valid(path: list, obstacles: set) -> bool:
 
 def clamp_theta(theta: float) -> float:
     """Clamp the angle between 0 and 2pi"""
+    new_theta = theta
     if theta < 0:
-        new_theta = 2 * pi + theta
+        new_theta += 2 * pi
     return 2*pi - new_theta
