@@ -237,7 +237,7 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Path still exists")
             # Keep the current path
         else:
-            rospy.loginfo(f"(STRATEGY) Recompute path from {origin.position} to {self.current_objective} (int({self.current_objective.x * self.resolution}), int({self.current_objective.y * self.resolution})")
+            rospy.loginfo(f"(STRATEGY) Recompute path from {origin} to {self.current_objective} ({maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]})")
             # apply resolution 
             path = a_star(origin, maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])
             rospy.loginfo(f"(STRATEGY) Path computed : {path}")
