@@ -153,7 +153,7 @@ class Strategy:
     def run(self):
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
         while not rospy.is_shutdown():
-            while self.team == -1 : rospy.sleep(0.05)
+            while self.team == -1 and not rospy.is_shutdown(): rospy.sleep(0.05)
             if self.need_for_compute:   # New sensor data
                 if len(self.path) > 0 :  # If the robot is already following a path
                     rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2)}")
