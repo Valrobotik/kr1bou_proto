@@ -209,6 +209,7 @@ class Strategy:
 
     def update_position(self, data):
         self.position = data
+        rospy.loginfo(f"(STRATEGY) Position received : {self.position}")
         self.need_for_compute = True
 
     def update_lidar_data(self, data):
