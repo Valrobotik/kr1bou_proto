@@ -8,7 +8,7 @@ import time
 from math import sqrt, pi
 
 from search_path import Node, a_star, clean_path
-from utils import setup_maze, is_path_valid, Objective, get_discrete_obstacles, clamp_theta
+from utils import *
 
 READY_LINEAR = 0
 READY = 1
@@ -36,7 +36,8 @@ class Strategy:
         self.maze = [[Node((x, y), 0) for y in range(int(self.map_boundaries[3] * self.resolution))]
                      for x in range(int(self.map_boundaries[2] * self.resolution))]
         self.path = []  # List of waypoints to follow
-        self.obstacles = []  # List of obstacles
+        self.obstacles = set()  # List of obstacles
+        self.previous_obstacles = set()  # Previous obstacles
 
         self.custom_waiting_rate = rospy.Rate(20)
 
@@ -102,25 +103,22 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
-        rospy.loginfo("1")
-        obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
-        rospy.loginfo("2")
-        self.maze = setup_maze(self.maze, obstacles)
-        rospy.loginfo("3")
+        self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
+        self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
+        self.previous_obstacles = self.obstacles
+        
         if self.path == [] and self.objectives != []:  # Get new closest objective
-            rospy.loginfo("3.1")
             self.reset_position_from_camera()
-            rospy.loginfo("4")
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
-        rospy.loginfo("4.1")
+            
         # Get the start and end nodes
         origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
         rospy.loginfo("5")
 
         rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
-        if is_path_valid(self.path, obstacles):  # Check if the path is still valid
+        if is_path_valid(self.path, self.obstacles):  # Check if the path is still valid
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
             rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")

@@ -48,23 +48,23 @@ def setup_maze(maze: list, obstacles: set) -> list:
     # update obstacles in the maze
     size_x = len(maze)
     size_y = len(maze[0])
-    rospy.loginfo(f"3.0.1")
+    rospy.loginfo(f"start_1")
     for i in range(size_x):
         for j in range(size_y):
-            maze[i][j] = Node((i, j), 0, {}) if (i, j) not in obstacles else None
-    rospy.loginfo(f"3.0.2")
-    # update neighbors
-    for i in range(size_x):
-        for j in range(size_y):
-            if maze[i][j] is not None:
-                for direction in DIRECTIONS:
-                    x, y = i + direction[0], j + direction[1]
-                    if (x, y) in obstacles:
-                        continue
-                    if 0 <= x < size_x and 0 <= y < size_y and maze[x][y] is not None:
-                        maze[i][j].neighbors[direction] = (1, maze[x][y])
-    rospy.loginfo(f"3.0.3")
+            maze[i][j] = Node((i, j), obstacle=((i, j) in obstacles))
+    rospy.loginfo(f"end_1")
     return maze
+
+def update_maze(maze: list, obstacles: set, new_obstacles: set) -> list:
+    rospy.loginfo(f"2")
+    not_obstacles_anymore = obstacles - new_obstacles
+    rospy.loginfo(f"3")
+    for not_obstacle in not_obstacles_anymore:
+        maze[not_obstacle[0]][not_obstacle[1]].obstacle = False
+    rospy.loginfo(f"4")
+    for new_obstacle in new_obstacles:
+        maze[new_obstacle[0]][new_obstacle[1]].obstacle = True
+    rospy.loginfo(f"5")
 
 
 def is_path_valid(path: list, obstacles: set) -> bool:

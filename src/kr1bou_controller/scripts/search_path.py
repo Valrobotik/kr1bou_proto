@@ -17,7 +17,7 @@ class Node:
     Node class
     """
 
-    def __init__(self, position: tuple, orientation: float, neighbors=None):
+    def __init__(self, position: tuple, orientation: float, neighbors=None, obstacle=False):
         if neighbors is None:
             neighbors = {}
         self.position = position
@@ -28,6 +28,7 @@ class Node:
         self.o = 0  # orientation
         self.f = 0
         self.parent = None
+        self.is_obstacle = obstacle
 
     def __lt__(self, other: 'Node'):
         return self.f < other.f
@@ -76,7 +77,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
 
         # Explore neighbors
         for cost, neighbor in current_node.neighbors.values():
-            if neighbor is None:  # WALL / OBSTACLE
+            if neighbor.is_obstacle:  # WALL / OBSTACLE
                 continue
 
             # Compute the new cost
