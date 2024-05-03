@@ -3,41 +3,39 @@
 Manages the data of the 8 ultrasound sensors.
 """
 import rospy
-import serial
-import math
 from std_msgs.msg import Bool, Float32MultiArray, Int16
 from geometry_msgs.msg import Pose2D
+import serial
+import math
 from typing import Tuple
 
-
 EMERGENCY_FRONT = 1
-EMERGENCY_BACK = 2 
+EMERGENCY_BACK = 2
 EMERGENCY_BOTH = 3
 NO_EMERGENCY = 0
 
 front_sensor = [8, 9]
 back_sensor = [6, 7, 1, 3]
 
-EMERGENCY_THREASHOLD = 0.30
+emergency_threshold = 0.30
 
-def emergency_stop_needed(US_data: list):
+clamped_readings = [(1000, 1000), (1000, 1000), (1000, 1000), (1000, 1000), (1000, 1000), (1000, 1000), (1000, 1000),
+                    (1000, 1000), (1000, 1000), (1000, 1000)]
+sensor_readings = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000]
+
+
+def emergency_stop_needed(us_data: list):
     data = Int16()
     data.data = NO_EMERGENCY
-    for i in range(0, len(US_data)):
-        if i in front_sensor : 
-            if US_data[i]<EMERGENCY_THREASHOLD and US_data[i] !=0 : 
+    for i in range(0, len(us_data)):
+        if i in front_sensor:
+            if us_data[i] < emergency_threshold and us_data[i] != 0:
                 data.data = EMERGENCY_FRONT
-                rospy.logwarn(f"(ULTRASOUND) /!\ ATTENTION : OBSTACLE FORWARDS AT {US_data[i]} CM ON {i}")
-            else : 
-                # rospy.loginfo(f"NO WARN ON {i} : {US_data[i]} CM ")
-                pass
-        elif i in back_sensor :
-            if US_data[i]<EMERGENCY_THREASHOLD and US_data[i] !=0:
-                rospy.logwarn(f"(ULTRASOUND) /!\ ATTENTION : OBSTACLE BACKWARDS AT {US_data[i]} CM ON {i}")
-                if data.data == NO_EMERGENCY: data.data = EMERGENCY_BACK
-                else : data.data = EMERGENCY_BOTH
-            else : #rospy.loginfo(f"NO WARN ON {i} : {US_data[i]} CM ")
-                pass
+                rospy.logwarn(f"(ULTRASOUND) WARNING : OBSTACLE FORWARDS AT {us_data[i]} CM ON {i}")
+        elif i in back_sensor:
+            if us_data[i] < emergency_threshold and us_data[i] != 0:
+                rospy.logwarn(f"(ULTRASOUND) WARNING : OBSTACLE BACKWARDS AT {us_data[i]} CM ON {i}")
+                data.data = EMERGENCY_BACK if data.data == NO_EMERGENCY else EMERGENCY_BOTH
     emergency_stop_pub.publish(data)
 
 
@@ -80,30 +78,25 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, f
         y_obstacle = sensor_y_absolute + raw_data * math.sin(sensor_absolute_angle)
     return x_obstacle, y_obstacle
 
-clamped_readings = [(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000),(1000,1000)]
-sensor_readings = [1000, 1000,1000, 1000,1000, 1000,1000, 1000,1000, 1000]
+
 def read_and_publish_sensor_data():
     global clamped_readings, sensor_readings
     while not rospy.is_shutdown():
         if serial_port.in_waiting:  # If there is data to read
             raw_data = serial_port.readline()  # Read
             try:
-                sensor_readings = [float(x)/100 for x in
+                sensor_readings = [float(x) / 100 for x in
                                    raw_data.decode('utf-8').replace('\r\n', '').replace('b', '')
                                    .replace("'", '').strip('[]').split('; ')]  # Parse
-                # clamped_readings = [
-                #     clamp_sensor_data(reading, pos) for reading, pos in
-                #     zip(sensor_readings, sensor_positions)  # Clamp
-                # ]
                 emergency_stop_needed(sensor_readings)
                 clamped_readings = [
                     calcul_absolut_position(reading, pos) for reading, pos in
-                     zip(sensor_readings, sensor_positions)  # Clamp
+                    zip(sensor_readings, sensor_positions)  # Clamp
                 ]
                 # Flatten the list of tuples
                 sensor_data_pub.publish(Float32MultiArray(data=[item for sublist in clamped_readings
                                                                 for item in sublist]))
-                #rospy.loginfo(f" US DATA : {[item for sublist in clamped_readings for item in sublist]}")
+                # rospy.loginfo(f" US DATA : {[item for sublist in clamped_readings for item in sublist]}")
             except ValueError:
                 rospy.logwarn(raw_data)
                 rospy.logwarn('{rospy.get_name()} received malformed data from US Arduino.')
@@ -112,30 +105,21 @@ def read_and_publish_sensor_data():
 
 def calcul_absolut_position(raw_data: float, sensor_position: tuple) -> Tuple[float, float]:
     global current_pose
-    #repere du robot :
-
+    # repère du robot :
     x_cap = sensor_position[0]
     y_cap = sensor_position[1]
     a_cap = sensor_position[3]
 
-    x1 = x_cap+raw_data*math.cos(a_cap)
-    y1 = y_cap+raw_data*math.sin(a_cap)
+    x1 = x_cap + raw_data * math.cos(a_cap)
+    y1 = y_cap + raw_data * math.sin(a_cap)
 
-    #alignement avec le repere absolue :
-
-    d = math.sqrt(x1**2+y1**2)
+    # alignement avec le repère absolu
+    d = math.sqrt(x1 ** 2 + y1 ** 2)
     a = math.atan2(y1, x1)
 
-    x_obs = current_pose.x+d*math.cos(a+current_pose.theta)
-    y_obs = current_pose.y+d*math.sin(a+current_pose.theta)
-
-    return(x_obs, y_obs)
-
-
-def run(data):
-    global start
-    start = data
-    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
+    x_obs = current_pose.x + d * math.cos(a + current_pose.theta)
+    y_obs = current_pose.y + d * math.sin(a + current_pose.theta)
+    return x_obs, y_obs
 
 
 def pose_callback(pose_msg: Pose2D):
@@ -146,36 +130,45 @@ def pose_callback(pose_msg: Pose2D):
     data = Int16()
     data.data = NO_EMERGENCY
     for i in front_sensor:
-        dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
-        if dist_robot_obstacle < EMERGENCY_THREASHOLD and sensor_readings[i] != 0:
-            #rospy.logwarn(f"/!\ ATTENTION : OBSTACLE AVANT A {dist_robot_obstacle} CM sur {i} (recalculer) dist mesurée precedement : {sensor_readings[i]}")
+        dist_robot_obstacle = math.sqrt(
+            (current_pose.x - clamped_readings[i][0]) ** 2 + (current_pose.y - clamped_readings[i][1]) ** 2)
+        if dist_robot_obstacle < emergency_threshold and sensor_readings[i] != 0:
+            # rospy.logwarn(f"/!\ ATTENTION : OBSTACLE AVANT A {dist_robot_obstacle} CM sur {i}
+            # (recalculer) dist mesurée précédemment : {sensor_readings[i]}")
             data.data = EMERGENCY_FRONT
     for i in back_sensor:
-        dist_robot_obstacle = math.sqrt((current_pose.x-clamped_readings[i][0])**2+(current_pose.y-clamped_readings[i][1])**2)
-        if dist_robot_obstacle < EMERGENCY_THREASHOLD and sensor_readings[i] != 0:
-            #rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARIERRE A {dist_robot_obstacle} CM sur {i} (recalculer) dist mesurée precedement : {sensor_readings[i]}")
+        dist_robot_obstacle = math.sqrt(
+            (current_pose.x - clamped_readings[i][0]) ** 2 + (current_pose.y - clamped_readings[i][1]) ** 2)
+        if dist_robot_obstacle < emergency_threshold and sensor_readings[i] != 0:
+            # rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARRIERE A {dist_robot_obstacle} CM sur {i}
+            # (recalculer) dist mesurée précédemment : {sensor_readings[i]}")
+            data.data = EMERGENCY_BACK if data.data == NO_EMERGENCY else EMERGENCY_BOTH
             if data.data == EMERGENCY_FRONT:
                 data.data = EMERGENCY_BOTH
             else:
                 data.data = EMERGENCY_BACK
-    if data.data != NO_EMERGENCY :
-        #emergency_stop_pub.publish(data)
+    if data.data != NO_EMERGENCY:
+        # emergency_stop_pub.publish(data)
         pass
-
-
     # rospy.loginfo(f"{rospy.get_name()} received {current_pose} from Pose")
 
-def near(x, y, epsilon = 0.01):
-    if (abs(x-y) < epsilon): return True
-    else : return False
+
+def near(x, y, epsilon=0.01):
+    return True if abs(x - y) < epsilon else False
+
+
+def run(data):
+    global start
+    start = data
+    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
+
 
 if __name__ == '__main__':
     # Initialization
     rospy.init_node('ultrasound_sensor_manager')
     rospy.loginfo("[START] Ultrasound Sensor node has started.")
 
-    start = False
-    # Wait for the runningPhase True signal
+    start = False  # Wait for the runningPhase True signal
     rospy.Subscriber('runningPhase', Bool, run)
 
     # Manage robot's pose
@@ -192,7 +185,6 @@ if __name__ == '__main__':
     sensor_positions = rospy.get_param('/sensor_positions')  # [(x, y, z, angle), ...]. Angle is in radians
     serial_port_param = rospy.get_param(f'/arduino/arduino_serial_ports/US')
     serial_port = serial.Serial(serial_port_param, baudrate, timeout=1)
-    #serial_port = None
 
     # Publisher and Subscriber
     sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
@@ -202,9 +194,5 @@ if __name__ == '__main__':
         rospy.sleep(0.1)
     try:
         read_and_publish_sensor_data()
-        pass
-    except rospy.ROSInterruptException:
-        pass
     finally:
-        if serial_port is not None:
-            serial_port.close()
+        serial_port.close()

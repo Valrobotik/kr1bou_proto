@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-import time
-from math import sqrt, pi
-
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
+
+import time
+from math import sqrt, pi
 
 from search_path import Node, a_star, clean_path
 from utils import setup_maze, is_path_valid, Objective
@@ -60,9 +60,8 @@ class Strategy:
         # Team Color
         self.team = -1
         self.setup_subscribers()
-        
-        
-         # Set up the objectives
+
+        # Set up the objectives
         self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2)) for
                            x, y, theta in rospy.get_param('/objectives')]
 
