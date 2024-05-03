@@ -209,7 +209,7 @@ class Strategy:
 
     def update_position(self, data):
         self.position = data
-        rospy.loginfo(f"(STRATEGY) Position received : {self.position}")
+        # rospy.loginfo(f"(STRATEGY) Position received : {self.position}")
         self.need_for_compute = True
 
     def update_lidar_data(self, data):
@@ -224,7 +224,7 @@ class Strategy:
     def update_camera(self, data: Float32MultiArray):
         """Updates the info from the camera [team_blue_x, team_blue_y, team_blue_theta, team_yellow_x, team_yellow_y,
         team_yellow_theta]"""
-        if self.team != -1:
+        if self.team == -1:
             return
         blue_robot = Pose2D()
         yellow_robot = Pose2D()
