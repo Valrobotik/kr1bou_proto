@@ -223,7 +223,6 @@ class Kr1bou:
         self.publisher_state.publish(temp)
 
     def update_moving_direction(self, data: Int16):
-        rospy.loginfo("(WHEEL CONTROL) Forced dir set")
         if data.data == 0:
             self.force_backward = False
             self.force_forward = False

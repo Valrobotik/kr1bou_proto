@@ -230,8 +230,8 @@ class Strategy:
         yellow_robot.x /= 100
         yellow_robot.y /= 100
 
-        rospy.loginfo(f"(STRATEGY) Camera - Blue robot : {blue_robot}")
-        rospy.loginfo(f"(STRATEGY) Camera - Yellow robot : {yellow_robot}")
+        #rospy.loginfo(f"(STRATEGY) Camera - Blue robot : {blue_robot}")
+        #rospy.loginfo(f"(STRATEGY) Camera - Yellow robot : {yellow_robot}")
 
         if self.team == TEAM_BLUE:  # discriminate between own robot and enemy robot
             self.camera_position, self.enemy_position = blue_robot, yellow_robot
