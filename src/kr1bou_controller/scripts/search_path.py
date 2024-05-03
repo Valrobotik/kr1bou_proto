@@ -8,7 +8,7 @@ import random
 import time
 from math import atan2, pi
 
-gamma = 10
+gamma = 1
 
 
 class Node:
@@ -52,12 +52,14 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     """
     open_list = [start_node]
     closed_list = set()
+    
+    print_path = []
 
     # Loop until the open list is empty
     while open_list:
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_list)
-        print("Current node:", current_node, "f =", current_node.f, "g =", current_node.g, "h =", current_node.h, "o =", current_node.o)
+        print(f"Current path: {print_path}") if print_path else None
 
         if current_node == end_node:  # Path found
             path = []
@@ -88,6 +90,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
             if neighbor not in open_list:  # To be visited
                 heapq.heappush(open_list, neighbor)
                 neighbor.parent = current_node
+                print_path.append(neighbor)
 
     return None
 
