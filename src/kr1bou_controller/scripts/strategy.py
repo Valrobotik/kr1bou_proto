@@ -24,7 +24,7 @@ TEAM_YELLOW = 0
 
 DEFAULT_MAX_SPEED = 0.25
 
-MAX_COST = 1000000
+DIRECTIONS = set([(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)])
 
 
 class Objective:
@@ -53,15 +53,17 @@ class Strategy:
         self.need_for_send = False
 
         self.next_pos_obj = [0, 0, 0]
-
         self.current_objective: Objective = None
-
+        
         # Map boundaries in meters [x_min, y_min, x_max, y_max]. Example: [0, 0, 3, 2]
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries') ]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
+        self.maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[3] * self.resolution))]
+                    for x in range(int(self.map_boundaries[2] * self.resolution))]
         self.path = []  # List of waypoints to follow
-        self.custom_waiting_rate = rospy.Rate(20)
+        self.obstacles = []  # List of obstacles
         
+        self.custom_waiting_rate = rospy.Rate(20)
         # Get the initial position of the robot
         self.position = Pose2D()
         rospy.Subscriber("odometry", Pose2D, self.update_position)
@@ -234,7 +236,24 @@ class Strategy:
     def update_solar_winner(self, winner: Int8):
         """Updates the solar panel winner from the solar panel node."""
         self.latest_solar_winner = winner.data
-
+        
+        
+    def setup_maze(self):
+        """Create the maze with the obstacles"""
+        self.obstacles = set(self.get_discrete_obstacles())
+        # update obstacles in the maze
+        for i in range(len(self.maze)):
+            for j in range(len(self.maze[0])):
+                self.maze[i][j] = Node((i, j), 0, {}) if (i, j) not in self.obstacles else None
+        # update neighbors
+        for i in range(len(self.maze)):
+            for j in range(len(self.maze[0])):
+                if self.maze[i][j] is not None:
+                    for direction in DIRECTIONS - self.obstacles:
+                        x, y = i + direction[0], j + direction[1]
+                        if 0 <= x < len(self.maze) and 0 <= y < len(self.maze[0]) and self.maze[x][y] is not None:
+                            self.maze[i][j].neighbors[direction] = (1, self.maze[x][y])
+                        
 
     def compute_path(self):
         """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
@@ -242,26 +261,9 @@ class Strategy:
         :return: the path to follow
         """
         rospy.loginfo("(STRATEGY) IN COMPUTE PATH FUNCTION")
-        # Create a matrix of nodes
-        maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[3] * self.resolution))]
-                for x in range(int(self.map_boundaries[2] * self.resolution))]
-        rospy.loginfo(f"(STRATEGY) Maze created : {len(maze)}x{len(maze[0])}")
-        obstacles = self.get_discrete_obstacles()
-        rospy.loginfo(f"(STRATEGY) Obstacles : {obstacles}")
-        
-        # Set the neighbors for each i, j. 
-        for i in range(len(maze)):
-            for j in range(len(maze[0])):
-                if maze[i][j] is not None:
-                    for direction in [(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
-                        x, y = i + direction[0], j + direction[1]
-                        if 0 <= x < len(maze) and 0 <= y < len(maze[0]) and maze[x][y]: # If any obstacle is in neighborhood,
-                            cost = MAX_COST if (x, y) in obstacles else 1               # set the cost to MAX_COST
-                            maze[i][j].neighbors[direction] = (cost, maze[x][y])
-        rospy.loginfo("(STRATEGY) Neighbors set")
-        
+        self.setup_maze()
         # Get the start and end nodes
-        origin = maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
+        origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
         if self.path == [] and self.objectives != []: # Get new closest objective
             self.current_objective  = self.objectives[0]
@@ -273,9 +275,9 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Path still exists")
             # Keep the current path
         else:
-            rospy.loginfo(f"(STRATEGY) Recompute path from {origin} to {self.current_objective} ({maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]})")
+            rospy.loginfo(f"(STRATEGY) Recompute path from {origin} to {self.current_objective} ({self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]})")
             # apply resolution 
-            path = a_star(origin, maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])
+            path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])
             rospy.loginfo(f"(STRATEGY) Path computed : {path}")
             path = clean_path(path)
             rospy.loginfo(f"(STRATEGY) Cleaned path : {path}")
