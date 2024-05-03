@@ -76,7 +76,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
             neighbor.h = heuristic(neighbor, end_node)
             neighbor.o = orientation_change(current_node, neighbor)
             # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma = 1 
-            neighbor.f = cost * neighbor.g + neighbor.h  
+            neighbor.f = cost * neighbor.g + neighbor.h  + neighbor.o
 
             if neighbor in closed_list:  # Skip if already visited
                 continue
@@ -148,14 +148,14 @@ def orientation_change(node1: Node, node2: Node) -> float:
         if y1 < y2:
             angle = 0
         else:
-            angle = 180
+            angle = pi
     elif y1 == y2:
         if x1 < x2:
-            angle = 90
+            angle = pi/2
         else:
-            angle = 270
+            angle = 3*pi/2
     else:
-        angle = atan2(y2 - y1, x2 - x1) * 180 / pi
+        angle = atan2(y2 - y1, x2 - x1)
     
     # update node2's orientation
     node2.orientation = angle

@@ -259,7 +259,7 @@ class Strategy:
         #                 if sqrt(j ** 2 + k ** 2) <= 0.1 * self.resolution:
         #                     obstacles.append((int(x * self.resolution) + j, int(y * self.resolution) + k))
         # TODO : Remove testing default obstacles below
-        obstacles.extend([(100, 70), (100, 140)])
+        # obstacles.extend([(100, 70), (100, 140)])
 
         # TODO : Get the obstacles from the camera
         return obstacles
