@@ -36,7 +36,7 @@ class Strategy:
         self.path = []  # List of waypoints to follow
         self.obstacles = set()  # List of obstacles
         self.previous_obstacles = set()  # Previous obstacles
-        self.maze = setup_maze((int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), self.obstacles)
+        self.maze = setup_maze((int(self.map_boundaries[3] * self.resolution), int(self.map_boundaries[2] * self.resolution)), self.obstacles)
 
         self.custom_waiting_rate = rospy.Rate(20)
 
