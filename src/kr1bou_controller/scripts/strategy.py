@@ -5,7 +5,8 @@ from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 from search_path import Node, a_star, clean_path
 
-from math import sqrt
+from math import sqrt, pi
+import time
 import heapq
 
 from typing import List
@@ -61,7 +62,7 @@ class Strategy:
         self.path = []  # List of waypoints to follow
         self.custom_waiting_rate = rospy.Rate(20)
         
-
+        # Get the initial position of the robot
         self.position = Pose2D()
         rospy.Subscriber("odometry", Pose2D, self.update_position)
         
@@ -70,11 +71,20 @@ class Strategy:
                            x, y, theta in rospy.get_param('/objectives')]
         # heapq.heapify(self.objectives)
 
+        # Get the ultrasound sensor data
         self.US_data = [(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1),(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)]
         rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
 
+        # Get the back camera data
         self.latest_solar_winner = 0
         rospy.Subscriber('solar_aruco', Int8, self.update_solar_winner)
+
+        # Get the camera data
+        self.need_rst_odom = False
+        self.last_time_cam = time.time()
+        self.camera_position = Pose2D()
+        self.got_cam_data = False
+        rospy.Subscriber('camera', Pose2D, self.update_camera)
 
         for i in range(1, 5):
             setattr(self, f'bumper_{i}', False)
@@ -90,6 +100,7 @@ class Strategy:
         self.pos_ordre_pub = rospy.Publisher('next_objectif', Pose2D, queue_size=1)
         self.direction_pub = rospy.Publisher('direction', Int16, queue_size=1)
         self.speed_ctrl_pub = rospy.Publisher('max_speed', Float64, queue_size=1)
+        self.publisher_corect_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
 
     def update_bumpers(self, data: Byte):
         """Update the bumper states by reading the Byte message from the bumper topic."""
@@ -111,6 +122,31 @@ class Strategy:
         # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
         self.US_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]
         self.need_for_compute = True
+
+    def update_camera(self, data : Pose2D):
+        """Updates the info from the camera"""
+        rospy.loginfo("(STRATEGY) Camera received")
+        self.camera_position = data
+        if(self.camera_position.theta < 0):
+            self.camera_position.theta = self.camera_position.theta+2*pi
+        self.camera_position.theta = 2*pi-self.camera_position.theta
+        self.got_cam_data = True
+
+        rospy.loginfo(f"(STRATEGY) {self.camera_position}")
+
+    def reset_position_from_camera(self):
+        """Publishes the camera position to the odometry topic to correct the odometry"""
+        rospy.loginfo("(STRATEGY) Debug odom correction")
+        if time.time() - self.last_time_cam < 10:
+            self.got_cam_data = False
+            while not self.got_cam_data:
+                rospy.sleep(0.05)
+            self.publisher_corect_odom.publish(self.camera_position)
+            rospy.loginfo("(STRATEGY) Odometry corrected")
+        else:
+            rospy.logwarn("(STRATEGY) No connexion with camera")
+        self.need_rst_odom = False
+        self.got_cam_data = False
     
     def update_team(self, data:Bool):
         if self.team == -1 :
@@ -308,5 +344,7 @@ if __name__ == "__main__":
     rate = rospy.Rate(rospy.get_param('/frequency'))
     while not start:
         rate.sleep()
+
+    strategy_manager.reset_position_from_camera()
 
     strategy_manager.run()
