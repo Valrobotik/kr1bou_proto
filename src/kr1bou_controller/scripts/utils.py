@@ -43,14 +43,13 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, resolution: int) -> 
     return obstacles
 
 
-def setup_maze(maze: list, obstacles: set) -> list:
+def setup_maze(shape: tuple, obstacles: set) -> list:
     """Create the maze with the obstacles"""
     # update obstacles in the maze
-    size_x = len(maze)
-    size_y = len(maze[0])
     rospy.loginfo(f"start_1")
-    for i in range(size_x):
-        for j in range(size_y):
+    maze = [[None for _ in range(shape[1])] for _ in range(shape[0])]
+    for i in range(shape[0]):
+        for j in range(shape[1]):
             maze[i][j] = Node((i, j), obstacle=((i, j) in obstacles))
     rospy.loginfo(f"end_1")
     return maze
