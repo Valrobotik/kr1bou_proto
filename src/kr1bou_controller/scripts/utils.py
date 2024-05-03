@@ -58,7 +58,7 @@ def setup_maze(shape: tuple, obstacles: set) -> list:
                 x = i + direction[0]
                 y = j + direction[1]
                 if 0 <= x < shape[0] and 0 <= y < shape[1]:
-                    maze[i][j].neighbors[direction] = maze[x][y]
+                    maze[i][j].neighbors[direction] = (1, maze[x][y])
     rospy.loginfo(f"end_1")
     return maze
 
