@@ -7,16 +7,20 @@ import rospy
 from gpiozero import Button
 from std_msgs.msg import Bool, Int8
 
+speaker_state = False
+def speaker_state_callback(data: Bool):
+    global speaker_state
+    speaker_state = data.data
 
 def on_button_press():
     rospy.loginfo("Team selected to blue")
     pub.publish(True)
-    bluetooth_state.publish(2)
+    bluetooth_choice.publish(2)
 
 def on_button_released():
     rospy.loginfo("Team selected to yellow")
     pub.publish(False)
-    bluetooth_state.publish(1)
+    bluetooth_choice.publish(1)
 
 def run(data: Bool):
     global start
@@ -34,7 +38,8 @@ if __name__ == '__main__':
 
         queue_size = rospy.get_param('/queue_size')
         pub = rospy.Publisher('Team', Bool, queue_size=queue_size)
-        bluetooth_state = rospy.Publisher('speaker_state', Int8, queue_size=queue_size)
+        bluetooth_choice = rospy.Publisher('speaker_choice', Int8, queue_size=queue_size)
+        speaker_state = rospy.Subscriber('speaker_state', Bool, speaker_state_callback)
 
                 # GPIO setup
         button_pin = rospy.get_param('/gpio/team_button_pin')
@@ -47,14 +52,17 @@ if __name__ == '__main__':
 
         rospy.sleep(2)
 
+        if speaker_state:
+            bluetooth_choice.publish(3)
+
         if button.is_pressed :
             rospy.loginfo("True - Is Blue")
             pub.publish(True)
-            bluetooth_state.publish(2)
+            bluetooth_choice.publish(2)
         else:
             rospy.loginfo("False - Is Yellow")
             pub.publish(False)
-            bluetooth_state.publish(1)
+            bluetooth_choice.publish(1)
 
         button.when_pressed = on_button_press
         button.when_released = on_button_released
