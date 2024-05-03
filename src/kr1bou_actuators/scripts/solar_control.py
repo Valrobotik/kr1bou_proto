@@ -32,7 +32,7 @@ def go_to(data: Int16):
 def loop():
     global time_run, pwm
     while not rospy.is_shutdown():
-        if time.time()-time_run < 3:
+        if time.time()-time_run > 3:
             pwm.stop()
         rospy.sleep(0.2)
 
