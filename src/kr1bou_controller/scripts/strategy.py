@@ -225,28 +225,25 @@ class Strategy:
         if self.path == []:
             self.current_objective  = heapq.heappop(self.objectives)  # Get new closest objective
 
-        rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
-        print("Maze :")
-        # print_maze(origin, Node((int(new_obj.x * self.resolution), int(new_obj.y * self.resolution)), 0), maze)
-        
+        rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")        
         # Compute the path
         if self.is_path_valid():
             rospy.loginfo("(STRATEGY) Path still exists")
-            path = self.path # Keep the current path
+            # Keep the current path
         else:
             rospy.loginfo("(STRATEGY) Recompute path")
             # apply resolution 
             path = a_star(origin, maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])[1:] # Remove current position node
             path = clean_path(path)
+            self.path = [Node((node.position[0] / self.resolution,node.position[1] / self.resolution), node.orientation) for node in path]
             rospy.loginfo(f"(STRATEGY) New path : {path}")
         
-        # Remove node if the robot is already on it
-        if len(path) > 0:
-            rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2)}")
-            rospy.loginfo(f"(STRATEGY) Threshold : {7}")
-            while sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2) < 7: # example : 7 cm
-                path.pop(0)
-        self.path = [Node((node.position[0] / self.resolution,node.position[1] / self.resolution), node.orientation) for node in path]
+        # # Remove node if the robot is already on it
+        # if len(path) > 0:
+        #     rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2)}")
+        #     rospy.loginfo(f"(STRATEGY) Threshold : {7}")
+        #     while sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2) < 7: # example : 7 cm
+        #         path.pop(0)
 
     def get_discrete_obstacles(self) -> list:
         """Get the obstacles from the ultrasound sensors, the bumpers, the position of the adversary and discretize them
@@ -274,7 +271,7 @@ class Strategy:
         for node in self.path:
             if node.position in self.get_discrete_obstacles():
                 superposed.append(node.position)
-            rospy.loginfo(f"Obstacle at {node.position}")
+                rospy.loginfo(f"Obstacle at {node.position}")
         return superposed == []
 
     def follow_path(self):

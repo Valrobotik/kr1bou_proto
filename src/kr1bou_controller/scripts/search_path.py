@@ -8,6 +8,8 @@ import random
 import time
 from math import atan2, pi
 
+gamma = 60
+
 
 class Node:
     """
@@ -75,9 +77,9 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
             neighbor.g = current_node.g + euclidian(neighbor, current_node)  # update g value
             neighbor.h = heuristic(neighbor, end_node)
             neighbor.o = orientation_change(current_node, neighbor)
-            # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma = 1 
+            # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma -> ~radians to degrees
             print(f"[COST: {cost}, G: {neighbor.g}, H: {neighbor.h}, O: {neighbor.o}]")
-            neighbor.f = cost * neighbor.g + neighbor.h  + neighbor.o
+            neighbor.f = cost * neighbor.g + neighbor.h  + gamma * neighbor.o
 
             if neighbor in closed_list:  # Skip if already visited
                 continue
