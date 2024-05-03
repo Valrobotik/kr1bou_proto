@@ -14,7 +14,7 @@ class Node:
     Node class
     """
 
-    def __init__(self, position: tuple, orientation: float, neighbors: dict):
+    def __init__(self, position: tuple, orientation: float, neighbors: dict = {}):
         self.position = position
         self.orientation = orientation
         self.neighbors = neighbors
