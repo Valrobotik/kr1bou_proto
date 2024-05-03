@@ -260,7 +260,6 @@ if __name__=="__main__":
             rate.sleep()
 
         rospy.sleep(0.2)
-        robot.reset_position_camera()
         while not rospy.is_shutdown():  
             robot.publish_speed()
             rate.sleep()
