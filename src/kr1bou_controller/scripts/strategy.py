@@ -8,7 +8,7 @@ import time
 from math import sqrt, pi
 
 from search_path import Node, a_star, clean_path
-from utils import setup_maze, is_path_valid, Objective, get_discrete_obstacles
+from utils import setup_maze, is_path_valid, Objective, get_discrete_obstacles, clamp_theta
 
 READY_LINEAR = 0
 READY = 1
@@ -42,8 +42,9 @@ class Strategy:
         self.custom_waiting_rate = rospy.Rate(20)
 
         # -- Subscribers --
-        self.position = Pose2D()    # Get the initial position of the robot
-        self.lidar_data = None      # Get the lidar data
+        self.position = Pose2D()  # Get the initial position of the robot
+        self.enemy_position = Pose2D()  # Get the position of the enemy robot
+        self.lidar_data = None  # Get the lidar data
         # Get the ultrasound sensor data
         self.us_data = [(-1, -1) for _ in range(10)]
         self.latest_solar_winner = 0  # Get the back camera data
@@ -106,12 +107,15 @@ class Strategy:
         rospy.loginfo("(STRATEGY) IN COMPUTE PATH FUNCTION")
         obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
         self.maze = setup_maze(self.maze, obstacles)
+
+        if self.path == [] and self.objectives != []:  # Get new closest objective
+            self.reset_position_from_camera()
+            self.current_objective = self.objectives[0]
+            self.objectives.pop(0)
+
         # Get the start and end nodes
         origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
-        if self.path == [] and self.objectives != []:  # Get new closest objective
-            self.current_objective = self.objectives[0]
-            self.objectives.pop(0)
 
         rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         if is_path_valid(self.path, obstacles):  # Check if the path is still valid
@@ -120,7 +124,7 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
             onset = time.time()
             path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)]
-                                           [int(self.current_objective.y * self.resolution)])
+            [int(self.current_objective.y * self.resolution)])
             path = clean_path(path)
             self.path = [
                 Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for
@@ -155,7 +159,7 @@ class Strategy:
             if (sqrt((self.next_pos_obj[0] - self.position.x) ** 2 + (
                     self.next_pos_obj[1] - self.position.y) ** 2) < 0.07 and self.next_pos_obj[2] == -1):
                 rospy.loginfo("(STRATEGY) Robot is close enough to the node. Waiting for the next order.")
-                rospy.loginfo(f"""(STRATEGY) Current dist: {sqrt((self.next_pos_obj[0] - self.position.x) ** 2 + 
+                rospy.loginfo(f"""(STRATEGY) Current dist: {sqrt((self.next_pos_obj[0] - self.position.x) ** 2 +
                                                                  (self.next_pos_obj[1] - self.position.y) ** 2)}""")
                 rospy.loginfo(f"(STRATEGY) Threshold : 0.07")
                 break
@@ -168,12 +172,12 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
         else:
             rospy.loginfo("(STRATEGY) No path found")
-            
+
     def setup_subscribers(self):
         rospy.Subscriber('odometry', Pose2D, self.update_position)
         rospy.Subscriber('lidar_data', PoseArray, self.update_lidar_data)
         rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
-        rospy.Subscriber('camera', Pose2D, self.update_camera)
+        rospy.Subscriber('camera', Float32MultiArray, self.update_camera)
         rospy.Subscriber('bumper', Byte, self.update_bumpers)
         rospy.Subscriber('state', Int16, self.update_state)
         rospy.Subscriber('Team', Bool, self.update_team)
@@ -191,6 +195,7 @@ class Strategy:
             rospy.logwarn("(STRATEGY) No connexion with camera")
         self.need_rst_odom = False
         self.got_cam_data = False
+        self.position = self.camera_position
 
     def update_bumpers(self, data: Byte):
         """Update the bumper states by reading the Byte message from the bumper topic."""
@@ -212,18 +217,27 @@ class Strategy:
 
     def update_us_data(self, data):
         raw = data.data
-        self.us_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)] # Unflatten the data
+        self.us_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]  # Unflatten the data
         self.need_for_compute = True
 
-    def update_camera(self, data: Pose2D):
-        """Updates the info from the camera"""
+    def update_camera(self, data: Float32MultiArray):
+        """Updates the info from the camera [team_blue_x, team_blue_y, team_blue_theta, team_yellow_x, team_yellow_y,
+        team_yellow_theta]"""
         rospy.loginfo("(STRATEGY) Camera received")
-        self.camera_position = data
-        if self.camera_position.theta < 0:
-            self.camera_position.theta = self.camera_position.theta + 2 * pi
-        self.camera_position.theta = 2 * pi - self.camera_position.theta
-        self.got_cam_data = True
+        if self.team != -1:
+            return
+        blue_robot = Pose2D()
+        yellow_robot = Pose2D()
+        blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
 
+        if self.team == TEAM_BLUE:  # discriminate between own robot and enemy robot
+            self.camera_position, self.enemy_position = blue_robot, yellow_robot
+        else:
+            self.camera_position, self.enemy_position = yellow_robot, blue_robot
+        self.camera_position.theta = clamp_theta(self.camera_position.theta)
+        self.enemy_position.theta = clamp_theta(self.enemy_position.theta)
+
+        self.got_cam_data = True
         rospy.loginfo(f"(STRATEGY) {self.camera_position}")
 
     def update_team(self, data: Bool):
