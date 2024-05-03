@@ -57,6 +57,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     while open_list:
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_list)
+        print("Current node:", current_node, "f =", current_node.f, "g =", current_node.g, "h =", current_node.h, "o =", current_node.o)
 
         if current_node == end_node:  # Path found
             path = []
