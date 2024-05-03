@@ -52,8 +52,11 @@ if __name__ == '__main__':
 
         rospy.sleep(2)
 
-        if speaker_state:
-            bluetooth_choice.publish(3)
+        while not speaker_state:
+            rate.sleep()
+
+        rospy.loginfo("Speaker node is ready")
+        bluetooth_choice.publish(3)
 
         if button.is_pressed :
             rospy.loginfo("True - Is Blue")
