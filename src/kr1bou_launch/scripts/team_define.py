@@ -39,7 +39,7 @@ if __name__ == '__main__':
         queue_size = rospy.get_param('/queue_size')
         pub = rospy.Publisher('Team', Bool, queue_size=queue_size)
         bluetooth_choice = rospy.Publisher('speaker_choice', Int8, queue_size=queue_size)
-        speaker_state = rospy.Subscriber('speaker_state', Bool, speaker_state_callback)
+        rospy.Subscriber('speaker_state', Bool, speaker_state_callback)
 
                 # GPIO setup
         button_pin = rospy.get_param('/gpio/team_button_pin')
