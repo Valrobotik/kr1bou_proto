@@ -1,8 +1,9 @@
 arduino:
   baudrate: 115200
   arduino_serial_ports:
-    Motor: "/dev/ttyACM0"
+    Motor: "/dev/ttyACM1"
     US: "/dev/ttyUSB1"
+    Lidar: "/dev/ttyACM1"
 
 gpio:
   start_button_pin: 4
