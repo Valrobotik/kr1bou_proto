@@ -164,7 +164,7 @@ class Strategy:
 
                 # get new path
                 self.update_objectives() # update heapqueue
-                
+
                 rospy.loginfo(f"(STRATEGY) Objectives : {self.objectives}")
                 self.compute_path()
                 rospy.loginfo(f"(STRATEGY) Path : {self.path}")
@@ -242,7 +242,7 @@ class Strategy:
         if len(path) > 0:
             rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2)}")
             rospy.loginfo(f"(STRATEGY) Threshold : {7}")
-            if sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2) < 7: # example : 7 cm
+            while sqrt((self.position.x * self.resolution - path[0].position[0]) ** 2 + (self.position.y * self.resolution - path[0].position[1]) ** 2) < 7: # example : 7 cm
                 path.pop(0)
         self.path = [Node((int(node.position[0] / self.resolution), int(node.position[1] / self.resolution)), node.orientation) for node in path]
 
