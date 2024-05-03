@@ -8,7 +8,7 @@ import random
 import time
 from math import atan2, pi
 
-gamma = 60
+gamma = 10
 
 
 class Node:
@@ -61,6 +61,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
         if current_node == end_node:  # Path found
             path = []
             current = current_node
+            print("Path found with cost: f =", current.f, "g =", current.g, "h =", current.h, "o =", current.o)
             while current is not None:
                 path.append(current)
                 current = current.parent
@@ -78,7 +79,6 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
             neighbor.h = heuristic(neighbor, end_node)
             neighbor.o = orientation_change(current_node, neighbor)
             # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma -> ~radians to degrees
-            print(f"[COST: {cost}, G: {neighbor.g}, H: {neighbor.h}, O: {neighbor.o}]")
             neighbor.f = cost * neighbor.g + neighbor.h  + gamma * neighbor.o
 
             if neighbor in closed_list:  # Skip if already visited
