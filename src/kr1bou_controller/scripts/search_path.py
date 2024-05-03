@@ -9,7 +9,7 @@ import time
 from math import atan2, pi
 import sys
 
-gamma = 1 # 1 for now (180/pi later)
+gamma = 1  # 1 for now (180/pi later)
 
 
 class Node:
@@ -17,7 +17,9 @@ class Node:
     Node class
     """
 
-    def __init__(self, position: tuple, orientation: float, neighbors: dict = {}):
+    def __init__(self, position: tuple, orientation: float, neighbors=None):
+        if neighbors is None:
+            neighbors = {}
         self.position = position
         self.orientation = orientation
         self.neighbors = neighbors
@@ -48,7 +50,6 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     A* Pathfinding algorithm implementation. Minimizes distance and changes of orientation
     :param start_node: the starting node / points
     :param end_node: the objective node / points
-    :param starting_angle: 
     :return: a list of nodes from start to end, or None if no path is found
     """
     open_list = [start_node]
@@ -79,11 +80,11 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
                 continue
 
             # Compute the new cost
-            neighbor.g = current_node.g + 1 # update g value
+            neighbor.g = current_node.g + 1  # update g value
             neighbor.h = heuristic(neighbor, end_node)
-            #neighbor.o = orientation_change(current_node, neighbor)
+            # neighbor.o = orientation_change(current_node, neighbor)
             # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma -> ~radians to degrees
-            neighbor.f = neighbor.g + neighbor.h  #+ gamma * neighbor.o
+            neighbor.f = neighbor.g + neighbor.h  # + gamma * neighbor.o
 
             if neighbor in closed_list:  # Skip if already visited
                 continue
@@ -115,7 +116,7 @@ def manhattan(node1: Node, node2: Node) -> float:
     return abs(node1.position[0] - node2.position[0]) + abs(node1.position[1] - node2.position[1])
 
 
-def other(node1: Node, node2: Node) -> float:
+def other_heuristic(node1: Node, node2: Node) -> float:
     """
     Another way to measure distance between two nodes.
     :param node1: node 1
@@ -136,7 +137,7 @@ def heuristic(node: Node, end_node: Node) -> float:
     :param end_node: objective node
     :return: heuristic value
     """
-    #return other(node, end_node)
+    # return other_heuristic(node, end_node)
     return euclidian(node, end_node)
     # return manhattan(node, end_node)
 
@@ -151,7 +152,6 @@ def orientation_change(node1: Node, node2: Node) -> float:
     # get angle between node1 and node2
     x1, y1 = node1.position
     x2, y2 = node2.position
-    angle = 0
     if x1 == x2:
         if y1 < y2:
             angle = 0
@@ -167,7 +167,7 @@ def orientation_change(node1: Node, node2: Node) -> float:
     
     # update node2's orientation
     node2.orientation = angle
-    return abs(node1.orientation - node2.orientation) # Compute the change
+    return abs(node1.orientation - node2.orientation)  # Compute the change
 
 
 def clean_path(path: List[Node]) -> List[Node]:
