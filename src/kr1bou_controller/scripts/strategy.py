@@ -224,11 +224,19 @@ class Strategy:
     def update_camera(self, data: Float32MultiArray):
         """Updates the info from the camera [team_blue_x, team_blue_y, team_blue_theta, team_yellow_x, team_yellow_y,
         team_yellow_theta]"""
+
         if self.team == -1:
             return
         blue_robot = Pose2D()
         yellow_robot = Pose2D()
         blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
+
+        # Convert to meters
+        blue_robot.x /= 100
+        blue_robot.y /= 100
+        yellow_robot.x /= 100
+        yellow_robot.y /= 100
+
         rospy.loginfo(f"(STRATEGY) Camera - Blue robot : {blue_robot}")
         rospy.loginfo(f"(STRATEGY) Camera - Yellow robot : {yellow_robot}")
 
@@ -241,7 +249,6 @@ class Strategy:
 
         self.got_cam_data = True
         self.last_time_cam = time.time()
-        rospy.loginfo(f"(STRATEGY) {self.camera_position}")
 
     def update_team(self, data: Bool):
         global start
