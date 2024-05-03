@@ -8,13 +8,15 @@ import random
 import time
 from math import atan2, pi
 
+gamma = 10
+
 
 class Node:
     """
     Node class
     """
 
-    def __init__(self, position: tuple, orientation: float, neighbors: dict):
+    def __init__(self, position: tuple, orientation: float, neighbors: dict = {}):
         self.position = position
         self.orientation = orientation
         self.neighbors = neighbors
@@ -55,10 +57,12 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     while open_list:
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_list)
+        print("Current node:", current_node, "f =", current_node.f, "g =", current_node.g, "h =", current_node.h, "o =", current_node.o)
 
         if current_node == end_node:  # Path found
             path = []
             current = current_node
+            print("Path found with cost: f =", current.f, "g =", current.g, "h =", current.h, "o =", current.o)
             while current is not None:
                 path.append(current)
                 current = current.parent
@@ -75,8 +79,8 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
             neighbor.g = current_node.g + euclidian(neighbor, current_node)  # update g value
             neighbor.h = heuristic(neighbor, end_node)
             neighbor.o = orientation_change(current_node, neighbor)
-            # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma = 1 
-            neighbor.f = cost * neighbor.g + neighbor.h  
+            # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma -> ~radians to degrees
+            neighbor.f = cost * neighbor.g + neighbor.h  + gamma * neighbor.o
 
             if neighbor in closed_list:  # Skip if already visited
                 continue
@@ -129,8 +133,8 @@ def heuristic(node: Node, end_node: Node) -> float:
     :param end_node: objective node
     :return: heuristic value
     """
-    # return euclidian(node, end_node)
-    return manhattan(node, end_node)
+    return euclidian(node, end_node)
+    # return manhattan(node, end_node)
 
 
 def orientation_change(node1: Node, node2: Node) -> float:
@@ -148,14 +152,14 @@ def orientation_change(node1: Node, node2: Node) -> float:
         if y1 < y2:
             angle = 0
         else:
-            angle = 180
+            angle = pi
     elif y1 == y2:
         if x1 < x2:
-            angle = 90
+            angle = pi/2
         else:
-            angle = 270
+            angle = 3*pi/2
     else:
-        angle = atan2(y2 - y1, x2 - x1) * 180 / pi
+        angle = atan2(y2 - y1, x2 - x1)
     
     # update node2's orientation
     node2.orientation = angle

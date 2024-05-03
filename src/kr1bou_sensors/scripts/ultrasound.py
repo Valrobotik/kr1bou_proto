@@ -28,7 +28,9 @@ def emergency_stop_needed(US_data: list):
             if US_data[i]<EMERGENCY_THREASHOLD and US_data[i] !=0 : 
                 data.data = EMERGENCY_FRONT
                 rospy.logwarn(f"(ULTRASOUND) /!\ ATTENTION : OBSTACLE FORWARDS AT {US_data[i]} CM ON {i}")
-            else : rospy.loginfo(f"NO WARN ON {i} : {US_data[i]} CM ")
+            else : 
+                # rospy.loginfo(f"NO WARN ON {i} : {US_data[i]} CM ")
+                pass
         elif i in back_sensor :
             if US_data[i]<EMERGENCY_THREASHOLD and US_data[i] !=0:
                 rospy.logwarn(f"(ULTRASOUND) /!\ ATTENTION : OBSTACLE BACKWARDS AT {US_data[i]} CM ON {i}")
