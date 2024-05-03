@@ -7,8 +7,9 @@ import heapq
 import random
 import time
 from math import atan2, pi
+import sys
 
-gamma = 1
+gamma = 10
 
 
 class Node:
@@ -58,7 +59,8 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_list)
         if len(open_list) + len(closed_list) != 0:
-            print(f"Visited (%) : {len(closed_list) / (len(open_list) + len(closed_list)) * 100}")
+            print(f"Visited (%) : {len(closed_list) / (len(open_list) + len(closed_list)) * 100}\r")
+            sys.stdout.flush()
 
         if current_node == end_node:  # Path found
             path = []
@@ -77,7 +79,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
                 continue
 
             # Compute the new cost
-            neighbor.g = current_node.g + euclidian(neighbor, current_node)  # update g value
+            neighbor.g = current_node.g + manhattan(neighbor, current_node)  # update g value
             neighbor.h = heuristic(neighbor, end_node)
             neighbor.o = orientation_change(current_node, neighbor)
             # f = alpha * g + beta * h + gamma * o. Here alpha = cost, beta = 1, gamma -> ~radians to degrees
@@ -134,8 +136,9 @@ def heuristic(node: Node, end_node: Node) -> float:
     :param end_node: objective node
     :return: heuristic value
     """
-    return euclidian(node, end_node)
-    # return manhattan(node, end_node)
+    #return other(node, end_node)
+    #return euclidian(node, end_node)
+    return manhattan(node, end_node)
 
 
 def orientation_change(node1: Node, node2: Node) -> float:
