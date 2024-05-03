@@ -161,9 +161,9 @@ class Strategy:
         while not rospy.is_shutdown():
             while self.team == -1 and not rospy.is_shutdown(): rospy.sleep(0.05)
             if self.need_for_compute:   # New sensor data
-                rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2)}")
-                rospy.loginfo(f"(STRATEGY) Threshold : {5.0 / self.resolution}")
                 while len(self.path) > 0 and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < 5.0 / self.resolution: # example : 5 cm
+                    rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2)}")
+                    rospy.loginfo(f"(STRATEGY) Threshold : {5.0 / self.resolution}")
                     rospy.loginfo(f"(STRATEGY) Robot is close enough to the nearest waypoint. Removing {self.path[0]} from the path.")
                     self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
                 
@@ -237,9 +237,9 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) New path : {path}")
         
         # Remove node if the robot is already on it if the robot is already following a path
-        rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2)}")
-        rospy.loginfo(f"(STRATEGY) Threshold : {5.0 / self.resolution}")
         while len(self.path) > 0  and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < 5.0 / self.resolution: # example : 5 cm
+            rospy.loginfo(f"(STRATEGY) Distance : {sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2)}")
+            rospy.loginfo(f"(STRATEGY) Threshold : {5.0 / self.resolution}")
             rospy.loginfo(f"(STRATEGY) Robot is close enough to the nearest waypoint. Removing {self.path[0]} from the path.")
             self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
     
