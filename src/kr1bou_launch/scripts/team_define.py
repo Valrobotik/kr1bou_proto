@@ -5,16 +5,18 @@ Looks out for Emergency Red Button. Stops everything.
 
 import rospy
 from gpiozero import Button
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int8
 
 
 def on_button_press():
     rospy.loginfo("Team selected to blue")
     pub.publish(True)
+    bluetooth_state.publish(2)
 
 def on_button_released():
     rospy.loginfo("Team selected to yellow")
     pub.publish(False)
+    bluetooth_state.publish(1)
 
 def run(data: Bool):
     global start
@@ -32,6 +34,7 @@ if __name__ == '__main__':
 
         queue_size = rospy.get_param('/queue_size')
         pub = rospy.Publisher('Team', Bool, queue_size=queue_size)
+        bluetooth_state = rospy.Publisher('speaker_state', Int8, queue_size=queue_size)
 
                 # GPIO setup
         button_pin = rospy.get_param('/gpio/team_button_pin')
@@ -47,9 +50,11 @@ if __name__ == '__main__':
         if button.is_pressed :
             rospy.loginfo("True - Is Blue")
             pub.publish(True)
+            bluetooth_state.publish(2)
         else:
             rospy.loginfo("False - Is Yellow")
             pub.publish(False)
+            bluetooth_state.publish(1)
 
         button.when_pressed = on_button_press
         button.when_released = on_button_released
