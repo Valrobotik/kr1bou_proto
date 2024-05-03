@@ -50,7 +50,7 @@ def setup_maze(shape: tuple, obstacles: set) -> list:
     maze = [[None for _ in range(shape[1])] for _ in range(shape[0])]
     for i in range(shape[0]):
         for j in range(shape[1]):
-            maze[i][j] = Node((i, j), obstacle=((i, j) in obstacles))
+            maze[i][j] = Node((i, j), 0, obstacle=((i, j) in obstacles))
     rospy.loginfo(f"end_1")
     return maze
 
