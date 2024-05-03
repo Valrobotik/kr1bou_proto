@@ -199,6 +199,8 @@ class Strategy:
                 for x in range(int(self.map_boundaries[2] * self.resolution))]
         rospy.loginfo("(STRATEGY) Maze created")
         obstacles = self.get_discrete_obstacles()
+        rospy.loginfo(f"(STRATEGY) Obstacles : {obstacles}")
+        
         # Set the neighbors for each i, j. 
         for i in range(len(maze)):
             for j in range(len(maze[0])):
@@ -208,6 +210,7 @@ class Strategy:
                         if 0 <= x < len(maze) and 0 <= y < len(maze[0]) and maze[x][y]: # If any obstacle is in neighborhood,
                             cost = MAX_COST if (x, y) in obstacles else 1               # set the cost to MAX_COST
                             maze[i][j].neighbors[direction] = (cost, maze[x][y])
+        rospy.loginfo("(STRATEGY) Neighbors set")
         
         # Get the start and end nodes
         origin = maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
