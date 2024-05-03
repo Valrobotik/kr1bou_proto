@@ -22,20 +22,11 @@ def angle_to_percent(angle):
 
 
 def go_to(data: Int16):
-    global pwm, time_run
-    time_run = time.time()
-    pwm = GPIO.PWM(pwm_gpio, frequency)
+    global pwm
     pwm.start(angle_to_percent(data.data))
     rospy.loginfo(f"(SOLAR_CONTROL) {data.data}")
-
-
-def loop():
-    global time_run, pwm
-    while not rospy.is_shutdown():
-        if time.time()-time_run > 3:
-            pwm.stop()
-        rospy.sleep(0.2)
-
+    rospy.sleep(3)
+    pwm.stop()
 
 def run(data: Bool):
     global start
@@ -64,7 +55,7 @@ if __name__ == "__main__":
         pwm.start(angle_to_percent(0))
         rospy.sleep(1)
         pwm.stop()
-        loop()
+        rospy.spin()
     finally:
         if pwm is not None:
             pwm.stop()
