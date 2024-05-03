@@ -224,12 +224,13 @@ class Strategy:
     def update_camera(self, data: Float32MultiArray):
         """Updates the info from the camera [team_blue_x, team_blue_y, team_blue_theta, team_yellow_x, team_yellow_y,
         team_yellow_theta]"""
-        rospy.loginfo("(STRATEGY) Camera received")
         if self.team != -1:
             return
         blue_robot = Pose2D()
         yellow_robot = Pose2D()
         blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
+        rospy.loginfo(f"(STRATEGY) Camera - Blue robot : {blue_robot}")
+        rospy.loginfo(f"(STRATEGY) Camera - Yellow robot : {yellow_robot}")
 
         if self.team == TEAM_BLUE:  # discriminate between own robot and enemy robot
             self.camera_position, self.enemy_position = blue_robot, yellow_robot
