@@ -128,7 +128,7 @@ class Strategy:
             #rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
 
         # Remove node if the robot is already on it if the robot is already following a path
-        self.close_enough_to_waypoint(threshold=7.0)
+        self.close_enough_to_waypoint(threshold=4.0)
 
     def go_to(self, x=-1, y=-1, alpha=-1, speed=0.25, direction=0):
         """go to position (x, y, alpha)
@@ -159,7 +159,7 @@ class Strategy:
         self.need_for_compute = True
 
     def follow_path(self):
-        if self.path and len(self.path) != 0:
+        if self.path:
             #rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
             rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
