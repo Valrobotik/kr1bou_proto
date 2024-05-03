@@ -91,7 +91,8 @@ class Strategy:
                 rospy.loginfo(f"(STRATEGY) Path : {self.path}")
                 self.follow_path()
                 self.need_for_compute = False
-            self.wait_until_ready()
+            else:
+                self.wait_until_ready()
  
     def close_enough_to_waypoint(self, threshold=5.0):
         while (len(self.path) > 0 and sqrt((self.position.x - self.path[0].position[0]) ** 2 +
