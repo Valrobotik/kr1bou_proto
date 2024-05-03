@@ -32,7 +32,6 @@ if __name__ == '__main__':
 
         queue_size = rospy.get_param('/queue_size')
         pub = rospy.Publisher('Team', Bool, queue_size=queue_size)
-        finalpub = rospy.Publisher('TeamFinal', Bool, queue_size=queue_size)
 
                 # GPIO setup
         button_pin = rospy.get_param('/gpio/team_button_pin')
@@ -67,10 +66,10 @@ if __name__ == '__main__':
         
         if button.is_pressed :
             rospy.loginfo("START MATCH WITH TEAM BLUE")
-            finalpub.publish(True)
+            pub.publish(True)
         else:
             rospy.loginfo("START MATCH WITH TEAM YELLOW")
-            finalpub.publish(False)
+            pub.publish(False)
 
         rospy.spin()
     except rospy.ROSInterruptException as e:
