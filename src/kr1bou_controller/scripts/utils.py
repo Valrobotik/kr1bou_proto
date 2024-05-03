@@ -46,18 +46,22 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, resolution: int) -> 
 def setup_maze(maze: list, obstacles: set) -> list:
     """Create the maze with the obstacles"""
     # update obstacles in the maze
+    size_x = len(maze)
+    size_y = len(maze[0])
     rospy.loginfo(f"3.0.1")
-    for i in range(len(maze)):
-        for j in range(len(maze[0])):
+    for i in range(size_x):
+        for j in range(size_y):
             maze[i][j] = Node((i, j), 0, {}) if (i, j) not in obstacles else None
     rospy.loginfo(f"3.0.2")
     # update neighbors
-    for i in range(len(maze)):
-        for j in range(len(maze[0])):
+    for i in range(size_x):
+        for j in range(size_y):
             if maze[i][j] is not None:
-                for direction in DIRECTIONS - obstacles:
+                for direction in DIRECTIONS:
                     x, y = i + direction[0], j + direction[1]
-                    if 0 <= x < len(maze) and 0 <= y < len(maze[0]) and maze[x][y] is not None:
+                    if (x, y) in obstacles:
+                        continue
+                    if 0 <= x < size_x and 0 <= y < size_y and maze[x][y] is not None:
                         maze[i][j].neighbors[direction] = (1, maze[x][y])
     rospy.loginfo(f"3.0.3")
     return maze
