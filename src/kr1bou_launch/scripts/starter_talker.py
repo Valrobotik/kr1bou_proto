@@ -9,14 +9,14 @@ from gpiozero import Button
 from std_msgs.msg import Bool
 
 
-# Logic for key press and release are reversed because of the hardware architecture.
+# Logic for key press and release are reversed because of hardware architecture.
 def on_key_press():
-    rospy.loginfo("(STARTER TALKER) Key removed: True")
+    rospy.loginfo("(STARTER TALKER) Key removed")
     pub.publish(True)
 
 
 def on_key_release():
-    rospy.loginfo("(STARTER TALKER) Key inserted: False")
+    rospy.loginfo("(STARTER TALKER) Key inserted")
 
 
 if __name__ == '__main__':
