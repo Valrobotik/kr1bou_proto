@@ -80,6 +80,8 @@ class Strategy:
         while not rospy.is_shutdown():
             self.close_enough_to_waypoint()  # Remove the waypoint if the robot is close enough
             rospy.loginfo(f"(STRATEGY) Objectives : {self.objectives}")
+            if not self.objectives and not self.path:
+                break
             self.compute_path()
             rospy.loginfo(f"(STRATEGY) Path : {self.path}")
             self.follow_path()
@@ -100,17 +102,22 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
+        rospy.loginfo("1")
         obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
+        rospy.loginfo("2")
         self.maze = setup_maze(self.maze, obstacles)
-
+        rospy.loginfo("3")
         if self.path == [] and self.objectives != []:  # Get new closest objective
+            rospy.loginfo("3.1")
             self.reset_position_from_camera()
+            rospy.loginfo("4")
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
-
+        rospy.loginfo("4.1")
         # Get the start and end nodes
         origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
+        rospy.loginfo("5")
 
         rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         if is_path_valid(self.path, obstacles):  # Check if the path is still valid
