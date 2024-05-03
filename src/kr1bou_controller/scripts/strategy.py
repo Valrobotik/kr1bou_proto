@@ -40,10 +40,6 @@ class Strategy:
 
         self.custom_waiting_rate = rospy.Rate(20)
 
-        # Set up the objectives
-        self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2)) for
-                           x, y, theta in rospy.get_param('/objectives')]
-
         # -- Subscribers --
         self.position = Pose2D()  # Get the initial position of the robot
         # Get the ultrasound sensor data
@@ -64,6 +60,11 @@ class Strategy:
         # Team Color
         self.team = -1
         self.setup_subscribers()
+        
+        
+         # Set up the objectives
+        self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2)) for
+                           x, y, theta in rospy.get_param('/objectives')]
 
         # -- Publishers --
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
