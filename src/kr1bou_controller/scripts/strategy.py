@@ -207,8 +207,8 @@ class Strategy:
         """
         rospy.loginfo("(STRATEGY) IN COMPUTE PATH FUNCTION")
         # Create a matrix of nodes
-        maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[2] * self.resolution))]
-                for x in range(int(self.map_boundaries[3] * self.resolution))]
+        maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[3] * self.resolution))]
+                for x in range(int(self.map_boundaries[2] * self.resolution))]
         rospy.loginfo(f"(STRATEGY) Maze created : {len(maze)}x{len(maze[0])}")
         obstacles = self.get_discrete_obstacles()
         rospy.loginfo(f"(STRATEGY) Obstacles : {obstacles}")
