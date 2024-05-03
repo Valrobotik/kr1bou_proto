@@ -3,7 +3,7 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float64, Bool, Int16, Float32MultiArray, Byte
-from search_path import Node, a_star, clean_path
+from search_path import Node, a_star, clean_path, print_maze
 
 from math import sqrt
 import heapq
@@ -41,6 +41,9 @@ class Objective:
 
     def __str__(self):
         return f"({self.x}, {self.y}, {self.theta}, {self.cost})"
+    
+    def __repr__(self):
+        return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
 
 
 class Strategy:
@@ -103,7 +106,16 @@ class Strategy:
         # [(sensor1_reading_x, sensor1_reading_y), ..., (sensorN_reading_x, sensorN_reading_y)] #cm
         self.US_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]
         self.need_for_compute = True
-
+    
+    def update_team(self, data:Bool):
+        if self.team == -1 :
+            if data.data : 
+                self.team = TEAM_BLUE
+            else :
+                self.team = TEAM_YELLOW
+        else : 
+            rospy.logwarn("(STRATEGY) /!\\ CAN NOT CHANGE TEAM DURING THE MATCH /!\\")
+    
     def update_state(self, data: Int16):
         self.state_robot = data.data
         self.need_for_compute = True
@@ -182,8 +194,8 @@ class Strategy:
         :return: the path to follow
         """
         # Create a matrix of nodes
-        maze = [[Node((x, y), 0, {}) for y in range(self.map_boundaries[3] * self.resolution)]
-                for x in range(self.map_boundaries[2]* self.resolution)]
+        maze = [[Node((x, y), 0, {}) for y in range(int(self.map_boundaries[3] * self.resolution))]
+                for x in range(int(self.map_boundaries[2] * self.resolution))]
         obstacles = self.get_discrete_obstacles(resolution=self.resolution)
         # Set the neighbors for each i, j. If any obstacle is in neighborhood, set the cost to MAX_COST
         for i in range(len(maze)):
@@ -194,6 +206,7 @@ class Strategy:
                         if 0 <= x < len(maze) and 0 <= y < len(maze[0]) and maze[x][y]:
                             cost = MAX_COST if (x, y) in obstacles else 1
                             maze[i][j].neighbors[direction] = (cost, maze[x][y])
+        
         # Get the start and end nodes
         origin = maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
@@ -201,8 +214,12 @@ class Strategy:
             new_obj = heapq.heappop(self.objectives)  # Get new closest objective
         else :
             new_obj = self.objectives[0] # recompute path to current objective
+        rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{new_obj}")
+        print("Maze :")
+        print_maze(origin, new_obj, maze)  
+        
         # Compute the path
-        if self.still_exists():
+        if self.is_path_valid():
             rospy.loginfo("(STRATEGY) Path still exists")
             path = self.path # Keep the current path
         else:
@@ -236,7 +253,7 @@ class Strategy:
         # TODO : Get the obstacles from the camera
         return obstacles
     
-    def still_exists(self):
+    def is_path_valid(self):
         """Check if the current path is still valid, i.e no obstacles on the path"""
         if self.path == []:
             return False
