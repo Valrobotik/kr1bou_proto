@@ -114,7 +114,7 @@ class Strategy:
             self.reset_position_from_camera()
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
-        
+
         # Get the start and end nodes
         origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
         origin.orientation = self.position.theta
@@ -156,13 +156,7 @@ class Strategy:
     def wait_until_ready(self):
         while self.state_robot != READY:
             # rospy.loginfo("(STRATEGY) Waiting for the robot to be ready...")
-            if (sqrt((self.next_pos_obj[0] - self.position.x) ** 2 + (self.next_pos_obj[1] - self.position.y) ** 2) < 0.07):
-                rospy.loginfo("(STRATEGY) Robot is close enough to the node. Waiting for the next order.")
-                rospy.loginfo(f"(STRATEGY) Current dist: {sqrt((self.next_pos_obj[0] - self.position.x) ** 2 + (self.next_pos_obj[1] - self.position.y) ** 2)}")
-                rospy.loginfo(f"(STRATEGY) Threshold : 0.07")
-                break
             self.custom_waiting_rate.sleep()
-        self.need_for_compute = True
 
     def follow_path(self):
         if self.path:
@@ -184,6 +178,7 @@ class Strategy:
     def reset_position_from_camera(self):
         """Publishes the camera position to the odometry topic to correct the odometry"""
         rospy.loginfo("(STRATEGY) Debug odom correction")
+        self.wait_until_ready()
         if time.time() - self.last_time_cam < 10:
             self.got_cam_data = False
             while not self.got_cam_data:
