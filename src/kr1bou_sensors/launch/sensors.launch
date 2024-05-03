@@ -10,7 +10,7 @@
     </node>
 
     <!-- Front Camera Node -->
-    <node name="camera_front" pkg="kr1bou_sensors" type="camera_front.py" output="screen">
+    <node name="camera_back" pkg="kr1bou_sensors" type="camera_back.py" output="screen">
         <!-- Optional parameters can be added here -->
     </node>
 

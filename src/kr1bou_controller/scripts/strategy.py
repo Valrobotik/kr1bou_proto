@@ -79,7 +79,7 @@ class Strategy:
         rospy.Subscriber('state', Int16, self.update_state)
 
         self.team = -1
-        rospy.Subscriber('TeamFinal', Bool, self.update_team)
+        rospy.Subscriber('Team', Bool, self.update_team)
         
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
         self.pos_ordre_pub = rospy.Publisher('next_objectif', Pose2D, queue_size=1)
@@ -178,6 +178,15 @@ class Strategy:
             obj.cost = sqrt((obj.x - self.position.x) ** 2 + (obj.y - self.position.y) ** 2)
         heapq.heapify(self.objectives)
 
+    def update_team(self, data:Bool):
+        global start
+        if not start or self.team != -1:
+            if data.data : 
+                self.team = TEAM_BLUE
+            else :
+                self.team = TEAM_YELLOW
+        else :
+            rospy.loginfo("(STRATEGY) YOU CAN'T CHANGE TEAM AFTER STARTING THE GAME !")
 
     def compute_path(self):
         """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of

@@ -68,8 +68,8 @@ def run(data) :
 
 if __name__ == "__main__" :
     # Initialization
-    rospy.init_node("camera_front")
-    rospy.loginfo("[START] Camera front node has started.")
+    rospy.init_node("camera_back")
+    rospy.loginfo("[START] Camera back node has started.")
 
     # Load configuration parameters
     frequency = rospy.get_param("/frequency")
@@ -85,7 +85,7 @@ if __name__ == "__main__" :
 
     rate = rospy.Rate(frequency)
     rospy.Subscriber("runningPhase", Bool, run)
-    cam_front_pub = rospy.Publisher("camera_front", Int8, queue_size=queue_size)
+    cam_back_pub = rospy.Publisher("camera_back", Int8, queue_size=queue_size)
     
     while not start :
         rate.sleep()
@@ -97,8 +97,8 @@ if __name__ == "__main__" :
 
         winner = get_winner(frame, detector)
         if winner is not None :
-            cam_front_pub.publish(Int8(data=winner))
-            rospy.loginfo("(CAMERA_FRONT) winner : " + str(winner))
+            cam_back_pub.publish(Int8(data=winner))
+            rospy.loginfo("(CAMERA_BACK) winner : " + str(winner))
         rate.sleep()
 
     cam.release()
