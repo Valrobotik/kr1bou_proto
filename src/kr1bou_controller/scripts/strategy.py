@@ -231,7 +231,7 @@ class Strategy:
         else:
             rospy.loginfo("(STRATEGY) Recompute path")
             # apply resolution 
-            path = a_star(origin, maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])[1:] # Remove current position node
+            path = a_star(origin, maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)])
             path = clean_path(path)
             self.path = [Node((node.position[0] / self.resolution,node.position[1] / self.resolution), node.orientation) for node in path]
             rospy.loginfo(f"(STRATEGY) New path : {path}")
