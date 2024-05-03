@@ -37,9 +37,8 @@ class WheelController:
 
     def correct_odometry(self, data: Pose2D):
         # Format : Ox.xx;y.yy;t.ttR x and y in cm, t in rad
-        rospy.loginfo(f"(WHEEL CONTROL) O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R")
-        self.list_command_to_send.append(
-            f"O{format(data.x / 100, '.2f')};{format(data.y / 100, '.2f')};{format(data.theta, '.2f')}R")
+        rospy.loginfo(f"(WHEEL CONTROL) O{format(data.x, '.2f')};{format(data.y, '.2f')};{format(data.theta, '.2f')}R")
+        self.list_command_to_send.append(f"O{format(data.x, '.2f')};{format(data.y, '.2f')};{format(data.theta, '.2f')}R")
 
     def receive_odometry(self):
         if self.serial_port.in_waiting > 0:
