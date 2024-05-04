@@ -102,7 +102,7 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
-        rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.camera_position}")
+        rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.enemy_position}")
         self.obstacles = get_discrete_obstacles(self.lidar_data, self.us_data,
                                                 [(self.enemy_position.x, self.enemy_position.y)],
                                                 self.resolution, self.radius, self.map_boundaries)
