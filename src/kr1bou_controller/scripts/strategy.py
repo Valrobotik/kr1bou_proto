@@ -121,10 +121,10 @@ class Strategy:
 
         if self.team == TEAM_BLUE:
             solar_objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                                 x, y, theta, direction in rospy.get_param("/objectives/blue/solar")]
+                                 x, y, theta, direction in rospy.get_param("/objectives/blue/solar_panel")]
         else:
             solar_objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                                 x, y, theta, direction in rospy.get_param("/objectives/yellow/solar")]
+                                 x, y, theta, direction in rospy.get_param("/objectives/yellow/solar_panel")]
         
         for solar_objective in solar_objectives:
             # Move to start position
