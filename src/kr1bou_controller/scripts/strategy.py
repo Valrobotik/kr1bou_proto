@@ -103,7 +103,7 @@ class Strategy:
         :return: the path to follow
         """
         self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data,
-                                                    [self.enemy_position.x, self.enemy_position.y],
+                                                    [(self.enemy_position.x, self.enemy_position.y)],
                                                     self.resolution, self.radius))
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
         self.previous_obstacles = self.obstacles
