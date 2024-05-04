@@ -170,7 +170,7 @@ def save_game_state(maze: np.ndarray, path: list, obstacles: set, resolution: in
         ax.add_patch(plt.Rectangle((node.position[1] * resolution, node.position[0] * resolution), 1, 1, color='blue'))
     for obstacle in obstacles:
         ax.add_patch(plt.Rectangle((obstacle[1], obstacle[0]), 1, 1, color='red'))
+    plt.savefig(filename)
     if show:
         plt.show()
-    plt.savefig(filename)
-    plt.close(fig)
+    plt.close()

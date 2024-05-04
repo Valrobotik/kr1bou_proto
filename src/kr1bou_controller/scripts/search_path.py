@@ -228,7 +228,7 @@ def test_n(n: int = 1000, verbose: bool = False):
 
 def debug():
     # load path, obstacles, resolution, boundaries from pickle
-    with open("/home/kribou/Downloads/game_states.pkl", "rb") as f:
+    with open("/home/kribou/Downloads/all_game_states.pkl", "rb") as f:
         game_states = pkl.load(f)
     count = 0
     for origin, end, path, obstacles, resolution, boundaries in game_states:
@@ -255,7 +255,7 @@ def debug():
         path = cleaned_path if path else []
         for node in path:
             node.position = (node.position[0] / resolution, node.position[1] / resolution)
-        save_game_state(maze, path, obstacles, resolution, boundaries, f"maze{count}.png", show=True)
+        save_game_state(maze, path, obstacles, resolution, boundaries, f"archive/maze{count}.png", show=True)
 
 
 if __name__ == '__main__':
