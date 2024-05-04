@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-import rospy
+import time
+from math import sqrt
+
 from geometry_msgs.msg import Pose2D, PoseArray
 from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 
-import time
-from math import sqrt, pi
-
-from search_path import Node, a_star, clean_path
+from search_path import a_star, clean_path
 from utils import *
 
 READY_LINEAR = 0
@@ -33,15 +32,13 @@ class Strategy:
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
+        self.radius = rospy.get_param('/radius')  # Radius of the robot in the resolution/unit given.
         self.path = []  # List of waypoints to follow
         self.obstacles = set()  # List of obstacles
         self.previous_obstacles = set()  # Previous obstacles
-        self.maze = setup_maze((int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), self.obstacles)
-        print(self.maze.shape)
-        for i in range(self.maze.shape[0]):
-            for j in range(self.maze.shape[1]):
-                if self.maze[i][j] is None:
-                    print(i, j)
+        self.maze = np.zeros(
+            (int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), dtype=Node)
+        self.maze = setup_maze(self.maze, self.obstacles)
         self.custom_waiting_rate = rospy.Rate(20)
 
         # -- Subscribers --
@@ -88,7 +85,7 @@ class Strategy:
             self.compute_path()
             # rospy.loginfo(f"(STRATEGY) Path : {self.path}")
             self.follow_path()
- 
+
     def close_enough_to_waypoint(self, threshold=5.0):
         while (len(self.path) > 0 and sqrt((self.position.x - self.path[0].position[0]) ** 2 +
                                            (self.position.y - self.path[0].position[1]) ** 2)
@@ -105,10 +102,14 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
-        self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
+        rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nUS: {self.us_data}, \nC: {self.camera_position}")
+        self.obstacles = get_discrete_obstacles(self.lidar_data, self.us_data,
+                                                    [(self.enemy_position.x, self.enemy_position.y)],
+                                                    self.resolution, self.radius, self.map_boundaries)
+        rospy.loginfo(f"Obstacles : {self.obstacles}")
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
         self.previous_obstacles = self.obstacles
-        
+
         if self.path == [] and self.objectives != []:  # Get new closest objective
             self.reset_position_from_camera()
             self.current_objective = self.objectives[0]
@@ -125,14 +126,14 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
             # rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
-            path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)]
-            [int(self.current_objective.y * self.resolution)])
+            path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
+                int(self.current_objective.y * self.resolution)])
             path = clean_path(path)
             self.path = [
                 Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for
                 node in path]
-            #rospy.loginfo(f"(STRATEGY) Path computed in {time.time() - onset} seconds")
-            #rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
+            # rospy.loginfo(f"(STRATEGY) Path computed in {time.time() - onset} seconds")
+            # rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
 
         # Remove node if the robot is already on it if the robot is already following a path
         self.close_enough_to_waypoint(threshold=4.0)
@@ -161,7 +162,7 @@ class Strategy:
 
     def follow_path(self):
         if self.path:
-            #rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
+            # rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
             rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
         else:
@@ -189,9 +190,11 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Odometry corrected")
         else:
             rospy.logwarn("(STRATEGY) No connexion with camera")
+            return False
         self.need_rst_odom = False
         self.got_cam_data = False
         self.position = self.camera_position
+        return True
 
     def update_bumpers(self, data: Byte):
         """Update the bumper states by reading the Byte message from the bumper topic."""
@@ -208,8 +211,9 @@ class Strategy:
         # rospy.loginfo(f"(STRATEGY) Position received : {self.position}")
         self.need_for_compute = True
 
-    def update_lidar_data(self, data):
-        self.lidar_data = data
+    def update_lidar_data(self, data: PoseArray):
+        raw = data
+        self.lidar_data = [(raw.poses[i].position.x, raw.poses[i].position.y) for i in range(len(raw.poses))]
         self.need_for_compute = True
 
     def update_us_data(self, data):
@@ -233,8 +237,8 @@ class Strategy:
         yellow_robot.x /= 100
         yellow_robot.y /= 100
 
-        #rospy.loginfo(f"(STRATEGY) Camera - Blue robot : {blue_robot}")
-        #rospy.loginfo(f"(STRATEGY) Camera - Yellow robot : {yellow_robot}")
+        # rospy.loginfo(f"(STRATEGY) Camera - Blue robot : {blue_robot}")
+        # rospy.loginfo(f"(STRATEGY) Camera - Yellow robot : {yellow_robot}")
 
         if self.team == TEAM_BLUE:  # discriminate between own robot and enemy robot
             self.camera_position, self.enemy_position = blue_robot, yellow_robot
@@ -264,7 +268,7 @@ class Strategy:
         self.latest_solar_winner = winner.data
 
     def stop(self):
-        self.go_to(self.position.x, self.position.y) # Stop the robot
+        self.go_to(self.position.x, self.position.y)  # Stop the robot
 
     def back_until_bumper(self, speed=0.15, axis='y+', direction=BACKWARD):
         while not self.bumper_1 and not self.bumper_2 and not self.bumper_3 and not self.bumper_4:
@@ -278,7 +282,7 @@ class Strategy:
                 self.go_to(self.position.x - 3, self.position.y, speed=speed, direction=direction)
         self.stop()
 
-    def move_relative(self, distance, speed=0.20, axis ='y-', direction=BEST_DIRECTION):
+    def move_relative(self, distance, speed=0.20, axis='y-', direction=BEST_DIRECTION):
         if axis == 'y-':
             self.go_to(self.position.x, self.position.y - distance, speed=speed, direction=direction)
         elif axis == 'y+':
@@ -346,7 +350,13 @@ if __name__ == "__main__":
         while not start:
             rate.sleep()
 
-        strategy_manager.reset_position_from_camera()
+        if not strategy_manager.reset_position_from_camera():
+            rospy.logwarn("Failed to reset the position from the camera. Applying default position.")
+            if strategy_manager.team == TEAM_BLUE:
+                strategy_manager.position = Pose2D(.2, 1., 0.0)
+            else:
+                strategy_manager.position = Pose2D(2.8, 1., pi)
+
         rospy.sleep(0.1)
         strategy_manager.run()
     finally:

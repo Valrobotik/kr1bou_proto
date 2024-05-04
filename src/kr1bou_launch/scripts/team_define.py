@@ -16,11 +16,13 @@ def speaker_state_callback(data: Bool):
 def on_button_press():
     rospy.loginfo("Team selected to blue")
     pub.publish(True)
+    # Sending "Blue" ID to the speaker
     bluetooth_choice.publish(2)
 
 def on_button_released():
     rospy.loginfo("Team selected to yellow")
     pub.publish(False)
+    # Sending "Yellow" ID to the speaker
     bluetooth_choice.publish(1)
 
 def run(data: Bool):
@@ -42,7 +44,7 @@ if __name__ == '__main__':
         bluetooth_choice = rospy.Publisher('speaker_choice', Int8, queue_size=queue_size)
         rospy.Subscriber('speaker_state', Bool, speaker_state_callback)
 
-                # GPIO setup
+        # GPIO setup
         button_pin = rospy.get_param('/gpio/team_button_pin')
         button = Button(int(button_pin))  # The emergency button
 
@@ -51,7 +53,7 @@ if __name__ == '__main__':
         # Wait for the runningPhase True signal
         rospy.Subscriber('runningPhase', Bool, run)
 
-        rospy.sleep(2)
+        rospy.sleep(1)
 
         rospy.loginfo("Waiting for speaker node to be ready")
 
@@ -63,17 +65,18 @@ if __name__ == '__main__':
         if button.is_pressed :
             rospy.loginfo("True - Is Blue")
             pub.publish(True)
+            # Sending "Blue" ID to the speaker
             bluetooth_choice.publish(2)
         else:
             rospy.loginfo("False - Is Yellow")
             pub.publish(False)
+            # Sending "Yellow" ID to the speaker
             bluetooth_choice.publish(1)
 
         button.when_pressed = on_button_press
         button.when_released = on_button_released
 
         # Spin to keep the script for exiting
-
 
         rospy.Subscriber('runningPhase', Bool, run)
         rate = rospy.Rate(rospy.get_param('/frequency'))
