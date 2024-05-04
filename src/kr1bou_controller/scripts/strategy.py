@@ -125,10 +125,11 @@ class Strategy:
         if is_path_valid(self.path, self.obstacles):  # Check if the path is still valid
             # rospy.loginfo("(STRATEGY) Path still exists")
             pass
-        else:  # Compute a new path
-            # rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
+        else:  # Coobstaclmpute a new path
+            rospy.loginfo(f"(STRATEGY) NO PATH VALIDE Computing path from {origin.position} to {self.current_objective}")
             path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
                 int(self.current_objective.y * self.resolution)])
+            rospy.loginfo(f"(STRATEGY) new Path computed : {path}")
             path = clean_path(path)
             self.path = [
                 Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for

@@ -1,6 +1,16 @@
-import serial
-import time
+import matplotlib.pyplot as plt
 
-ser = serial.Serial("/dev/ttyUSB2", 115200)
-time.sleep(1)
-ser.write(b'INI\r')
+#[(0.23,1.0), (0.71, 0.5), (0.72, 0.5),(2.25, 0.5)]
+#[(1.770198558613197, 0.8311971362523631), (1.93743986253925, 0.061376336938198675)]
+1.5601833712991808, 0.6727864666855069
+
+plt.plot([0.23, 0.74, 0.75, 2.25], [1.0, 0.5, 0.5, 0.5], 'ro')
+plt.plot([0.23, 0.74, 0.75, 2.25], [1.0, 0.5, 0.5, 0.5], 'r-')
+plt.plot([1.5601833712991808, 1.63], [0.6727864666855069, 0.64], 'bo')
+circle = plt.Circle((1.5601833712991808, 0.6727864666855069), 0.5, color='b', fill=False)
+plt.gca().add_artist(circle)
+circle = plt.Circle((1.63, 0.64), 0.5, color='b', fill=False)
+plt.gca().add_artist(circle)
+plt.xlim(0, 3)
+plt.ylim(0, 2) 
+plt.show()
