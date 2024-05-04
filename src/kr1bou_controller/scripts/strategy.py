@@ -108,7 +108,7 @@ class Strategy:
                                  x, y, theta, direction in rospy.get_param("/objectives/yellow/plant")]
         self.current_objective = self.objectives[0]
 
-        while len(self.path > 0) and max_time > time.time() - self.start_time:
+        while (self.path or self.objectives) and max_time > time.time() - self.start_time:
             self.close_enough_to_waypoint()
             self.compute_path()
             self.follow_path(self.current_objective.direction)
