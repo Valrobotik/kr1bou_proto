@@ -23,9 +23,9 @@ if __name__ == '__main__':
         x = []
         y = []
 
-        x_robot = 0.5
-        y_robot = 0.5
-        theta_robot = 0.0
+        x_robot = 1.50
+        y_robot = 0.95
+        theta_robot = 5.82
 
         fig = plt.figure()
         plt.ion()  # Active le mode interactif
