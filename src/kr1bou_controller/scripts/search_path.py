@@ -260,6 +260,7 @@ def debug():
             node.position = (node.position[0] / resolution, node.position[1] / resolution)
         save_game_state(maze, path, obstacles, resolution, boundaries, f"maze{count}.png", show=True)
 
+
 if __name__ == '__main__':
     # test_n(1, True)
     # test_n(1000)
