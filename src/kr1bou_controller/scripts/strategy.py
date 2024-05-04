@@ -90,13 +90,29 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        #self.plant_phase()
+        # self.debug_phase()
+        # self.plant_phase()
         self.solar_phase()
-        #self.home_phase()
+        # self.home_phase()
 
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
     # -- Phases --
+    def debug_phase(self):
+        rospy.loginfo("(STRATEGY) Starting debug phase")
+        max_time = rospy.get_param("/phases/debug")
+        if self.team == TEAM_BLUE:
+            self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+                                 x, y, theta, direction in rospy.get_param("/objectives/blue/debug")]
+        else:
+            self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+                                 x, y, theta, direction in rospy.get_param("/objectives/yellow/debug")]
+        self.current_objective = self.objectives[0]
+        while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+            self.compute_path()
+            self.follow_path()
+        rospy.loginfo("(STRATEGY) Debug phase is over")
+
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
         max_time = rospy.get_param("/phases/plant")
