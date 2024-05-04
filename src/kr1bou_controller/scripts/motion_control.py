@@ -244,6 +244,10 @@ def set_max_speed(data: Float64):
     WHEEL_BACKWARD_SPEED = data.data
     WHEEL_TURN_SPEED_FORWARD = data.data+0.05
     WHEEL_TURN_SPEED_BACKWARD = data.data+0.05
+    if WHEEL_TURN_SPEED_BACKWARD > 0.5:
+        WHEEL_TURN_SPEED_BACKWARD = 0.5
+    if WHEEL_TURN_SPEED_FORWARD > 0.5:
+        WHEEL_TURN_SPEED_FORWARD = 0.5
     # rospy.loginfo(f"(MOTION CONTROL) New speed set to {data.data}")
 
 
