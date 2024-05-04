@@ -263,6 +263,33 @@ class Strategy:
     def update_solar_winner(self, winner: Int8):
         self.latest_solar_winner = winner.data
 
+    def stop(self):
+        self.go_to(self.position.x, self.position.y) # Stop the robot
+
+    def back_until_bumper(self, speed=0.15, axis='y+', direction=BACKWARD):
+        while not self.bumper_1 and not self.bumper_2 and not self.bumper_3 and not self.bumper_4:
+            if axis == 'y+':
+                self.go_to(self.position.x, self.position.y + 2, speed=speed, direction=direction)
+            elif axis == 'y-':
+                self.go_to(self.position.x, self.position.y - 2, speed=speed, direction=direction)
+            elif axis == 'x+':
+                self.go_to(self.position.x + 3, self.position.y, speed=speed, direction=direction)
+            elif axis == 'x-':
+                self.go_to(self.position.x - 3, self.position.y, speed=speed, direction=direction)
+        self.stop()
+
+    def move_relative(self, distance, speed=0.20, axis ='y-', direction=BEST_DIRECTION):
+        if axis == 'y-':
+            self.go_to(self.position.x, self.position.y - distance, speed=speed, direction=direction)
+        elif axis == 'y+':
+            self.go_to(self.position.x, self.position.y + distance, speed=speed, direction=direction)
+        elif axis == 'x-':
+            self.go_to(self.position.x - distance, self.position.y, speed=speed, direction=direction)
+        elif axis == 'x+':
+            self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction)
+
+    def solar_panel(self, id = 1):
+        pass # TODO
 
 def run(data):
     global start
