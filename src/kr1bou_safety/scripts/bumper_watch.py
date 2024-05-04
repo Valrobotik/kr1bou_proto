@@ -45,7 +45,7 @@ def check_bumpers(buttons: List[Button]):
     for i, button in enumerate(buttons):
         if button.is_active:
             state.data += 2**i
-    return state
+    return 15-state
 
 def run(data: Bool):
     global start
