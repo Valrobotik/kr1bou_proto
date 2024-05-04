@@ -203,13 +203,13 @@ def test_n(n: int = 1000, verbose: bool = False):
 
 def debug():
     # load path, obstacles, resolution, boundaries from pickle
-    with open("/home/kribou/Downloads/all_game_states.pkl", "rb") as f:
+    with open("/home/valrob/Desktop/all_game_states.pkl", "rb") as f:
         game_states = pkl.load(f)
     count = 0
     for origin, end, path, obstacles, resolution, boundaries in game_states[1:]:
         count += 1
         # replace obstacles by a square of radius 40 around 140, 50
-        obstacles = set([(i, j) for i in range(100, 180) for j in range(10, 90)])
+        #obstacles = set([(i, j) for i in range(100, 180) for j in range(10, 90)])
         maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=Node), obstacles)
         print(maze.shape)
         print(path)
