@@ -71,12 +71,16 @@ class Kr1bou:
 
         self.publisher_state = rospy.Publisher('state', Int16, queue_size=1)
 
+        self.solar_mode = False
+
         rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, set_max_speed)
         rospy.Subscriber('stop', Bool, self.stop)
         rospy.Subscriber('direction', Int16, self.update_moving_direction)
         rospy.Subscriber('Emergency_stop', Int16, self.stop_move)
+        rospy.Subscriber('solar_mode', Bool, self.update_solar_mode)
+
 
     def stop_move(self, data: Int16):
         self.emergency_current = data.data
@@ -101,7 +105,7 @@ class Kr1bou:
         if (data.x > 0 or data.y > 0) and self.emergency_current == EMERGENCY_FRONT:
             data.x = 0
             data.y = 0
-        elif (data.x < 0 or data.y < 0) and self.emergency_current == EMERGENCY_BACK:
+        elif ((data.x < 0 or data.y < 0) and not self.solar_mode) and self.emergency_current == EMERGENCY_BACK:
             data.x = 0
             data.y = 0
         elif self.emergency_current == EMERGENCY_BOTH:
@@ -119,6 +123,9 @@ class Kr1bou:
             w = 0
         self.vitesse_gauche = w
         self.vitesse_droite = -w
+
+    def update_solar_mode(self, data: Bool):
+        self.solar_mode = data.data
 
     def update_pose(self, data: Pose2D):
         self.x = data.x

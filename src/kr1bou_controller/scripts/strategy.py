@@ -84,6 +84,7 @@ class Strategy:
         self.direction_pub = rospy.Publisher('direction', Int16, queue_size=1)
         self.speed_ctrl_pub = rospy.Publisher('max_speed', Float64, queue_size=1)
         self.publisher_correct_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
+        self.solar_mode_pub = rospy.Publisher('solar_mode', Bool, queue_size=1)
 
     def run(self):
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
@@ -194,14 +195,15 @@ class Strategy:
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
                 need_twice = True
 
+            self.solar_mode_pub.publish(True)
             rospy.sleep(.1)
-            
             # Bump
             self.back_until_bumper()
 
             # Forward
             self.go_to(self.position.x, self.position.y - .03, 3*pi/2, .15, FORWARD)
-
+            self.wait_until_ready()
+            self.solar_mode_pub.publish(False)
             # Rotate solar panel
             self.solar_pub.publish(Int16(90))
             rospy.sleep(.1)
