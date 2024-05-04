@@ -9,6 +9,8 @@ from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 from search_path import a_star, clean_path
 from utils import *
 
+import pickle
+
 READY_LINEAR = 0
 READY = 1
 IN_PROGRESS = 2
@@ -128,6 +130,9 @@ class Strategy:
             pass
         else:  # Compute a new path
             # rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
+            # save variables using pickle
+            with open("variables.pkl", "wb") as f:
+                pickle.dump([self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries], f)
             self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
                 int(self.current_objective.y * self.resolution)])
             self.path = clean_path(self.raw_path)
