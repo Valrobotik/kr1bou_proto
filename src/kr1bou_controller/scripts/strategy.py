@@ -129,12 +129,13 @@ class Strategy:
             # rospy.loginfo("(STRATEGY) Path still exists")
             pass
         else:  # Compute a new path
-            # rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
+            rospy.loginfo(f"(STRATEGY) unvalid path Computing path from {origin.position} to {self.current_objective}")
             # save variables using pickle
             with open("variables.pkl", "wb") as f:
                 pickle.dump([self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries], f)
             self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
                 int(self.current_objective.y * self.resolution)])
+            rospy.loginfo(f"(STRATEGY) new Raw path computed : {self.raw_path}")
             self.path = clean_path(self.raw_path)
             self.path = [
                 Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for
