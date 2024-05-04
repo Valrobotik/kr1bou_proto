@@ -62,7 +62,7 @@ if __name__ == '__main__':
         x = []
         y = []
         for i in range(0, len(dictionary[0])):
-            if dictionary[1][i] > 90:
+            if dictionary[1][i] > 150:
                 x_temp = (dictionary[1][i] / 1000 * math.sin(math.radians(dictionary[0][i]) - theta_robot + math.pi / 2)
                           + x_robot)
                 y_temp = (dictionary[1][i] / 1000 * math.cos(math.radians(dictionary[0][i]) - theta_robot + math.pi / 2)
@@ -76,17 +76,20 @@ if __name__ == '__main__':
         # Appliquer DBSCAN sur les points. eps est la distance maximale entre deux échantillons pour qu'ils soient
         # considérés comme dans le même voisinage.
         try:
-            db = DBSCAN(eps=0.06, min_samples=3).fit(points)
+            if len(points) > 0:
+                db = DBSCAN(eps=0.06, min_samples=3).fit(points)
 
-            labels = db.labels_
+                labels = db.labels_
 
-            # Pour chaque groupe, calculer le point moyen et l'ajouter à la liste des groupes.
-            groups = []
-            for group_id in set(labels):
-                if group_id != -1:  # Ignorer le bruit
-                    group_points = points[labels == group_id]
-                    group_mean = group_points.mean(axis=0)
-                    groups.append(group_mean)
+                # Pour chaque groupe, calculer le point moyen et l'ajouter à la liste des groupes.
+                groups = []
+                for group_id in set(labels):
+                    if group_id != -1:  # Ignorer le bruit
+                        group_points = points[labels == group_id]
+                        group_mean = group_points.mean(axis=0)
+                        groups.append(group_mean)
+            else:
+                groups = []
         except Exception as e:
             print(e)
             groups = []

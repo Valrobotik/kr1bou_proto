@@ -17,7 +17,7 @@ KAngle = 0.1
 
 ANGLE_PRECISION = 0.05
 DISTANCE_PRECISION = 0.05
-KP_R = -0.1
+KP_R = -0.18
 
 GOTO_DELTA = -0.02
 POSITION_SHIFT = 0.0
@@ -71,12 +71,16 @@ class Kr1bou:
 
         self.publisher_state = rospy.Publisher('state', Int16, queue_size=1)
 
+        self.solar_mode = False
+
         rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, set_max_speed)
         rospy.Subscriber('stop', Bool, self.stop)
         rospy.Subscriber('direction', Int16, self.update_moving_direction)
         rospy.Subscriber('Emergency_stop', Int16, self.stop_move)
+        rospy.Subscriber('solar_mode', Bool, self.update_solar_mode)
+
 
     def stop_move(self, data: Int16):
         self.emergency_current = data.data
@@ -101,7 +105,7 @@ class Kr1bou:
         if (data.x > 0 or data.y > 0) and self.emergency_current == EMERGENCY_FRONT:
             data.x = 0
             data.y = 0
-        elif (data.x < 0 or data.y < 0) and self.emergency_current == EMERGENCY_BACK:
+        elif ((data.x < 0 or data.y < 0) and not self.solar_mode) and self.emergency_current == EMERGENCY_BACK:
             data.x = 0
             data.y = 0
         elif self.emergency_current == EMERGENCY_BOTH:
@@ -120,6 +124,9 @@ class Kr1bou:
         self.vitesse_gauche = w
         self.vitesse_droite = -w
 
+    def update_solar_mode(self, data: Bool):
+        self.solar_mode = data.data
+
     def update_pose(self, data: Pose2D):
         self.x = data.x
         self.y = data.y
@@ -128,6 +135,7 @@ class Kr1bou:
     def update_speed(self):
         x2 = self.objectif_x
         y2 = self.objectif_y
+        rospy.loginfo(f"(MOTION CONTROL) from : {self.x} ; {self.y} to : {x2} ; {y2}")
 
         # rospy.loginfo(f"(MOTION CONTROL) going to : {x2} ; {y2}")
         force_forward = self.force_forward
@@ -158,7 +166,10 @@ class Kr1bou:
         dy_base = y2 - pos[1]
 
         dist_to_base = sqrt(dx_base * dx_base + dy_base * dy_base)
-
+        rospy.loginfo(f"(MOTION CONTROL) 2 from : {self.x} ; {self.y} to : {x2} ; {y2}")
+        rospy.loginfo(f"(MOTION CONTROL) dx_base : {dx_base} / dy_base : {dy_base}")
+        rospy.loginfo(f"(MOTION CONTROL) dist_to_base : {dist_to_base}")
+        
         m_goto_base_reached = False
         if dist_to_base < GOTO_BASE_DISTANCE_THRESHOLD:
             m_goto_base_reached = True

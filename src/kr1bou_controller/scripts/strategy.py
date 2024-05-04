@@ -84,15 +84,16 @@ class Strategy:
         self.direction_pub = rospy.Publisher('direction', Int16, queue_size=1)
         self.speed_ctrl_pub = rospy.Publisher('max_speed', Float64, queue_size=1)
         self.publisher_correct_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
+        self.solar_mode_pub = rospy.Publisher('solar_mode', Bool, queue_size=1)
 
     def run(self):
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        self.debug_phase()
+        # self.debug_phase()
         # self.plant_phase()
-        # self.solar_phase()
+        self.solar_phase()
         # self.home_phase()
 
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
@@ -136,10 +137,10 @@ class Strategy:
         max_time = rospy.get_param("/phases/solar_panel")
 
         if self.team == TEAM_BLUE:
-            solar_objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+            solar_objectives = [Objective(x, y-0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y-0.1) ** 2), direction) for
                                  x, y, theta, direction in rospy.get_param("/objectives/blue/solar_panel")]
         else:
-            solar_objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+            solar_objectives = [Objective(x, y-0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y-0.1) ** 2), direction) for
                                  x, y, theta, direction in rospy.get_param("/objectives/yellow/solar_panel")]
         
         for solar_objective in solar_objectives:
@@ -149,19 +150,44 @@ class Strategy:
             need_twice = False
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
+
+            self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
             
-            while (self.path or self.objectives) and max_time > time.time() - self.start_time:
-                self.close_enough_to_waypoint()
-                self.compute_path()
-                self.follow_path(self.current_objective.direction)
+            # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+            #     self.close_enough_to_waypoint()
+            #     self.compute_path()
+            #     self.follow_path(self.current_objective.direction)
+            
+            self.wait_until_ready()
+            rospy.sleep(0.2)
+            self.reset_position_from_camera()
+
+            solar_objective.y+=0.1
+            solar_objective.cost = sqrt((solar_objective.x - self.position.x) ** 2 + (solar_objective.y - self.position.y) ** 2)
+            self.objectives = [solar_objective]
+            self.current_objective = self.objectives[0]
+
+            rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
+
+            self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
+
+            self.wait_until_ready()
+            # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+            #     self.close_enough_to_waypoint()
+            #     self.compute_path()
+            #     self.follow_path(self.current_objective.direction)
+
+            rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
             # Rotate self
             self.go_to(self.position.x, self.position.y, 3*pi/2, .25, BEST_DIRECTION)
 
+            rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             # Get arm in the right position
             while self.latest_solar_winner == SOLAR_DEFAULT:
                 rospy.sleep(0.1)
             
+            rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_NEUTRAL or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BOTH:
                 self.solar_pub.publish(Int16(180))
             
@@ -171,14 +197,17 @@ class Strategy:
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
                 need_twice = True
 
+            rospy.loginfo(f"(STRATEGY) Solar panel mode set")
+            self.solar_mode_pub.publish(True)
             rospy.sleep(.1)
-            
             # Bump
+            rospy.loginfo(f"(STRATEGY) back until bumper")
             self.back_until_bumper()
 
             # Forward
             self.go_to(self.position.x, self.position.y - .03, 3*pi/2, .15, FORWARD)
-
+            self.wait_until_ready()
+            self.solar_mode_pub.publish(False)
             # Rotate solar panel
             self.solar_pub.publish(Int16(90))
             rospy.sleep(.1)
@@ -284,6 +313,7 @@ class Strategy:
         self.direction_pub.publish(direction_data)
         self.speed_ctrl_pub.publish(speed_data)
         self.pos_ordre_pub.publish(obj)
+        self.state_robot = IN_PROGRESS
 
     def wait_until_ready(self):
         while self.state_robot != READY:
@@ -333,6 +363,8 @@ class Strategy:
                 setattr(self, f'bumper_{i + 1}', True)
             else:
                 setattr(self, f'bumper_{i + 1}', False)
+
+            rospy.loginfo(f"(STRATEGY) Bumper {i + 1} : {getattr(self, f'bumper_{i + 1}')}")
         self.need_for_compute = True
 
     def update_position(self, data):
