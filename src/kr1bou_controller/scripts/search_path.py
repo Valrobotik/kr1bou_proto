@@ -9,6 +9,7 @@ import time
 from math import atan2, pi
 from utils import Node, save_game_state, setup_maze, print_maze
 import numpy as np
+import pickle as pkl
 
 gamma = 1  # 1 for now (180/pi later)
 
@@ -225,6 +226,39 @@ def test_n(n: int = 1000, verbose: bool = False):
     print("Average time:", sum(times) / n, "seconds")
 
 
+def debug():
+    # load path, obstacles, resolution, boundaries from pickle
+    with open("/home/kribou/Downloads/variables.pkl", "rb") as f:
+        path, obstacles, resolution, boundaries = pkl.load(f)
+    maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=Node), obstacles)
+    start = path[0]
+    end = path[-1]
+    print("Start and End nodes:", start, end)
+    onset = time.perf_counter()
+    path = a_star(start, end)
+    offset = time.perf_counter()
+    print("Path:")
+    if path:
+        for node in path:
+            print(node, end=" ")
+        cleaned_path = clean_path(path)
+        for node in cleaned_path:
+            print(node, end=" ")
+        print()
+    else:
+        print("No path found")
+    print()
+    print("Start:", start)
+    print("End:", end)
+    print("Execution time:", offset - onset, "seconds")
+    print()
+    path = cleaned_path if path else []
+    for node in path:
+        node.position = (node.position[0] / resolution, node.position[1] / resolution)
+    save_game_state(maze, path, obstacles, resolution, boundaries, "maze.png", show=True)
+
+
 if __name__ == '__main__':
-    test_n(1, True)
+    # test_n(1, True)
     # test_n(1000)
+    debug()

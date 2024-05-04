@@ -30,6 +30,7 @@ class Strategy:
         # -- Robot related --
         self.need_for_compute = True  # Whether to ask for a new path
         self.next_pos_obj = [0, 0, 0]  # Next position to go to / Intermediate objective
+        self.game_states = []
 
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
@@ -131,8 +132,9 @@ class Strategy:
         else:  # Compute a new path
             rospy.loginfo(f"(STRATEGY) unvalid path Computing path from {origin.position} to {self.current_objective}")
             # save variables using pickle
+            self.game_states.append([self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries])
             with open("variables.pkl", "wb") as f:
-                pickle.dump([self.path, self.obstacles, self.resolution, self.map_boundaries], f)
+                pickle.dump(self.game_states, f)
             self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
                 int(self.current_objective.y * self.resolution)])
             rospy.loginfo(f"(STRATEGY) new Raw path computed : {self.raw_path}")
