@@ -101,7 +101,7 @@ def read_and_publish_sensor_data():
                 # rospy.loginfo(f" US DATA : {[item for sublist in clamped_readings for item in sublist]}")
             except ValueError:
                 rospy.logwarn(raw_data)
-                rospy.logwarn('{rospy.get_name()} received malformed data from US Arduino.')
+                rospy.logwarn(f'{rospy.get_name()} received malformed data from US Arduino.')
         rate.sleep()
 
 
