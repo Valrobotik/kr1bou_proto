@@ -27,20 +27,20 @@ class Objective:
         return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
 
 
-def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int) -> set:
+def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int, map_boundaries: list) -> set:
     """Get the obstacles from the ultrasound sensors (etc.), the position of the adversary and discretize them
     """
     obstacles = set()
     # Get the obstacles from the ultrasound sensors (values in meters)
-    # obstacles = extend_obstacles(us_data, obstacles, radius, resolution)
+    # obstacles = extend_obstacles(us_data, obstacles, radius, resolution, map_boundaries)
     # Get the obstacles from the lidar
-    obstacles = extend_obstacles(lidar_data, obstacles, radius, resolution)
+    obstacles = extend_obstacles(lidar_data, obstacles, radius, resolution, map_boundaries)
     # Get the obstacles from the camera
-    obstacles = extend_obstacles(camera_data, obstacles, radius, resolution)
+    obstacles = extend_obstacles(camera_data, obstacles, radius, resolution, map_boundaries)
     return obstacles
 
 
-def extend_obstacles(data: list, obstacles: set, radius: int, resolution: int) -> set:
+def extend_obstacles(data: list, obstacles: set, radius: int, resolution: int, map_boundaries: list) -> set:
     for i, (x, y) in enumerate(data):
         if (x, y) not in [(0, 0), (-1, -1)]:
             # Meters to unit
@@ -48,8 +48,9 @@ def extend_obstacles(data: list, obstacles: set, radius: int, resolution: int) -
             # Extend to a circle
             for j in range(-radius, radius + 1):
                 for k in range(-radius, radius + 1):
-                    if j ** 2 + k ** 2 <= radius ** 2:  # Inside the circle
-                        obstacles.add((x_ + j, y_ + k))
+                    if x_ + j < 0 or x_ + j >= map_boundaries[2] or y_ + k < 0 or y_ + k >= map_boundaries[3]:
+                        if j ** 2 + k ** 2 <= radius ** 2:  # Inside the circle
+                            obstacles.add((x_ + j, y_ + k))
     return obstacles
 
 
