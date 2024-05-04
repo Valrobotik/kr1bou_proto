@@ -171,7 +171,6 @@ class Strategy:
             self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
 
             self.wait_until_ready()
-
             # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
             #     self.close_enough_to_waypoint()
             #     self.compute_path()
