@@ -149,11 +149,13 @@ class Strategy:
             need_twice = False
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
+
+            self.go_to(solar_objective.x, solar_objective.y, 3*pi/2, .25, BACKWARD)
             
-            while (self.path or self.objectives) and max_time > time.time() - self.start_time:
-                self.close_enough_to_waypoint()
-                self.compute_path()
-                self.follow_path(self.current_objective.direction)
+            # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+            #     self.close_enough_to_waypoint()
+            #     self.compute_path()
+            #     self.follow_path(self.current_objective.direction)
             
             self.wait_until_ready()
             rospy.sleep(0.2)
@@ -166,10 +168,14 @@ class Strategy:
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
 
-            while (self.path or self.objectives) and max_time > time.time() - self.start_time:
-                self.close_enough_to_waypoint()
-                self.compute_path()
-                self.follow_path(self.current_objective.direction)
+            self.go_to(solar_objective.x, solar_objective.y, 3*pi/2, .25, BACKWARD)
+
+            self.wait_until_ready()
+
+            # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+            #     self.close_enough_to_waypoint()
+            #     self.compute_path()
+            #     self.follow_path(self.current_objective.direction)
 
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
