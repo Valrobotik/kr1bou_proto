@@ -190,9 +190,11 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Odometry corrected")
         else:
             rospy.logwarn("(STRATEGY) No connexion with camera")
+            return False
         self.need_rst_odom = False
         self.got_cam_data = False
         self.position = self.camera_position
+        return True
 
     def update_bumpers(self, data: Byte):
         """Update the bumper states by reading the Byte message from the bumper topic."""
@@ -313,7 +315,13 @@ if __name__ == "__main__":
         while not start:
             rate.sleep()
 
-        strategy_manager.reset_position_from_camera()
+        if not strategy_manager.reset_position_from_camera():
+            rospy.logwarn("Failed to reset the position from the camera. Applying default position.")
+            if strategy_manager.team == TEAM_BLUE:
+                strategy_manager.position = Pose2D(.2, 1., 0.0)
+            else:
+                strategy_manager.position = Pose2D(2.8, 1., pi)
+
         rospy.sleep(0.1)
         strategy_manager.run()
     finally:
