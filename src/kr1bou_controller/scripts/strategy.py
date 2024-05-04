@@ -289,8 +289,9 @@ class Strategy:
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction)
         self.wait_until_ready()
 
-    def solar_panel(self, id = 1):
-        pass # TODO
+    def solar_panel(self, id = 0):
+        objective_x, objective_y = rospy.get_param('/solar_panel')[id]
+        
 
 def run(data):
     global start
