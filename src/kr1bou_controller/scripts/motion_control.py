@@ -158,7 +158,7 @@ class Kr1bou:
         dy_base = y2 - pos[1]
 
         dist_to_base = sqrt(dx_base * dx_base + dy_base * dy_base)
-
+        rospy.loginfo(f"(MOTION CONTROL) dist_to_base : {dist_to_base}")
         m_goto_base_reached = False
         if dist_to_base < GOTO_BASE_DISTANCE_THRESHOLD:
             m_goto_base_reached = True
