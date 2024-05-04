@@ -131,6 +131,8 @@ class Strategy:
             self.objectives = [solar_objective]
             self.current_objective = self.objectives[0]
             need_twice = False
+
+            rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
             
             while (self.path or self.objectives) and max_time > time.time() - self.start_time:
                 self.close_enough_to_waypoint()
