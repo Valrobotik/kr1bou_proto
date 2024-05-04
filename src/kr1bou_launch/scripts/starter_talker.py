@@ -15,6 +15,7 @@ def on_key_press():
     pub.publish(True)
     # Attendre 90 secondes pour envoyer le son de départ du pami
     rospy.sleep(5)
+    # Sending "Start-pami" ID to the speaker
     bluetooth_choice.publish(4)
 
 
