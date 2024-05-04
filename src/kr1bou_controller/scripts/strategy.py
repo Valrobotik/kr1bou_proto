@@ -308,6 +308,7 @@ class Strategy:
         self.direction_pub.publish(direction_data)
         self.speed_ctrl_pub.publish(speed_data)
         self.pos_ordre_pub.publish(obj)
+        self.state_robot = IN_PROGRESS
 
     def wait_until_ready(self):
         while self.state_robot != READY:
