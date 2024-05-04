@@ -102,11 +102,11 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
-        # rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.camera_position}")
+        rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.camera_position}")
         self.obstacles = get_discrete_obstacles(self.lidar_data, self.us_data,
                                                 [(self.enemy_position.x, self.enemy_position.y)],
                                                 self.resolution, self.radius, self.map_boundaries)
-        rospy.loginfo(f"Obstacles : {len(self.obstacles)}")
+        # rospy.loginfo(f"Obstacles : {len(self.obstacles)}")
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
         self.previous_obstacles = self.obstacles
 
@@ -114,7 +114,7 @@ class Strategy:
             self.reset_position_from_camera()
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
-            # rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
+            rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
             # rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
 
         # Get the start and end nodes
@@ -123,8 +123,7 @@ class Strategy:
 
         # rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         if is_path_valid(self.path, self.obstacles):  # Check if the path is still valid
-            # rospy.loginfo("(STRATEGY) Path still exists")
-            pass
+            rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
             # rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
             path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
@@ -134,11 +133,11 @@ class Strategy:
                 Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for
                 node in path]
             # rospy.loginfo(f"(STRATEGY) Path computed in {time.time() - onset} seconds")
-            # rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
+            rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
 
         # Remove node if the robot is already on it if the robot is already following a path
         self.close_enough_to_waypoint(threshold=4.0)
-        save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
+        # save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
 
     def go_to(self, x=-1, y=-1, alpha=-1, speed=1.0, direction=0):
         """go to position (x, y, alpha)
