@@ -164,7 +164,7 @@ class Strategy:
     def follow_path(self):
         if self.path:
             # rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
-            self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, BEST_DIRECTION)
+            self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, FORWARD)
             rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
         else:
             rospy.loginfo("(STRATEGY) No path found")
