@@ -30,7 +30,6 @@ def setup_buttons(pins):
     rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         state  = check_bumpers(buttons_list)
-        rospy.loginfo(f"(BUMPER WATCH) state : {state}")
         if state.data != old_state.data:
             pub.publish(state)
             old_state = state
