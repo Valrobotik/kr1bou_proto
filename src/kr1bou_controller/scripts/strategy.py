@@ -33,6 +33,7 @@ class Strategy:
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
         self.radius = rospy.get_param('/radius')  # Radius of the robot in the resolution/unit given.
+        self.raw_path = []  # Raw path to follow
         self.path = []  # List of waypoints to follow
         self.obstacles = set()  # List of obstacles
         self.previous_obstacles = set()  # Previous obstacles
@@ -122,17 +123,17 @@ class Strategy:
         origin.orientation = self.position.theta
 
         # rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
-        if is_path_valid(self.path, self.obstacles):  # Check if the path is still valid
+        if is_path_valid(self.raw_path, self.obstacles):  # Check if the path is still valid
             # rospy.loginfo("(STRATEGY) Path still exists")
             pass
         else:  # Compute a new path
             # rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
-            path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
+            self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
                 int(self.current_objective.y * self.resolution)])
-            path = clean_path(path)
+            self.path = clean_path(self.raw_path)
             self.path = [
                 Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for
-                node in path]
+                node in self.path]
             # rospy.loginfo(f"(STRATEGY) Path computed in {time.time() - onset} seconds")
             # rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
 
