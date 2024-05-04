@@ -138,6 +138,7 @@ class Strategy:
 
         # Remove node if the robot is already on it if the robot is already following a path
         self.close_enough_to_waypoint(threshold=4.0)
+        save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
 
     def go_to(self, x=-1, y=-1, alpha=-1, speed=0.25, direction=0):
         """go to position (x, y, alpha)

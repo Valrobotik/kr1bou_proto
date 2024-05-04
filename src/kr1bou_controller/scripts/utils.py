@@ -1,10 +1,41 @@
 import rospy
 # from math import sqrt
-from search_path import Node
 from math import pi
 import numpy as np
+import matplotlib.pyplot as plt
+from typing import List, Optional
 
 DIRECTIONS = {(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)}
+
+
+class Node:
+    def __init__(self, position: tuple, orientation: float, neighbors=None, obstacle=False):
+        if neighbors is None:
+            neighbors = {}
+        self.position = position
+        self.orientation = orientation
+        self.neighbors = neighbors
+        self.g = 0  # distance to previous position
+        self.h = 0  # estimated distance
+        self.o = 0  # orientation
+        self.f = 0
+        self.parent = None
+        self.is_obstacle = obstacle
+
+    def __lt__(self, other: 'Node'):
+        return self.f < other.f
+
+    def __eq__(self, other: 'Node'):
+        return self.position == other.position
+
+    def __hash__(self):
+        return hash(self.position)
+
+    def __str__(self):
+        return f"({self.position})"
+    
+    def __repr__(self):
+        return f"Node({self.position}, {self.orientation})"
 
 
 class Objective:
@@ -97,3 +128,48 @@ def clamp_theta(theta: float) -> float:
     if theta < 0:
         new_theta += 2 * pi
     return 2 * pi - new_theta
+
+
+def print_maze(start, end, maze, path: Optional[List[Node]] = None):
+    """
+    Print the maze
+    :param start: the start node
+    :param end: the end node
+    :param maze: the maze
+    :param path: the path to be printed
+    """
+    for i in range(maze.shape[0]):
+        for j in range(maze.shape[1]):
+            node = maze[i][j]
+            # Discriminate Obstacles, Nodes, and Path
+            if node.is_obstacle:
+                print("X", end=" ")
+            elif node == start:
+                print("S", end=" ")
+            elif node == end:
+                print("E", end=" ")
+            elif path and node in path:
+                print(path.index(node), end=" ")
+            else:
+                print(".", end=" ")
+        print()
+
+
+def save_game_state(maze: np.ndarray, path: list, obstacles: set, resolution: int, map_boundaries: list, filename: str, show=False):
+    """Save the current game state in a file using matplotlib"""
+    fig, ax = plt.subplots()
+    ax.set_xlim(0, map_boundaries[2] * resolution)  # Convert to unit
+    ax.set_ylim(0, map_boundaries[3] * resolution)
+    # ax.set_aspect('equal')
+    for i in range(maze.shape[0]):
+        for j in range(maze.shape[1]):
+            if maze[i][j].is_obstacle:
+                ax.add_patch(plt.Rectangle((j, i), 1, 1, color='black'))
+    for node in path:   # convert path to used unit
+        ax.add_patch(plt.Rectangle((node.position[1] * resolution, node.position[0] * resolution), 1, 1, color='blue'))
+    for obstacle in obstacles:
+        ax.add_patch(plt.Rectangle((obstacle[1], obstacle[0]), 1, 1, color='red'))
+    if show:
+        plt.show()
+    plt.savefig(filename)
+    plt.close(fig)
