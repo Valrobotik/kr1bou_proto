@@ -230,12 +230,6 @@ class Strategy:
         yellow_robot = Pose2D()
         blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
 
-        # Convert to meters
-        blue_robot.x /= 100
-        blue_robot.y /= 100
-        yellow_robot.x /= 100
-        yellow_robot.y /= 100
-
         # rospy.loginfo(f"(STRATEGY) Camera - Blue robot : {blue_robot}")
         # rospy.loginfo(f"(STRATEGY) Camera - Yellow robot : {yellow_robot}")
 
