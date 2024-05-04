@@ -140,7 +140,7 @@ class Strategy:
         self.close_enough_to_waypoint(threshold=4.0)
         save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
 
-    def go_to(self, x=-1, y=-1, alpha=-1, speed=0.25, direction=0):
+    def go_to(self, x=-1, y=-1, alpha=-1, speed=1.0, direction=0):
         """go to position (x, y, alpha)
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]"""
