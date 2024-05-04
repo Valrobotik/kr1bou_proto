@@ -64,8 +64,6 @@ if __name__ == '__main__':
         queue_size = rospy.get_param('/queue_size')
         pub = rospy.Publisher('bumper', Byte, queue_size=queue_size)
         buttons_list = setup_buttons(bumper_pins)
-        while not start:
-            rate.sleep()
         rospy.spin()
     finally:
         rospy.loginfo("[STOP] Bumper Watch node has stopped.")
