@@ -231,7 +231,7 @@ class Strategy:
             self.game_states.append([origin.position,
                                      self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)].position,
                                      self.path, self.obstacles, self.resolution, self.map_boundaries])
-            with open("variables.pkl", "wb") as f:
+            with open("all_game_states.pkl", "wb") as f:
                 pickle.dump(self.game_states, f)
             self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
                 int(self.current_objective.y * self.resolution)])
