@@ -228,14 +228,14 @@ def test_n(n: int = 1000, verbose: bool = False):
 
 def debug():
     # load path, obstacles, resolution, boundaries from pickle
-    with open("/home/kribou/Downloads/variables.pkl", "rb") as f:
+    with open("/home/kribou/Downloads/game_states.pkl", "rb") as f:
         game_states = pkl.load(f)
     count = 0
-    for path, obstacles, resolution, boundaries in game_states:
+    for origin, end, path, obstacles, resolution, boundaries in game_states:
         count += 1
         maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=Node), obstacles)
-        start = path[0]
-        end = path[-1]
+        start = Node(origin, 0)
+        end = Node(end, 0)
         print("Start and End nodes:", start, end)
         onset = time.perf_counter()
         path = a_star(start, end)
@@ -250,9 +250,6 @@ def debug():
             print()
         else:
             print("No path found")
-        print()
-        print("Start:", start)
-        print("End:", end)
         print("Execution time:", offset - onset, "seconds")
         print()
         path = cleaned_path if path else []
