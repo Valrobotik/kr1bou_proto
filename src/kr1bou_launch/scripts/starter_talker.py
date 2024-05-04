@@ -6,13 +6,16 @@ When the key/button is pressed, it publishes a True signal to the 'starter' topi
 
 import rospy
 from gpiozero import Button
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int8
 
 
 # Logic for key press and release are reversed because of hardware architecture.
 def on_key_press():
     rospy.loginfo("(STARTER TALKER) Key removed")
     pub.publish(True)
+    # Attendre 90 secondes pour envoyer le son de départ du pami
+    rospy.sleep(5)
+    bluetooth_choice.publish(4)
 
 
 def on_key_release():
@@ -23,6 +26,7 @@ if __name__ == '__main__':
     try:
         rospy.init_node('starter_talker', anonymous=True)
         rospy.loginfo("[START] Launcher node has started. Monitoring the start key.")
+        bluetooth_choice = rospy.Publisher('speaker_choice', Int8, queue_size=1)
         start_pin = rospy.get_param('/gpio/start_button_pin')
         queue_size = rospy.get_param('/queue_size')
         
