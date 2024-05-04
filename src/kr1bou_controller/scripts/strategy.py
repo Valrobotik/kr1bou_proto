@@ -133,11 +133,12 @@ class Strategy:
                 Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for
                 node in path]
             # rospy.loginfo(f"(STRATEGY) Path computed in {time.time() - onset} seconds")
-            rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
+            # rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
 
         # Remove node if the robot is already on it if the robot is already following a path
         self.close_enough_to_waypoint(threshold=4.0)
         # save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
+        rospy.loginfo(f"(STRATEGY) Path : {self.path}")
 
     def go_to(self, x=-1, y=-1, alpha=-1, speed=1.0, direction=0):
         """go to position (x, y, alpha)

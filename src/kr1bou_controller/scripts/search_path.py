@@ -151,7 +151,7 @@ def clean_path(path: List[Node]) -> List[Node]:
     return cleaned_path
 
 
-def generate_random_maze(height: int, width: int, density: float) -> List[List[Node]]:
+def generate_random_maze(height: int, width: int, density: float):
     """
     Generate a random maze
     :param height: height of the maze
@@ -166,7 +166,6 @@ def generate_random_maze(height: int, width: int, density: float) -> List[List[N
     i_j_to_remove = random.sample([(i, j) for i in range(height) for j in range(width)], int(density * height * width))
     for i, j in i_j_to_remove:
         maze[i][j].is_obstacle = True
-    
     return maze
 
 
