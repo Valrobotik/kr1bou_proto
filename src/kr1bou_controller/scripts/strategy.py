@@ -164,10 +164,14 @@ class Strategy:
             self.objectives = [solar_objective]
             self.current_objective = self.objectives[0]
 
+            rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
+
             while (self.path or self.objectives) and max_time > time.time() - self.start_time:
                 self.close_enough_to_waypoint()
                 self.compute_path()
                 self.follow_path(self.current_objective.direction)
+
+            rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
             # Rotate self
             self.go_to(self.position.x, self.position.y, 3*pi/2, .25, BEST_DIRECTION)
