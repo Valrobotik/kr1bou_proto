@@ -76,6 +76,7 @@ class Strategy:
         self.objectives = []
         self.current_objective = None
         self.current_direction = BEST_DIRECTION
+        self.start_time = time.time()
 
         # -- Publishers --
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
@@ -98,7 +99,7 @@ class Strategy:
     # -- Phases --
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
-        # TODO: Implement forced direction
+        max_time = rospy.get_param("/phases/plant")
         if self.team == TEAM_BLUE:
             self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
                                  x, y, theta, direction in rospy.get_param("/objectives/blue/plant")]
@@ -107,7 +108,7 @@ class Strategy:
                                  x, y, theta, direction in rospy.get_param("/objectives/yellow/plant")]
         self.current_objective = self.objectives[0]
 
-        while self.objectives:
+        while len(self.path > 0) and max_time > time.time() - self.start_time:
             self.close_enough_to_waypoint()
             self.compute_path()
             self.follow_path(self.current_objective.direction)

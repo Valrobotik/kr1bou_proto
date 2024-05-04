@@ -53,6 +53,6 @@ objectives:
     home: [[.2, 1.8, 0, 0], [.2, .4, 0, 1], [.2, 1.8, 0, 0]]
   
 phases:
-  plant: [30, 1]
-  solar_panel: [80, 0]
-  home: [90, 1]
+  plant: 30
+  solar_panel: 80
+  home: 90
