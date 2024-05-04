@@ -37,3 +37,9 @@ solar_panel: [[0.27, 1.60],
 
 # An objective is a list of waypoints with (x, y, theta) coordinates
 objectives: [[2.25, 0.5, 0], [2.25, 1.5, 0], [0.75, 1.5, 0], [0.75, 0.5, 0], [1.5, 1, 0]]
+
+# TODO : Add the prefered orientation of the robot as 4th element of the waypoint
+# objectives: 
+#   run : [[2.25, 0.5, 0], [2.25, 1.5, 0], [0.75, 1.5, 0], [0.75, 0.5, 0], [1.5, 1, 0]]
+#   flower: [[1.5, 1, 0, ]
+#   solar_panel: [[0.27, 1.60], [0.50, 1.60], [0.72, 1.60], [1.27, 1.60], [1.50, 1.60], [1.72, 1.60], [2.27, 1.60], [2.50, 1.60], [2.72, 1.60]]
