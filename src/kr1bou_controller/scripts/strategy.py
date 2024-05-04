@@ -83,7 +83,6 @@ class Strategy:
             rospy.sleep(0.05)
         while not rospy.is_shutdown():
             self.close_enough_to_waypoint()  # Remove the waypoint if the robot is close enough
-            # rospy.loginfo(f"(STRATEGY) Objectives : {self.objectives}")
             if not self.objectives and not self.path:
                 break
             self.compute_path()
@@ -114,6 +113,8 @@ class Strategy:
             self.reset_position_from_camera()
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
+            rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
+            rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
 
         # Get the start and end nodes
         origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
