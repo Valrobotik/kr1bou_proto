@@ -182,7 +182,7 @@ class Strategy:
             # Rotate self
             self.go_to(self.position.x, self.position.y, 3*pi/2, .25, BEST_DIRECTION)
             self.wait_until_ready()
-            
+
             self.reset_position_from_camera()
 
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
@@ -208,7 +208,7 @@ class Strategy:
             self.back_until_bumper()
 
             # Forward
-            self.go_to(self.position.x, self.position.y - .03, 3*pi/2, .15, FORWARD)
+            self.go_to(self.position.x, self.position.y - .05, 3*pi/2, .15, FORWARD)
             self.wait_until_ready()
             self.solar_mode_pub.publish(False)
             # Rotate solar panel
