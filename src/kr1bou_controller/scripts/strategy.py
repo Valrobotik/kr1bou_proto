@@ -287,6 +287,7 @@ class Strategy:
             self.go_to(self.position.x - distance, self.position.y, speed=speed, direction=direction)
         elif axis == 'x+':
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction)
+        self.wait_until_ready()
 
     def solar_panel(self, id = 1):
         pass # TODO
