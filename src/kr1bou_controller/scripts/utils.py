@@ -48,7 +48,7 @@ def extend_obstacles(data: list, obstacles: set, radius: int, resolution: int, m
             # Extend to a circle
             for j in range(-radius, radius + 1):
                 for k in range(-radius, radius + 1):
-                    if x_ + j < 0 or x_ + j >= map_boundaries[2] or y_ + k < 0 or y_ + k >= map_boundaries[3]:
+                    if x_ + j < 0 or x_ + j >= map_boundaries[2] * resolution or y_ + k < 0 or y_ + k >= map_boundaries[3] * resolution:
                         continue
                     if j ** 2 + k ** 2 <= radius ** 2:  # Inside the circle
                         obstacles.add((x_ + j, y_ + k))
