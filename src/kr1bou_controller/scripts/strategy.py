@@ -151,16 +151,16 @@ class Strategy:
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
 
-            self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
+            # self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
             
-            # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
-            #     self.close_enough_to_waypoint()
-            #     self.compute_path()
-            #     self.follow_path(self.current_objective.direction)
+            # # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+            # #     self.close_enough_to_waypoint()
+            # #     self.compute_path()
+            # #     self.follow_path(self.current_objective.direction)
             
-            self.wait_until_ready()
-            rospy.sleep(0.2)
-            self.reset_position_from_camera()
+            # self.wait_until_ready()
+            # rospy.sleep(0.2)
+            # self.reset_position_from_camera()
 
             solar_objective.y+=0.1
             solar_objective.cost = sqrt((solar_objective.x - self.position.x) ** 2 + (solar_objective.y - self.position.y) ** 2)
