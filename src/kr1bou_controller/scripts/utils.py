@@ -44,23 +44,22 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, resolution: int) -> 
     return obstacles
 
 
-def setup_maze(shape: tuple, obstacles: set) -> list:
+def setup_maze(maze, obstacles: set):
     """Create the maze with the obstacles"""
-    # update obstacles in the maze
-    maze = np.zeros(shape, dtype=Node)
-    for i in range(shape[0]):
-        for j in range(shape[1]):
+    for i in range(maze.shape[0]):
+        for j in range(maze.shape[1]):
             maze[i][j] = Node((i, j), 0, obstacle=((i, j) in obstacles))
-    for i in range(shape[0]):
-        for j in range(shape[1]):
+    for i in range(maze.shape[0]):
+        for j in range(maze.shape[1]):
             for direction in DIRECTIONS:
                 x = i + direction[0]
                 y = j + direction[1]
-                if 0 <= x < shape[0] and 0 <= y < shape[1]:
+                if 0 <= x < maze.shape[0] and 0 <= y < maze.shape[1]:
                     maze[i][j].neighbors[direction] = (1, maze[x][y])
     return maze
 
-def update_maze(maze: list, obstacles: set, new_obstacles: set) -> list:
+
+def update_maze(maze: np.ndarray, obstacles: set, new_obstacles: set):
     not_obstacles_anymore = obstacles - new_obstacles
     for not_obstacle in not_obstacles_anymore:
         maze[not_obstacle[0]][not_obstacle[1]].obstacle = False
@@ -86,4 +85,4 @@ def clamp_theta(theta: float) -> float:
     new_theta = theta
     if theta < 0:
         new_theta += 2 * pi
-    return 2*pi - new_theta
+    return 2 * pi - new_theta
