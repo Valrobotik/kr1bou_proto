@@ -181,7 +181,7 @@ class Strategy:
         rospy.loginfo("(STRATEGY) Debug odom correction")
         self.wait_until_ready()
         rospy.sleep(0.3)
-        if time.time() - self.last_time_cam < 10:
+        if time.time() - self.last_time_cam < 3:
             self.got_cam_data = False
             while not self.got_cam_data:
                 rospy.sleep(0.05)
