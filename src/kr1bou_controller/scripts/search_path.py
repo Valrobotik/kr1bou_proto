@@ -115,6 +115,8 @@ def clean_path(path: List[Node]) -> List[Node]:
     :param path: the path to clean
     :return: the cleaned path
     """
+    if not path:
+        return []
     if len(path) < 3:
         return path
     cleaned_path = [path[0]]
