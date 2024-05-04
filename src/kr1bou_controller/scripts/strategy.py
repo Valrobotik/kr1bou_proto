@@ -132,7 +132,7 @@ class Strategy:
         else:  # Compute a new path
             rospy.loginfo(f"(STRATEGY) unvalid path Computing path from {origin.position} to {self.current_objective}")
             # save variables using pickle
-            self.game_states.append([self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries])
+            self.game_states.append([origin.position, self.maze[int(self.current_objective.x * self.resolution)].position, self.path, self.obstacles, self.resolution, self.map_boundaries])
             with open("variables.pkl", "wb") as f:
                 pickle.dump(self.game_states, f)
             self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
