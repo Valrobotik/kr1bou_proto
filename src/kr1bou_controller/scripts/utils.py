@@ -118,7 +118,7 @@ def is_path_valid(path: list, obstacles: set) -> bool:
     for node in path:
         if node.position in obstacles:
             superposed.append(node.position)
-            rospy.loginfo(f"Obstacle at {node.position}")
+    rospy.loginfo(f"Obstacle at {superposed}") if superposed else None
     return superposed == []
 
 
