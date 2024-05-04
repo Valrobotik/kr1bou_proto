@@ -9,6 +9,8 @@ from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 from search_path import a_star, clean_path
 from utils import *
 
+import pickle
+
 READY_LINEAR = 0
 READY = 1
 IN_PROGRESS = 2
@@ -28,6 +30,7 @@ class Strategy:
         # -- Robot related --
         self.need_for_compute = True  # Whether to ask for a new path
         self.next_pos_obj = [0, 0, 0]  # Next position to go to / Intermediate objective
+        self.game_states = []
 
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
@@ -128,6 +131,12 @@ class Strategy:
             pass
         else:  # Compute a new path
             rospy.loginfo(f"(STRATEGY) unvalid path Computing path from {origin.position} to {self.current_objective}")
+            # save variables using pickle
+            self.game_states.append([origin.position,
+                                     self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)].position,
+                                     self.path, self.obstacles, self.resolution, self.map_boundaries])
+            with open("variables.pkl", "wb") as f:
+                pickle.dump(self.game_states, f)
             self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
                 int(self.current_objective.y * self.resolution)])
             rospy.loginfo(f"(STRATEGY) new Raw path computed : {self.raw_path}")
