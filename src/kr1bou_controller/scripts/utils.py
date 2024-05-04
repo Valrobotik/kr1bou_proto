@@ -32,7 +32,7 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, r
     """
     obstacles = set()
     # Get the obstacles from the ultrasound sensors (values in meters)
-    obstacles = extend_obstacles(us_data, obstacles, radius, resolution)
+    # obstacles = extend_obstacles(us_data, obstacles, radius, resolution)
     # Get the obstacles from the lidar
     obstacles = extend_obstacles(lidar_data, obstacles, radius, resolution)
     # Get the obstacles from the camera
