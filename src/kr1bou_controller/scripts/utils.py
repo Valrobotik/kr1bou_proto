@@ -27,20 +27,29 @@ class Objective:
         return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
 
 
-def get_discrete_obstacles(lidar_data: list, us_data: list, resolution: int) -> list:
-    """Get the obstacles from the ultrasound sensors, the bumpers, the position of the adversary and discretize them
+def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int) -> set:
+    """Get the obstacles from the ultrasound sensors (etc.), the position of the adversary and discretize them
     """
-    obstacles = []
+    obstacles = set()
     # Get the obstacles from the ultrasound sensors (values in meters)
-    for i, (x, y) in enumerate(us_data):
+    obstacles = extend_obstacles(us_data, obstacles, radius, resolution)
+    # Get the obstacles from the lidar
+    obstacles = extend_obstacles(lidar_data, obstacles, radius, resolution)
+    # Get the obstacles from the camera
+    obstacles = extend_obstacles(camera_data, obstacles, radius, resolution)
+    return obstacles
+
+
+def extend_obstacles(data: list, obstacles: set, radius: int, resolution: int) -> set:
+    for i, (x, y) in enumerate(data):
         if (x, y) not in [(0, 0), (-1, -1)]:
-            # TODO : Extend to a circle
-            pass
-
-    # TODO : Remove testing default obstacles below
-    obstacles.extend([(100, 70), (100, 140)])
-
-    # TODO : Get the obstacles from the camera
+            # Meters to unit
+            x_, y_ = int(x * resolution), int(y * resolution)
+            # Extend to a circle
+            for j in range(-radius, radius + 1):
+                for k in range(-radius, radius + 1):
+                    if j ** 2 + k ** 2 <= radius ** 2:  # Inside the circle
+                        obstacles.add((x_ + j, y_ + k))
     return obstacles
 
 

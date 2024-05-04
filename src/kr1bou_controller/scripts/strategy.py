@@ -32,6 +32,7 @@ class Strategy:
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
+        self.radius = rospy.get_param('/radius')  # Radius of the robot in the resolution/unit given.
         self.path = []  # List of waypoints to follow
         self.obstacles = set()  # List of obstacles
         self.previous_obstacles = set()  # Previous obstacles
@@ -101,7 +102,9 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
-        self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
+        self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data,
+                                                    [self.enemy_position.x, self.enemy_position.y],
+                                                    self.resolution, self.radius))
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
         self.previous_obstacles = self.obstacles
 
@@ -204,8 +207,9 @@ class Strategy:
         # rospy.loginfo(f"(STRATEGY) Position received : {self.position}")
         self.need_for_compute = True
 
-    def update_lidar_data(self, data):
-        self.lidar_data = data
+    def update_lidar_data(self, data: PoseArray):
+        raw = data
+        self.lidar_data = [(raw.poses[i].position.x, raw.poses[i].position.y) for i in range(len(raw.poses))]
         self.need_for_compute = True
 
     def update_us_data(self, data):
