@@ -181,6 +181,9 @@ class Strategy:
 
             # Rotate self
             self.go_to(self.position.x, self.position.y, 3*pi/2, .25, BEST_DIRECTION)
+            self.wait_until_ready()
+            
+            self.reset_position_from_camera()
 
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             # Get arm in the right position
