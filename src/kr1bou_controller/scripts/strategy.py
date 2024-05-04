@@ -289,9 +289,44 @@ class Strategy:
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction)
         self.wait_until_ready()
 
+    def move_to(self, objective_x, objective_y, speed=0.25, direction=BEST_DIRECTION):
+        self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
+        self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
+        self.previous_obstacles = self.obstacles
+        origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
+        origin.orientation = self.position.theta
+        self.path = []
+        while not rospy.is_shutdown():
+            if self.path == [] or not is_path_valid(self.path, self.obstacles):
+                path = a_star(origin, self.maze[int(objective_x * self.resolution)][int(objective_y * self.resolution)])
+                path = clean_path(path)
+                self.path = [Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for node in path]
+            self.close_enough_to_waypoint() 
+            self.follow_path()
+
+            if self.path == []: break
+        self.wait_until_ready()
+
     def solar_panel(self, id = 0):
         objective_x, objective_y = rospy.get_param('/solar_panel')[id]
-        
+        self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
+        self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
+        self.previous_obstacles = self.obstacles
+        origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
+        origin.orientation = self.position.theta
+        self.path = []
+        while not rospy.is_shutdown():
+            if self.path == [] or not is_path_valid(self.path, self.obstacles):
+                path = a_star(origin, self.maze[int(objective_x * self.resolution)][int(objective_y * self.resolution)])
+                path = clean_path(path)
+                self.path = [Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for node in path]
+            self.close_enough_to_waypoint() 
+            self.follow_path()
+
+            if self.path == []: break
+        self.wait_until_ready()
+
+
 
 def run(data):
     global start
