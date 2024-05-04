@@ -139,7 +139,7 @@ class Strategy:
         # Remove node if the robot is already on it if the robot is already following a path
         self.close_enough_to_waypoint(threshold=4.0)
 
-    def go_to(self, x=-1, y=-1, alpha=-1, speed=0.25, direction=0):
+    def go_to(self, x=-1, y=-1, alpha=-1, speed=0.4, direction=0):
         """go to position (x, y, alpha)
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]"""
