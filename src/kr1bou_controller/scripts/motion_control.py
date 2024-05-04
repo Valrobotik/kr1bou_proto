@@ -135,7 +135,7 @@ class Kr1bou:
     def update_speed(self):
         x2 = self.objectif_x
         y2 = self.objectif_y
-        rospy.loginfo(f"(MOTION CONTROL) from : {self.x} ; {self.y} to : {x2} ; {y2}")
+        #rospy.loginfo(f"(MOTION CONTROL) from : {self.x} ; {self.y} to : {x2} ; {y2}")
 
         # rospy.loginfo(f"(MOTION CONTROL) going to : {x2} ; {y2}")
         force_forward = self.force_forward
@@ -166,9 +166,9 @@ class Kr1bou:
         dy_base = y2 - pos[1]
 
         dist_to_base = sqrt(dx_base * dx_base + dy_base * dy_base)
-        rospy.loginfo(f"(MOTION CONTROL) 2 from : {self.x} ; {self.y} to : {x2} ; {y2}")
-        rospy.loginfo(f"(MOTION CONTROL) dx_base : {dx_base} / dy_base : {dy_base}")
-        rospy.loginfo(f"(MOTION CONTROL) dist_to_base : {dist_to_base}")
+        #rospy.loginfo(f"(MOTION CONTROL) 2 from : {self.x} ; {self.y} to : {x2} ; {y2}")
+        #rospy.loginfo(f"(MOTION CONTROL) dx_base : {dx_base} / dy_base : {dy_base}")
+        #rospy.loginfo(f"(MOTION CONTROL) dist_to_base : {dist_to_base}")
         
         m_goto_base_reached = False
         if dist_to_base < GOTO_BASE_DISTANCE_THRESHOLD:
