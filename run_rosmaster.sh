@@ -4,7 +4,7 @@ echo "Démarrage nouvelle version (Ctrl+C pour annuler...)"
 sleep 3
 # Kill l'ancien rosmaster
 echo "Kill de l'ancienne instance..."
-# pkill -f rosmaster
+pkill -f rosmaster
 # Obtenir IP machine
 IP_ADDRESS=$(hostname -I | awk '{print $1}')
 # Construire lURL en utilisant ladresse IP
