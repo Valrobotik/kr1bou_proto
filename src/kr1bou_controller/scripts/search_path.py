@@ -7,43 +7,10 @@ import heapq
 import random
 import time
 from math import atan2, pi
-import sys
+from utils import Node, save_game_state, setup_maze, print_maze
+import numpy as np
 
 gamma = 1  # 1 for now (180/pi later)
-
-
-class Node:
-    """
-    Node class
-    """
-
-    def __init__(self, position: tuple, orientation: float, neighbors=None, obstacle=False):
-        if neighbors is None:
-            neighbors = {}
-        self.position = position
-        self.orientation = orientation
-        self.neighbors = neighbors
-        self.g = 0  # distance to previous position
-        self.h = 0  # estimated distance
-        self.o = 0  # orientation
-        self.f = 0
-        self.parent = None
-        self.is_obstacle = obstacle
-
-    def __lt__(self, other: 'Node'):
-        return self.f < other.f
-
-    def __eq__(self, other: 'Node'):
-        return self.position == other.position
-
-    def __hash__(self):
-        return hash(self.position)
-
-    def __str__(self):
-        return f"({self.position})"
-    
-    def __repr__(self):
-        return f"Node({self.position}, {self.orientation})"
 
 
 def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
@@ -74,7 +41,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
 
         # Explore neighbors
         for cost, neighbor in current_node.neighbors.values():
-            if neighbor.is_obstacle:  # WALL / OBSTACLE
+            if neighbor.is_obstacle:  # WALL / OBSTACLE to ignore
                 continue
 
             # Compute the new cost
@@ -184,7 +151,7 @@ def clean_path(path: List[Node]) -> List[Node]:
     return cleaned_path
 
 
-def generate_random_maze(height: int, width: int, density: float) -> List[List[Node]]:
+def generate_random_maze(height: int, width: int, density: float):
     """
     Generate a random maze
     :param height: height of the maze
@@ -192,39 +159,13 @@ def generate_random_maze(height: int, width: int, density: float) -> List[List[N
     :param density: density of the maze
     :return: a list of nodes representing the maze
     """
-    maze = [[Node((i, j), 0, {}) for j in range(width)] for i in range(height)]
-    for i in range(height):
-        for j in range(width):
-            if i > 0:
-                maze[i][j].neighbors['N'] = (1, maze[i - 1][j])
-            if i < height - 1:
-                maze[i][j].neighbors['S'] = (1, maze[i + 1][j])
-            if j > 0:
-                maze[i][j].neighbors['W'] = (1, maze[i][j - 1])
-            if j < width - 1:
-                maze[i][j].neighbors['E'] = (1, maze[i][j + 1])
-            if i > 0 and j > 0:
-                maze[i][j].neighbors['NW'] = (1, maze[i - 1][j - 1])
-            if i > 0 and j < width - 1:
-                maze[i][j].neighbors['NE'] = (1, maze[i - 1][j + 1])
-            if i < height - 1 and j > 0:
-                maze[i][j].neighbors['SW'] = (1, maze[i + 1][j - 1])
-            if i < height - 1 and j < width - 1:
-                maze[i][j].neighbors['SE'] = (1, maze[i + 1][j + 1])
-
-    not_none_nodes = [node for row in maze for node in row if node is not None]
-    x_y_to_remove = random.sample(not_none_nodes, int(density * len(not_none_nodes)))
-    # remove a random number of nodes according to the density
-    for node in x_y_to_remove:
-        # remove neighbors
-        for neighbor in node.neighbors.values():
-            cost, neighbor_node = neighbor
-            if neighbor_node:
-                for direction, neighbor_neighbor in neighbor_node.neighbors.items():
-                    if neighbor_neighbor[1] and node and neighbor_neighbor[1] == node:
-                        neighbor_node.neighbors[direction] = (cost, None)
-        i, j = node.position
-        maze[i][j] = None
+    maze = np.zeros((height, width), dtype=Node)
+    maze = setup_maze(maze, set())
+    
+    # take a random number of nodes to remove
+    i_j_to_remove = random.sample([(i, j) for i in range(height) for j in range(width)], int(density * height * width))
+    for i, j in i_j_to_remove:
+        maze[i][j].is_obstacle = True
     return maze
 
 
@@ -235,49 +176,27 @@ def generate_random_start_end(maze: List[List[Node]]) -> tuple:
     :return: a tuple of start and end nodes
     """
     # Go through each node and list them. Then take a random node from the list
-    not_none_nodes = [node for row in maze for node in row if node is not None]
-    start = random.choice(not_none_nodes)
-    end = random.choice(not_none_nodes)
+    not_obstacle_nodes = [node for row in maze for node in row if not node.is_obstacle]
+    start = random.choice(not_obstacle_nodes)
+    end = random.choice(not_obstacle_nodes)
     return start, end
-
-
-def print_maze(start, end, maze: List[List[Node]], path: Optional[List[Node]] = None):
-    """
-    Print the maze
-    :param start: the start node
-    :param end: the end node
-    :param maze: the maze
-    :param path: the path to be printed
-    """
-    for row in maze:
-        for node in row:
-            # Discriminate None, Nodes, and Path
-            if node is None:
-                print("X", end=" ")
-            elif node == start:
-                print("S", end=" ")
-            elif node == end:
-                print("E", end=" ")
-            elif path and node in path:
-                print(path.index(node), end=" ")
-            else:
-                print(".", end=" ")
-        print()
 
 
 def test_n(n: int = 1000, verbose: bool = False):
     times = []
-    height = 20
-    width = 30
+    height = 200
+    width = 300
     density = 0.1
+    resolution = 10
     for _ in range(n):
         maze = generate_random_maze(height, width, density)
+        obstacles = [node.position for row in maze for node in row if node.is_obstacle]
         start, end = generate_random_start_end(maze)
         print("Start and End nodes:", start, end) if verbose else None
         onset = time.perf_counter()
         path = a_star(start, end)
         offset = time.perf_counter()
-        print_maze(start, end, maze, path) if verbose else None
+        # print_maze(start, end, maze, path) if verbose else None
         print() if verbose else None
         print("Path:") if verbose else None
         if path and verbose:
@@ -298,6 +217,10 @@ def test_n(n: int = 1000, verbose: bool = False):
             print("Width:", width)
             print("Execution time:", offset - onset, "seconds")
             print()
+            path = cleaned_path if path else []
+            for node in path:
+                node.position = (node.position[0] / resolution, node.position[1] / resolution)
+            save_game_state(maze, path, obstacles, resolution, [0, 0, width / resolution, height / resolution], "maze.png", show=True)
         times.append(offset - onset)
     print("Average time:", sum(times) / n, "seconds")
 
