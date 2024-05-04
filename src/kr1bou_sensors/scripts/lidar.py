@@ -62,7 +62,7 @@ if __name__ == '__main__':
         x = []
         y = []
         for i in range(0, len(dictionary[0])):
-            if dictionary[1][i] > 90:
+            if dictionary[1][i] > 150:
                 x_temp = (dictionary[1][i] / 1000 * math.sin(math.radians(dictionary[0][i]) - theta_robot + math.pi / 2)
                           + x_robot)
                 y_temp = (dictionary[1][i] / 1000 * math.cos(math.radians(dictionary[0][i]) - theta_robot + math.pi / 2)
