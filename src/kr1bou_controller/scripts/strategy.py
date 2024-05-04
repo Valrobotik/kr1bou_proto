@@ -102,7 +102,7 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
-        rospy.loginfo(f"Data : \nL: {self.lidar_data}")
+        # rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.camera_position}")
         self.obstacles = get_discrete_obstacles(self.lidar_data, self.us_data,
                                                 [(self.enemy_position.x, self.enemy_position.y)],
                                                 self.resolution, self.radius, self.map_boundaries)
@@ -180,7 +180,6 @@ class Strategy:
 
     def reset_position_from_camera(self):
         """Publishes the camera position to the odometry topic to correct the odometry"""
-        rospy.loginfo("(STRATEGY) Debug odom correction")
         self.wait_until_ready()
         rospy.sleep(0.3)
         if time.time() - self.last_time_cam < 3:
@@ -188,7 +187,6 @@ class Strategy:
             while not self.got_cam_data:
                 rospy.sleep(0.05)
             self.publisher_correct_odom.publish(self.camera_position)
-            rospy.loginfo("(STRATEGY) Odometry corrected")
         else:
             rospy.logwarn("(STRATEGY) No connexion with camera")
             return False
