@@ -182,10 +182,12 @@ class Strategy:
             # Rotate self
             self.go_to(self.position.x, self.position.y, 3*pi/2, .25, BEST_DIRECTION)
 
+            rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             # Get arm in the right position
             while self.latest_solar_winner == SOLAR_DEFAULT:
                 rospy.sleep(0.1)
             
+            rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_NEUTRAL or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BOTH:
                 self.solar_pub.publish(Int16(180))
             
@@ -195,9 +197,11 @@ class Strategy:
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
                 need_twice = True
 
+            rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(True)
             rospy.sleep(.1)
             # Bump
+            rospy.loginfo(f"(STRATEGY) back until bumper")
             self.back_until_bumper()
 
             # Forward
