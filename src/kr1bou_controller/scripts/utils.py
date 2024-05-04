@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from typing import List, Optional
 
 DIRECTIONS = {(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)}
+INF = float('inf')
 
 
 class Node:
@@ -15,9 +16,8 @@ class Node:
         self.position = position
         self.orientation = orientation
         self.neighbors = neighbors
-        self.g = 0  # distance to previous position
+        self.g = INF  # distance to previous position
         self.h = 0  # estimated distance
-        self.o = 0  # orientation
         self.f = 0
         self.parent = None
         self.is_obstacle = obstacle
@@ -36,6 +36,40 @@ class Node:
     
     def __repr__(self):
         return f"Node({self.position}, {self.orientation})"
+
+
+def euclidian(node1: Node, node2: Node) -> float:
+    """
+    Euclidian distance between two nodes
+    :param node1: node 1
+    :param node2: node 2
+    :return: euclidian distance between the two nodes
+    """
+    return ((node1.position[0] - node2.position[0]) ** 2 + (node1.position[1] - node2.position[1]) ** 2) ** 0.5
+
+
+def manhattan(node1: Node, node2: Node) -> float:
+    """
+    Manhattan distance between two nodes.
+    :param node1: node 1
+    :param node2: node 2
+    :return: manhattan distance between the two nodes
+    """
+    return abs(node1.position[0] - node2.position[0]) + abs(node1.position[1] - node2.position[1])
+
+
+def other_estimate(node1: Node, node2: Node) -> float:
+    """
+    Another way to measure distance between two nodes.
+    :param node1: node 1
+    :param node2: node 2
+    :return: estimated distance between the two nodes
+    """
+    node_x, node_y = node1.position
+    goal_x, goal_y = node2.position
+    dx = abs(node_x - goal_x)
+    dy = abs(node_y - goal_y)
+    return dx + dy + (2 ** 0.5 - 2) * min(dx, dy)
 
 
 class Objective:
@@ -77,12 +111,10 @@ def extend_obstacles(data: list, obstacles: set, radius: int, resolution: int, m
         if (x, y) not in [(0, 0), (-1, -1)]:
             # Meters to unit
             x_, y_ = int(x * resolution), int(y * resolution)
-            # Extend to a circle
+            # Extend to a square of radius around the obstacle
             for j in range(-radius, radius + 1):
                 for k in range(-radius, radius + 1):
-                    if x_ + j < 0 or x_ + j >= map_boundaries[2] * resolution or y_ + k < 0 or y_ + k >= map_boundaries[3] * resolution:
-                        continue
-                    if j ** 2 + k ** 2 <= radius ** 2:  # Inside the circle
+                    if 0 <= x_ + j < map_boundaries[2] * resolution and 0 <= y_ + k < map_boundaries[3] * resolution:
                         obstacles.add((x_ + j, y_ + k))
     return obstacles
 
@@ -161,15 +193,16 @@ def save_game_state(maze: np.ndarray, path: list, obstacles: set, resolution: in
     fig, ax = plt.subplots()
     ax.set_xlim(0, map_boundaries[2] * resolution)  # Convert to unit
     ax.set_ylim(0, map_boundaries[3] * resolution)
-    # ax.set_aspect('equal')
+    ax.set_aspect('equal')
     for i in range(maze.shape[0]):
         for j in range(maze.shape[1]):
             if maze[i][j].is_obstacle:
-                ax.add_patch(plt.Rectangle((j, i), 1, 1, color='black'))
-    for node in path:   # convert path to used unit
-        ax.add_patch(plt.Rectangle((node.position[1] * resolution, node.position[0] * resolution), 1, 1, color='blue'))
+                ax.add_patch(plt.Rectangle((i, j), 1, 1, color='black'))
+    if path:
+        for node in path:   # convert path to used unit
+            ax.add_patch(plt.Rectangle((node.position[0] * resolution, node.position[1] * resolution), 1, 1, color='blue'))
     for obstacle in obstacles:
-        ax.add_patch(plt.Rectangle((obstacle[1], obstacle[0]), 1, 1, color='red'))
+        ax.add_patch(plt.Rectangle((obstacle[0], obstacle[1]), 1, 1, color='red'))
     plt.savefig(filename)
     if show:
         plt.show()
