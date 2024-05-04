@@ -39,11 +39,12 @@ class Node:
 
 
 class Objective:
-    def __init__(self, x, y, theta, cost):
+    def __init__(self, x, y, theta, cost, direction):
         self.x = x
         self.y = y
         self.theta = theta
         self.cost = cost
+        self.direction = direction
 
     def __lt__(self, other):
         return self.cost < other.cost
