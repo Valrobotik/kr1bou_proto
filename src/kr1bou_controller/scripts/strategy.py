@@ -90,9 +90,9 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        self.debug_phase()
+        # self.debug_phase()
         # self.plant_phase()
-        # self.solar_phase()
+        self.solar_phase()
         # self.home_phase()
 
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
@@ -136,10 +136,10 @@ class Strategy:
         max_time = rospy.get_param("/phases/solar_panel")
 
         if self.team == TEAM_BLUE:
-            solar_objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+            solar_objectives = [Objective(x, y-0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y-0.1) ** 2), direction) for
                                  x, y, theta, direction in rospy.get_param("/objectives/blue/solar_panel")]
         else:
-            solar_objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+            solar_objectives = [Objective(x, y-0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y-0.1) ** 2), direction) for
                                  x, y, theta, direction in rospy.get_param("/objectives/yellow/solar_panel")]
         
         for solar_objective in solar_objectives:
@@ -150,6 +150,20 @@ class Strategy:
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
             
+            while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+                self.close_enough_to_waypoint()
+                self.compute_path()
+                self.follow_path(self.current_objective.direction)
+            
+            self.wait_until_ready()
+            rospy.sleep(0.2)
+            self.reset_position_from_camera()
+
+            solar_objective.y+=0.1
+            solar_objective.cost = sqrt((solar_objective.x - self.position.x) ** 2 + (solar_objective.y - self.position.y) ** 2)
+            self.objectives = [solar_objective]
+            self.current_objective = self.objectives[0]
+
             while (self.path or self.objectives) and max_time > time.time() - self.start_time:
                 self.close_enough_to_waypoint()
                 self.compute_path()
