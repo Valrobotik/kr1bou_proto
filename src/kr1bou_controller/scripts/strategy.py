@@ -363,6 +363,8 @@ class Strategy:
                 setattr(self, f'bumper_{i + 1}', True)
             else:
                 setattr(self, f'bumper_{i + 1}', False)
+
+            rospy.loginfo(f"(STRATEGY) Bumper {i + 1} : {getattr(self, f'bumper_{i + 1}')}")
         self.need_for_compute = True
 
     def update_position(self, data):
