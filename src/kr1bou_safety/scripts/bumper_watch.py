@@ -24,13 +24,13 @@ def setup_buttons(pins):
     global buttons_list
     rospy.loginfo(f"(BUMPER WATCH) {pins}")
     buttons_list = [Button(int(pin)) for pin in pins]
-    for button in buttons_list:
-        button.when_pressed = on_bumper_press
-        button.when_released = on_bumper_release
-    while not rospy.is_shutdown():
-        state  = check_bumpers(buttons_list)
-        rospy.loginfo(f"(BUMPER WATCH) state : {state}")
-        pub.publish(state)
+    for i in range(0, len(buttons_list)):
+        buttons_list[i].when_pressed = on_bumper_press
+        buttons_list[i].when_released = on_bumper_release
+    # while not rospy.is_shutdown():
+    #     state  = check_bumpers(buttons_list)
+    #     rospy.loginfo(f"(BUMPER WATCH) state : {state}")
+    #     pub.publish(state)
 
 
 
