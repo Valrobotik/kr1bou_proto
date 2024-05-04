@@ -179,6 +179,7 @@ class Strategy:
         """Publishes the camera position to the odometry topic to correct the odometry"""
         rospy.loginfo("(STRATEGY) Debug odom correction")
         self.wait_until_ready()
+        rospy.sleep(0.3)
         if time.time() - self.last_time_cam < 10:
             self.got_cam_data = False
             while not self.got_cam_data:
