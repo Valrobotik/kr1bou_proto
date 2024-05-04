@@ -102,11 +102,11 @@ class Strategy:
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
-        #rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nUS: {self.us_data}, \nC: {self.camera_position}")
+        rospy.loginfo(f"Data : \nL: {self.lidar_data}")
         self.obstacles = get_discrete_obstacles(self.lidar_data, self.us_data,
-                                                    [(self.enemy_position.x, self.enemy_position.y)],
-                                                    self.resolution, self.radius, self.map_boundaries)
-        #rospy.loginfo(f"Obstacles : {self.obstacles}")
+                                                [(self.enemy_position.x, self.enemy_position.y)],
+                                                self.resolution, self.radius, self.map_boundaries)
+        rospy.loginfo(f"Obstacles : {self.obstacles}")
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
         self.previous_obstacles = self.obstacles
 
@@ -114,8 +114,8 @@ class Strategy:
             self.reset_position_from_camera()
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
-            rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
-            rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
+            # rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
+            # rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
 
         # Get the start and end nodes
         origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
@@ -123,7 +123,8 @@ class Strategy:
 
         # rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         if is_path_valid(self.path, self.obstacles):  # Check if the path is still valid
-            rospy.loginfo("(STRATEGY) Path still exists")
+            # rospy.loginfo("(STRATEGY) Path still exists")
+            pass
         else:  # Compute a new path
             # rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
             path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
@@ -293,43 +294,8 @@ class Strategy:
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction)
         self.wait_until_ready()
 
-    def move_to(self, objective_x, objective_y, speed=0.25, direction=BEST_DIRECTION):
-        self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
-        self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
-        self.previous_obstacles = self.obstacles
-        origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
-        origin.orientation = self.position.theta
-        self.path = []
-        while not rospy.is_shutdown():
-            if self.path == [] or not is_path_valid(self.path, self.obstacles):
-                path = a_star(origin, self.maze[int(objective_x * self.resolution)][int(objective_y * self.resolution)])
-                path = clean_path(path)
-                self.path = [Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for node in path]
-            self.close_enough_to_waypoint() 
-            self.follow_path()
-
-            if self.path == []: break
-        self.wait_until_ready()
-
-    def solar_panel(self, id = 0):
+    def solar_panel(self, id=0):
         objective_x, objective_y = rospy.get_param('/solar_panel')[id]
-        self.obstacles = set(get_discrete_obstacles(self.lidar_data, self.us_data, self.resolution))
-        self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
-        self.previous_obstacles = self.obstacles
-        origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
-        origin.orientation = self.position.theta
-        self.path = []
-        while not rospy.is_shutdown():
-            if self.path == [] or not is_path_valid(self.path, self.obstacles):
-                path = a_star(origin, self.maze[int(objective_x * self.resolution)][int(objective_y * self.resolution)])
-                path = clean_path(path)
-                self.path = [Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for node in path]
-            self.close_enough_to_waypoint() 
-            self.follow_path()
-
-            if self.path == []: break
-        self.wait_until_ready()
-
 
 
 def run(data):

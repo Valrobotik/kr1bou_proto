@@ -17,13 +17,13 @@ def on_button_press():
     rospy.loginfo("Team selected to blue")
     pub.publish(True)
     # Sending "Blue" ID to the speaker
-    bluetooth_choice.publish(2)
+    bluetooth_choice.publish(3)
 
 def on_button_released():
     rospy.loginfo("Team selected to yellow")
     pub.publish(False)
     # Sending "Yellow" ID to the speaker
-    bluetooth_choice.publish(1)
+    bluetooth_choice.publish(2)
 
 def run(data: Bool):
     global start
@@ -66,12 +66,12 @@ if __name__ == '__main__':
             rospy.loginfo("True - Is Blue")
             pub.publish(True)
             # Sending "Blue" ID to the speaker
-            bluetooth_choice.publish(2)
+            bluetooth_choice.publish(3)
         else:
             rospy.loginfo("False - Is Yellow")
             pub.publish(False)
             # Sending "Yellow" ID to the speaker
-            bluetooth_choice.publish(1)
+            bluetooth_choice.publish(2)
 
         button.when_pressed = on_button_press
         button.when_released = on_button_released

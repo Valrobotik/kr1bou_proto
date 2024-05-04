@@ -36,7 +36,7 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, r
     # Get the obstacles from the lidar
     obstacles = extend_obstacles(lidar_data, obstacles, radius, resolution, map_boundaries)
     # Get the obstacles from the camera
-    obstacles = extend_obstacles(camera_data, obstacles, radius, resolution, map_boundaries)
+    # obstacles = extend_obstacles(camera_data, obstacles, radius, resolution, map_boundaries)
     return obstacles
 
 
