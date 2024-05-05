@@ -55,8 +55,7 @@ class Strategy:
         self.obstacles1 = set()  # List of obstacles with radius
         self.obstacles2 = set()  # List of obstacles with radius - 10
         self.previous_obstacles = set()  # Previous obstacles
-        self.maze = np.zeros(
-            (int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), dtype=Node)
+        self.maze = np.zeros((int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), dtype=Node)
         self.maze = setup_maze(self.maze, self.obstacles1)
         self.custom_waiting_rate = rospy.Rate(20)
 
@@ -104,10 +103,10 @@ class Strategy:
 
         self.start_time = time.time()
         self.debug_phase()
-        #self.plant_phase()
-        #self.solar_phase()
-        #self.home_phase()
-        
+        # self.plant_phase()
+        # self.solar_phase()
+        # self.home_phase()
+
         # self.solar_pub.publish(Int16(90))
 
         # self.go_to(2.8, 1, on_axis=X_PLUS)
@@ -190,10 +189,10 @@ class Strategy:
             # Rotate self
             self.rotate_only(3 * pi / 2)
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
-            
+
             # Get arm in the right position
             self.need_solar_winner = True
-            
+
             # Wait for solar panel winner
             rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
             while self.latest_solar_winner == SOLAR_DEFAULT:
@@ -220,7 +219,7 @@ class Strategy:
 
             # Forward
             rospy.loginfo(f"(STRATEGY) Forward")
-            self.go_to(self.position.x, self.position.y - .05, 3*pi/2, .15, FORWARD, Y_MINUS)
+            self.go_to(self.position.x, self.position.y - .05, 3 * pi / 2, .15, FORWARD, Y_MINUS)
             self.wait_until_ready()
             self.solar_mode_pub.publish(False)
             # Rotate solar panel
@@ -245,20 +244,22 @@ class Strategy:
                 # Reset arm
                 self.solar_pub.publish(Int16(0))
                 rospy.sleep(.1)
-                
+
             # Forward
             self.go_to(self.position.x, self.position.y - .05, 3 * pi / 2, .15, BACKWARD, Y_PLUS)
 
     def close_enough_to_waypoint(self, threshold=5.0):
-        while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
+        while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (
+                self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
             self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
-        if sqrt((self.position.x - self.current_objective.x) ** 2 + (self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:
+        if sqrt((self.position.x - self.current_objective.x) ** 2 + (
+                self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:
             self.current_objective = None
 
     def close_enough_raw_waypoint(self, threshold=10.0):
-        while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (self.position.y - self.raw_path[0].position[1]) ** 2) < threshold:
+        while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (
+                self.position.y - self.raw_path[0].position[1]) ** 2) < threshold:
             self.raw_path.pop(0)
-
 
     def compute_path(self):
         """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
@@ -268,8 +269,9 @@ class Strategy:
         rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.enemy_position} \n SELF POS : {self.position}")
         self.close_enough_raw_waypoint()
         self.obstacles1, self.obstacles2 = get_discrete_obstacles(self.lidar_data, self.us_data,
-                                                [(self.enemy_position.x, self.enemy_position.y)],
-                                                self.resolution, self.radius, self.map_boundaries, self.position)
+                                                                  [(self.enemy_position.x, self.enemy_position.y)],
+                                                                  self.resolution, self.radius, self.map_boundaries,
+                                                                  self.position)
         # rospy.loginfo(f"Obstacles : {len(self.obstacles)}")
 
         if self.current_objective is None:  # Get new closest objective
@@ -280,22 +282,21 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
             # rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
 
-
         # rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         if is_path_valid(self.raw_path, self.obstacles2):  # Check if the path is still valid with a 10 cm margin
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
-            # self.maze = setup_maze(np.zeros((self.map_boundaries[2] * self.resolution, self.map_boundaries[3] * self.resolution), dtype=Node), self.obstacles1)
             self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
             self.previous_obstacles = self.obstacles1
-            
+
             # Get the start and end nodes
             origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
-            origin.orientation = self.position.theta  
-            end = self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]
+            origin.orientation = self.position.theta
+            end = self.maze[int(self.current_objective.x * self.resolution)][
+                int(self.current_objective.y * self.resolution)]
             end.orientation = self.current_objective.theta
             rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {end.position}")
-            
+
             self.game_states.append([origin.position,
                                      self.maze[int(self.current_objective.x * self.resolution)][
                                          int(self.current_objective.y * self.resolution)].position,
@@ -356,7 +357,7 @@ class Strategy:
         rospy.Subscriber('state', Int16, self.update_state)
         rospy.Subscriber('Team', Bool, self.update_team)
 
-    def reset_position_from_camera(self, wait : float = .3):
+    def reset_position_from_camera(self, wait: float = .3):
         """Publishes the camera position to the odometry topic to correct the odometry"""
         self.wait_until_ready()
         rospy.sleep(wait)
@@ -414,7 +415,8 @@ class Strategy:
             blue_position, yellow_position = blue_robot, yellow_robot
         else:
             blue_position, yellow_position = yellow_robot, blue_robot
-        self.camera_position, self.enemy_position = parse_camera_data(yellow_robot, blue_robot, blue_position, yellow_position)
+        self.camera_position, self.enemy_position = parse_camera_data(yellow_robot, blue_robot, blue_position,
+                                                                      yellow_position)
         self.camera_position.theta = clamp_theta(self.camera_position.theta)
         self.enemy_position.theta = clamp_theta(self.enemy_position.theta)
 
@@ -436,6 +438,7 @@ class Strategy:
         if self.need_solar_winner:
             self.need_solar_winner = False
             self.latest_solar_winner = winner.data
+
     def stop(self):
         self.go_to(self.position.x, self.position.y)  # Stop the robot
 
@@ -462,11 +465,12 @@ class Strategy:
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
         self.wait_until_ready()
 
-    def rotate_only(self, angle : float, speed : float = .2):
+    def rotate_only(self, angle: float, speed: float = .2):
         self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
         self.reset_position_from_camera()
         self.wait_until_ready()
-        while abs(self.camera_position.theta - angle) > 0.05:                                      ####### verifier cette ligne entre position depuis odom ou position depuis cammmera
+        # TODO verifier cette ligne entre position depuis odom ou position depuis camera
+        while abs(self.camera_position.theta - angle) > 0.05:
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
             self.reset_position_from_camera(.1)
