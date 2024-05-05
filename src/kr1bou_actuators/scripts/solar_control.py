@@ -41,11 +41,8 @@ if __name__ == "__main__":
     # GPIO.setup(pwm_gpio, GPIO.OUT)
     # pwm = GPIO.PWM(pwm_gpio, frequency)
 
-    servo = AngularServo(pwm_gpio, min_angle=-90, max_angle=90)
+    servo = AngularServo(pwm_gpio, initial_angle=135, min_angle=0, max_angle=270, min_pulse_width=1/1000, max_pulse_width=2.5/1000)
     rospy.loginfo(f"Servo initialized on GPIO {pwm_gpio}")
-    servo.angle = 0
-    rospy.sleep(3)
-    servo.angle = -90
 
     #rospy.Subscriber("solar_angle", Int16, rotate_to)
 
