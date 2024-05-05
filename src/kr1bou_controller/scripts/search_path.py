@@ -26,7 +26,6 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     # Loop until the open list is empty
     while open_set:
         print("computing\r",end="")
-        sys.stdout.flush()
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_set)  # Also remove from open set
         closed_set.add(current_node)
@@ -37,6 +36,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
             while current is not None:
                 path.append(current)
                 current = current.parent
+            print("Path found")
             return path[::-1]
 
         # Explore neighbors
