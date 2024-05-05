@@ -55,7 +55,8 @@ class Strategy:
         self.obstacles1 = set()  # List of obstacles with radius
         self.obstacles2 = set()  # List of obstacles with radius - 10
         self.previous_obstacles = set()  # Previous obstacles
-        self.maze = np.zeros((int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), dtype=Node)
+        self.maze_shape = (int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution))
+        self.maze = np.zeros(self.maze_shape, dtype=Node)
         self.maze = setup_maze(self.maze, self.obstacles1)
         self.custom_waiting_rate = rospy.Rate(20)
 
@@ -102,7 +103,7 @@ class Strategy:
             rospy.sleep(0.05)
 
         self.start_time = time.time()
-        #self.debug_phase()
+        # self.debug_phase()
         # self.plant_phase()
         self.solar_phase()
         # self.home_phase()
@@ -154,7 +155,7 @@ class Strategy:
 
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
-        max_time = rospy.get_param("/phases/solar_panel")
+        # max_time = rospy.get_param("/phases/solar_panel")
 
         if self.team == TEAM_BLUE:
             solar_objectives = [

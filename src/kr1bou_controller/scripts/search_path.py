@@ -5,7 +5,6 @@ from math import atan2
 from utils import *
 import numpy as np
 import pickle as pkl
-import sys
 
 
 def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
@@ -22,8 +21,6 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     start_node.g = 0
     start_node.h = heuristic(start_node, end_node)
     start_node.f = start_node.h
-
-    onset = time.perf_counter()
 
     # Loop until the open list is empty
     while open_set:

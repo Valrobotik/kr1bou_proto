@@ -10,7 +10,7 @@ PIN = 13
 
 # Set function to calculate percent from angle
 def convert_angle(angle: int):
-    if angle < 0 and angle > 180:
+    if 0 > angle > 180:
         return 0
     return int(120 - (angle * 180 / 270))
 
@@ -22,6 +22,7 @@ def rotate_to(data: Int16):
     servo.write(convert_angle(angle))
     rospy.sleep(0.5)
     rospy.loginfo(f"{rospy.get_name()} sent: {convert_angle(angle)} to Servo")
+
 
 if __name__ == "__main__":
     # Initialization
