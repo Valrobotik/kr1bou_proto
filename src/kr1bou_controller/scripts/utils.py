@@ -3,7 +3,7 @@ import rospy
 from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 DIRECTIONS = {(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)}
 INF = float('inf')
@@ -33,7 +33,7 @@ class Node:
 
     def __str__(self):
         return f"({self.position})"
-    
+
     def __repr__(self):
         return f"Node({self.position}, {self.orientation})"
 
@@ -93,20 +93,23 @@ class Objective:
         return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
 
 
-def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int, map_boundaries: list) -> set:
+def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int,
+                           map_boundaries: list) -> Tuple[set, set]:
     """Get the obstacles from the ultrasound sensors (etc.), the position of the adversary and discretize them
-    """
-    obstacles = set()
+    We extend each obstacle to 2 squares around it to take into account the robot's size. First square is radius, and
+    second is more lenient."""
+    obstacles1, obstacles2 = set(), set()
     # Get the obstacles from the ultrasound sensors (values in meters)
-    # obstacles = extend_obstacles(us_data, obstacles, radius, resolution, map_boundaries)
+    # obstacles1, obstacles2 = extend_obstacles(us_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
     # Get the obstacles from the lidar
-    obstacles = extend_obstacles(lidar_data, obstacles, radius, resolution, map_boundaries)
+    obstacles1, obstacles2 = extend_obstacles(lidar_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
     # Get the obstacles from the camera
-    obstacles = extend_obstacles(camera_data, obstacles, radius, resolution, map_boundaries)
-    return obstacles
+    obstacles1, obstacles2 = extend_obstacles(camera_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
+    return obstacles1, obstacles2
 
 
-def extend_obstacles(data: list, obstacles: set, radius: int, resolution: int, map_boundaries: list) -> set:
+def extend_obstacles(data: list, obstacles1: set, obstacles2: set, radius: int, resolution: int,
+                     map_boundaries: list) -> Tuple[set, set]:
     for i, (x, y) in enumerate(data):
         if (x, y) not in [(0, 0), (-1, -1)]:
             # Meters to unit
@@ -115,8 +118,11 @@ def extend_obstacles(data: list, obstacles: set, radius: int, resolution: int, m
             for j in range(-radius, radius + 1):
                 for k in range(-radius, radius + 1):
                     if 0 <= x_ + j < map_boundaries[2] * resolution and 0 <= y_ + k < map_boundaries[3] * resolution:
-                        obstacles.add((x_ + j, y_ + k))
-    return obstacles
+                        obstacles1.add((x_ + j, y_ + k))
+                    # Extend to a square of radius - 10 around the obstacle
+                    if -radius + 10 <= j <= radius - 10 and -radius + 10 <= k <= radius - 10:
+                        obstacles2.add((x_ + j, y_ + k))
+    return obstacles1, obstacles2
 
 
 def setup_maze(maze, obstacles: set):
@@ -155,6 +161,11 @@ def is_path_valid(path: list, obstacles: set) -> bool:
     return superposed == []
 
 
+def meters_to_units(path: list, resolution: int) -> list:
+    """Convert the path from meters to units"""
+    return [(node.position[0] / resolution, node.position[1] / resolution) for node in path]
+
+
 def clamp_theta(theta: float) -> float:
     """Clamp the angle between 0 and 2pi"""
     new_theta = theta
@@ -188,7 +199,7 @@ def print_maze(start, end, maze, path: Optional[List[Node]] = None):
         print()
 
 
-def save_game_state(maze: np.ndarray, path: list, obstacles: set, resolution: int, map_boundaries: list, filename: str, show=False):
+def save_game_state(maze, path: list, obstacles: set, resolution: int, map_boundaries: list, filename: str, show=False):
     """Save the current game state in a file using matplotlib"""
     fig, ax = plt.subplots()
     ax.set_xlim(0, map_boundaries[2] * resolution)  # Convert to unit
@@ -199,8 +210,9 @@ def save_game_state(maze: np.ndarray, path: list, obstacles: set, resolution: in
             if maze[i][j].is_obstacle:
                 ax.add_patch(plt.Rectangle((i, j), 1, 1, color='black'))
     if path:
-        for node in path:   # convert path to used unit
-            ax.add_patch(plt.Rectangle((node.position[0] * resolution, node.position[1] * resolution), 1, 1, color='blue'))
+        for node in path:  # convert path to used unit
+            ax.add_patch(
+                plt.Rectangle((node.position[0] * resolution, node.position[1] * resolution), 1, 1, color='blue'))
     for obstacle in obstacles:
         ax.add_patch(plt.Rectangle((obstacle[0], obstacle[1]), 1, 1, color='red'))
     plt.savefig(filename)

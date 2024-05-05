@@ -51,11 +51,12 @@ class Strategy:
         self.radius = rospy.get_param('/radius')  # Radius of the robot in the resolution/unit given.
         self.raw_path = []  # Raw path to follow
         self.path = []  # List of waypoints to follow
-        self.obstacles = set()  # List of obstacles
+        self.obstacles1 = set()  # List of obstacles with radius
+        self.obstacles2 = set()  # List of obstacles with radius - 10
         self.previous_obstacles = set()  # Previous obstacles
         self.maze = np.zeros(
             (int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), dtype=Node)
-        self.maze = setup_maze(self.maze, self.obstacles)
+        self.maze = setup_maze(self.maze, self.obstacles1)
         self.custom_waiting_rate = rospy.Rate(20)
 
         # -- Subscribers --
@@ -111,11 +112,13 @@ class Strategy:
         rospy.loginfo("(STRATEGY) Starting debug phase")
         max_time = rospy.get_param("/phases/debug")
         if self.team == TEAM_BLUE:
-            self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                                 x, y, theta, direction in rospy.get_param("/objectives/blue/debug")]
+            self.objectives = [
+                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+                x, y, theta, direction in rospy.get_param("/objectives/blue/debug")]
         else:
-            self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                                 x, y, theta, direction in rospy.get_param("/objectives/yellow/debug")]
+            self.objectives = [
+                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+                x, y, theta, direction in rospy.get_param("/objectives/yellow/debug")]
         self.current_objective = self.objectives[0]
         while (self.path or self.objectives) and max_time > time.time() - self.start_time:
             self.compute_path()
@@ -126,11 +129,13 @@ class Strategy:
         rospy.loginfo("(STRATEGY) Starting plant phase")
         max_time = rospy.get_param("/phases/plant")
         if self.team == TEAM_BLUE:
-            self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                                 x, y, theta, direction in rospy.get_param("/objectives/blue/plant")]
+            self.objectives = [
+                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+                x, y, theta, direction in rospy.get_param("/objectives/blue/plant")]
         else:
-            self.objectives = [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                                 x, y, theta, direction in rospy.get_param("/objectives/yellow/plant")]
+            self.objectives = [
+                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+                x, y, theta, direction in rospy.get_param("/objectives/yellow/plant")]
         self.current_objective = self.objectives[0]
 
         while (self.path or self.objectives) and max_time > time.time() - self.start_time:
@@ -139,18 +144,22 @@ class Strategy:
             self.follow_path(self.current_objective.direction)
 
         rospy.loginfo("(STRATEGY) Plant phase is over")
-    
+
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
         max_time = rospy.get_param("/phases/solar_panel")
 
         if self.team == TEAM_BLUE:
-            solar_objectives = [Objective(x, y-0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y-0.1) ** 2), direction) for
-                                 x, y, theta, direction in rospy.get_param("/objectives/blue/solar_panel")]
+            solar_objectives = [
+                Objective(x, y - 0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y - 0.1) ** 2),
+                          direction) for
+                x, y, theta, direction in rospy.get_param("/objectives/blue/solar_panel")]
         else:
-            solar_objectives = [Objective(x, y-0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y-0.1) ** 2), direction) for
-                                 x, y, theta, direction in rospy.get_param("/objectives/yellow/solar_panel")]
-        
+            solar_objectives = [
+                Objective(x, y - 0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y - 0.1) ** 2),
+                          direction) for
+                x, y, theta, direction in rospy.get_param("/objectives/yellow/solar_panel")]
+
         for solar_objective in solar_objectives:
             # Move to start position
             self.objectives = [solar_objective]
@@ -170,8 +179,9 @@ class Strategy:
             # rospy.sleep(0.2)
             # self.reset_position_from_camera()
 
-            solar_objective.y+=0.1
-            solar_objective.cost = sqrt((solar_objective.x - self.position.x) ** 2 + (solar_objective.y - self.position.y) ** 2)
+            solar_objective.y += 0.1
+            solar_objective.cost = sqrt(
+                (solar_objective.x - self.position.x) ** 2 + (solar_objective.y - self.position.y) ** 2)
             self.objectives = [solar_objective]
             self.current_objective = self.objectives[0]
 
@@ -197,11 +207,11 @@ class Strategy:
             # Get arm in the right position
             while self.latest_solar_winner == SOLAR_DEFAULT:
                 rospy.sleep(0.1)
-            
+
             rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_NEUTRAL or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BOTH:
                 self.solar_pub.publish(Int16(180))
-            
+
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_BLUE or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_YELLOW:
                 continue
 
@@ -225,14 +235,14 @@ class Strategy:
 
             # Backwards
             self.back_until_bumper()
-            
+
             # Reset arm
             self.solar_pub.publish(Int16(0))
             rospy.sleep(.1)
 
             if need_twice:
                 # Forward
-                self.go_to(self.position.x, self.position.y - .03, 3*pi/2, .15, FORWARD)
+                self.go_to(self.position.x, self.position.y - .03, 3 * pi / 2, .15, FORWARD)
 
                 # Rotate solar panel
                 self.solar_pub.publish(Int16(90))
@@ -240,21 +250,13 @@ class Strategy:
 
                 # Backwards
                 self.back_until_bumper()
-                
+
                 # Reset arm
                 self.solar_pub.publish(Int16(0))
                 rospy.sleep(.1)
 
-
     def close_enough_to_waypoint(self, threshold=5.0):
-        while (len(self.path) > 0 and sqrt((self.position.x - self.path[0].position[0]) ** 2 +
-                                           (self.position.y - self.path[0].position[1]) ** 2)
-               < threshold / self.resolution):
-            # rospy.loginfo(f"""(STRATEGY) Distance: {sqrt((self.position.x - self.path[0].position[0]) ** 2 +
-            #                                              (self.position.y - self.path[0].position[1]) ** 2)}""")
-            # rospy.loginfo(f"(STRATEGY) Threshold: {threshold / self.resolution}")
-            # rospy.loginfo(f"""(STRATEGY) Robot is close enough to the nearest waypoint. Removing {self.path[0]} 
-            # from the path.""")
+        while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
             self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
 
     def compute_path(self):
@@ -263,12 +265,12 @@ class Strategy:
         :return: the path to follow
         """
         rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.enemy_position}")
-        self.obstacles = get_discrete_obstacles(self.lidar_data, self.us_data,
+        self.obstacles1, self.obstacles2 = get_discrete_obstacles(self.lidar_data, self.us_data,
                                                 [(self.enemy_position.x, self.enemy_position.y)],
                                                 self.resolution, self.radius, self.map_boundaries)
         # rospy.loginfo(f"Obstacles : {len(self.obstacles)}")
-        self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles)
-        self.previous_obstacles = self.obstacles
+        self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
+        self.previous_obstacles = self.obstacles1
 
         if self.path == [] and self.objectives != []:  # Get new closest objective
             self.reset_position_from_camera()
@@ -282,25 +284,22 @@ class Strategy:
         origin.orientation = self.position.theta
 
         # rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
-        if is_path_valid(self.raw_path, self.obstacles):  # Check if the path is still valid
-            # rospy.loginfo("(STRATEGY) Path still exists")
-            pass
+        if is_path_valid(self.raw_path, self.obstacles2):  # Check if the path is still valid with a 10 cm margin
+            rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
-            rospy.loginfo(f"(STRATEGY) unvalid path Computing path from {origin.position} to {self.current_objective}")
+            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
             # save variables using pickle
             self.game_states.append([origin.position,
-                                     self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)].position,
-                                     self.path, self.obstacles, self.resolution, self.map_boundaries])
+                                     self.maze[int(self.current_objective.x * self.resolution)][
+                                         int(self.current_objective.y * self.resolution)].position,
+                                     self.path, self.obstacles1, self.obstacles2, self.resolution, self.map_boundaries])
             with open("all_game_states.pkl", "wb") as f:
                 pickle.dump(self.game_states, f)
-            self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)][
-                int(self.current_objective.y * self.resolution)])
+            self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)]
+                                                    [int(self.current_objective.y * self.resolution)])
             rospy.loginfo(f"(STRATEGY) new Raw path computed : {self.raw_path}")
             self.path = clean_path(self.raw_path)
-            self.path = [
-                Node((node.position[0] / self.resolution, node.position[1] / self.resolution), node.orientation) for
-                node in self.path]
-            # rospy.loginfo(f"(STRATEGY) Path computed in {time.time() - onset} seconds")
+            self.path = meters_to_units(self.path, self.resolution)
             # rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
 
         # Remove node if the robot is already on it if the robot is already following a path
@@ -332,7 +331,7 @@ class Strategy:
             # rospy.loginfo("(STRATEGY) Waiting for the robot to be ready...")
             self.custom_waiting_rate.sleep()
 
-    def follow_path(self, direction = BEST_DIRECTION):
+    def follow_path(self, direction=BEST_DIRECTION):
         if self.path:
             # rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, direction)
@@ -460,7 +459,6 @@ class Strategy:
         elif axis == 'x+':
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
         self.wait_until_ready()
-
 
 
 def run(data):
