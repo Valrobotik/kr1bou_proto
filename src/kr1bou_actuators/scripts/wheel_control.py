@@ -61,9 +61,9 @@ class WheelController:
             while len(self.list_command_to_send) > 0:
                 try:
                     str_ = ""
-                    for comande in self.list_command_to_send:
-                        str_ += comande
-                        self.list_command_to_send.pop(self.list_command_to_send.index(comande))
+                    for command in self.list_command_to_send:
+                        str_ += command
+                        self.list_command_to_send.pop(self.list_command_to_send.index(command))
                     self.serial_port.write(str_.encode())
                     # rospy.loginfo(f"(WHEEL CONTROL) send_data : {str}")
                 except serial.SerialException as s:

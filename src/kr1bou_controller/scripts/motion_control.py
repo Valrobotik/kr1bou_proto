@@ -45,7 +45,8 @@ X_PLUS = 1
 X_MINUS = 2
 Y_PLUS = 3
 Y_MINUS = 4
-PREFERED_AXIS = 5
+PREFERRED_AXIS = 5
+
 
 class Kr1bou:
     def __init__(self):
@@ -72,7 +73,7 @@ class Kr1bou:
         self.force_backward = False
         self.axis_mode = NO_AXIS_MODE
 
-        self.angle_to_folow = 0
+        self.angle_to_follow = 0
 
         self.emergency_current = EMERGENCY_BACK
 
@@ -95,7 +96,6 @@ class Kr1bou:
         rospy.Subscriber('Emergency_stop', Int16, self.stop_move)
         rospy.Subscriber('solar_mode', Bool, self.update_solar_mode)
         rospy.Subscriber('axis_mode', Int16, self.update_axis_mode)
-
 
     def stop_move(self, data: Int16):
         self.emergency_current = data.data
@@ -147,26 +147,25 @@ class Kr1bou:
     def update_axis_mode(self, data: Int16):
         self.axis_mode = data.data
         if self.axis_mode == X_PLUS:
-            self.angle_to_folow = 0
+            self.angle_to_follow = 0
         elif self.axis_mode == X_MINUS:
-            self.angle_to_folow = pi
+            self.angle_to_follow = pi
         elif self.axis_mode == Y_PLUS:
-            self.angle_to_folow = pi / 2
+            self.angle_to_follow = pi / 2
         elif self.axis_mode == Y_MINUS:
-            self.angle_to_folow = 3*pi / 2
-        elif self.axis_mode == PREFERED_AXIS:
-            self.angle_to_folow = atan2(self.objectif_y - self.y, self.objectif_x - self.x)
-            
+            self.angle_to_follow = 3*pi / 2
+        elif self.axis_mode == PREFERRED_AXIS:
+            self.angle_to_follow = atan2(self.objectif_y - self.y, self.objectif_x - self.x)
 
     def update_pose(self, data: Pose2D):
         self.x = data.x
         self.y = data.y
         self.theta = data.theta
 
-    def update_speed(self, force_angle_line = -1):
+    def update_speed(self, force_angle_line=-1):
         x2 = self.objectif_x
         y2 = self.objectif_y
-        #rospy.loginfo(f"(MOTION CONTROL) from : {self.x} ; {self.y} to : {x2} ; {y2}")
+        # rospy.loginfo(f"(MOTION CONTROL) from : {self.x} ; {self.y} to : {x2} ; {y2}")
 
         # rospy.loginfo(f"(MOTION CONTROL) going to : {x2} ; {y2}")
         force_forward = self.force_forward
@@ -195,15 +194,15 @@ class Kr1bou:
         diff_angle_line_to_robot = angleDiffRad(destination_angle, angle_line_to_robot)
 
         is_on_right_side = diff_angle_line_to_robot > 0.0
-        target_angle = destination_angle + atan(dist_to_line * 1) * (-1 if is_on_right_side else 1)        ### dist_to_line * 3.5   
+        target_angle = destination_angle + atan(dist_to_line * 1) * (-1 if is_on_right_side else 1)  # dist_to_line * 3.5
 
         dx_base = x2 - pos[0]
         dy_base = y2 - pos[1]
 
         dist_to_base = sqrt(dx_base * dx_base + dy_base * dy_base)
-        #rospy.loginfo(f"(MOTION CONTROL) 2 from : {self.x} ; {self.y} to : {x2} ; {y2}")
-        #rospy.loginfo(f"(MOTION CONTROL) dx_base : {dx_base} / dy_base : {dy_base}")
-        #rospy.loginfo(f"(MOTION CONTROL) dist_to_base : {dist_to_base}")
+        # rospy.loginfo(f"(MOTION CONTROL) 2 from : {self.x} ; {self.y} to : {x2} ; {y2}")
+        # rospy.loginfo(f"(MOTION CONTROL) dx_base : {dx_base} / dy_base : {dy_base}")
+        # rospy.loginfo(f"(MOTION CONTROL) dist_to_base : {dist_to_base}")
         
         m_goto_base_reached = False
         if dist_to_base < GOTO_BASE_DISTANCE_THRESHOLD:
@@ -255,8 +254,8 @@ class Kr1bou:
         self.objectif_y = data.y
         self.objectif_theta = data.theta
 
-        if self.axis_mode == PREFERED_AXIS:
-            self.angle_to_folow = atan2(self.objectif_y - self.y, self.objectif_x - self.x)
+        if self.axis_mode == PREFERRED_AXIS:
+            self.angle_to_follow = atan2(self.objectif_y - self.y, self.objectif_x - self.x)
 
     def stop(self, data: Bool):
         if data.data:

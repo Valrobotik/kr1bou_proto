@@ -1,9 +1,8 @@
 import rospy
-# from math import sqrt
 from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 DIRECTIONS = {(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)}
 INF = float('inf')
@@ -148,7 +147,7 @@ def setup_maze(maze, obstacles: set):
     return maze
 
 
-def update_maze(maze: np.ndarray, obstacles: set, new_obstacles: set):
+def update_maze(maze: Union[np.ndarray, List[List[Node]]], new_obstacles: set, obstacles: set) -> Union[np.ndarray, List[List[Node]]]:
     not_obstacles_anymore = obstacles - new_obstacles
     for not_obstacle in not_obstacles_anymore:
         maze[not_obstacle[0]][not_obstacle[1]].is_obstacle = False
@@ -163,7 +162,6 @@ def update_maze(maze: np.ndarray, obstacles: set, new_obstacles: set):
             maze[i][j].h = 0
             maze[i][j].parent = None
     return maze
-
 
 
 def is_path_valid(path: list, obstacles: set) -> bool:

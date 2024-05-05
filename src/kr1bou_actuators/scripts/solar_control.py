@@ -5,53 +5,36 @@ import rospy
 from std_msgs.msg import Int16, Bool
 from piservo import Servo
 
+PIN = 13
+
 
 # Set function to calculate percent from angle
 def convert_angle(angle: int):
-    """Maps the angle from 180 to 270 degrees"""
-    if angle < 0 and angle > 180:
+    if 0 > angle > 180:
         return 0
+    return int(120 - (angle * 180 / 270))
 
-    return int(270 - (angle * 180 / 270))
 
-
-def go_to(data: Int16):
-    global pwm
-    pwm.start(angle_to_percent(data.data))
-    rospy.loginfo(f"(SOLAR_CONTROL) {data.data}")
-    rospy.sleep(3)
-    pwm.stop()
-
-def run(data: Bool):
-    global start
-    start = data.data
-    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
+def rotate_to(data: Int16):
+    global servo
+    rospy.loginfo(f"{rospy.get_name()} received: {data.data} from solar_angle")
+    angle = data.data
+    servo.write(convert_angle(angle))
+    rospy.sleep(0.5)
+    rospy.loginfo(f"{rospy.get_name()} sent: {convert_angle(angle)} to Servo")
 
 
 if __name__ == "__main__":
-    start = False
-    pwm = None
-    time_run = 0
     # Initialization
     rospy.init_node("solar_control", anonymous=True)
     rospy.loginfo("[START] Solar Controller node has started.")
 
-    # Use pin 12 for PWM signal
-    pwm_gpio = 12
-    frequency = 50
-    rospy.Subscriber("solar_angle", Int16, go_to)
+    # Subscribe to solar_angle
+    rospy.Subscriber("solar_angle", Int16, rotate_to)
 
+    # Initialize servo
     servo = Servo(13)
-    servo.write(0)
-    rospy.sleep(3)
-    servo.write(convert_angle(45))
-    rospy.sleep(3)
-    servo.write(convert_angle(90))
-    rospy.sleep(3)
-    servo.write(convert_angle(135))
-    rospy.sleep(3)
-    servo.write(convert_angle(180))
-    rospy.sleep(3)
+    servo.write(convert_angle(0))
 
     rospy.spin()
     rospy.loginfo("[STOP] Solar Controller node has stopped.")

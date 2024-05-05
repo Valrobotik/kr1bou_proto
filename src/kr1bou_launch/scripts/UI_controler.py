@@ -7,29 +7,30 @@ import rospy
 import serial
 from std_msgs.msg import Bool
 
-TEAM_BLUE = 1
-TEAM_YELLOW = 0
 
-start = 0
 def run(data: Bool):
     global start, ser
     start = data.data
-    if start : ser.write(b'RDY\r')
+    if start:
+        ser.write(b'RDY\r')
     rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
 
-team = -1
-def update_team(data : Bool):
+
+def update_team(data: Bool):
     global team, ser
-    if data.data : 
+    if data.data:
         ser.write(b'B\r')
         team = TEAM_BLUE
-    else :
+    else:
         ser.write(b'Y\r')
         team = TEAM_YELLOW
 
-    
+
 if __name__ == '__main__':
     start = False
+    team = -1
+    TEAM_BLUE = 1
+    TEAM_YELLOW = 0
     try:
         # Initialization
         rospy.init_node('UI_controler', anonymous=True)
@@ -42,5 +43,5 @@ if __name__ == '__main__':
         ser.write(b'INI\r')
         rospy.spin()
     except Exception as e:
-        rospy.logerr("Error on UI Controler")
+        rospy.logerr("Error on UI Controller")
         rospy.logerr(e)

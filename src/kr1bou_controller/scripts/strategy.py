@@ -55,7 +55,8 @@ class Strategy:
         self.obstacles1 = set()  # List of obstacles with radius
         self.obstacles2 = set()  # List of obstacles with radius - 10
         self.previous_obstacles = set()  # Previous obstacles
-        self.maze = np.zeros((int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution)), dtype=Node)
+        self.maze_shape = (int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution))
+        self.maze = np.zeros(self.maze_shape, dtype=Node)
         self.maze = setup_maze(self.maze, self.obstacles1)
         self.custom_waiting_rate = rospy.Rate(20)
 
@@ -102,9 +103,9 @@ class Strategy:
             rospy.sleep(0.05)
 
         self.start_time = time.time()
-        self.debug_phase()
+        # self.debug_phase()
         # self.plant_phase()
-        # self.solar_phase()
+        self.solar_phase()
         # self.home_phase()
 
         # self.solar_pub.publish(Int16(90))
@@ -154,7 +155,7 @@ class Strategy:
 
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
-        max_time = rospy.get_param("/phases/solar_panel")
+        # max_time = rospy.get_param("/phases/solar_panel")
 
         if self.team == TEAM_BLUE:
             solar_objectives = [
@@ -212,7 +213,6 @@ class Strategy:
 
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(True)
-            rospy.sleep(.1)
             # Bump
             rospy.loginfo(f"(STRATEGY) back until bumper")
             self.back_until_bumper()
@@ -384,7 +384,6 @@ class Strategy:
             else:
                 setattr(self, f'bumper_{i + 1}', False)
 
-            rospy.loginfo(f"(STRATEGY) Bumper {i + 1} : {getattr(self, f'bumper_{i + 1}')}")
         self.need_for_compute = True
 
     def update_position(self, data):
