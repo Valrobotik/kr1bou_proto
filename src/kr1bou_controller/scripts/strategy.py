@@ -476,7 +476,6 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
             self.reset_position_from_camera(.1)
-            self.wait_until_ready()
 
 
 def run(data):
