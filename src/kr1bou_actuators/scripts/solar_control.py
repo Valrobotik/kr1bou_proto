@@ -52,7 +52,7 @@ if __name__ == "__main__":
         pwm.start(angle_to_percent(0))
         rospy.sleep(3)
         pwm.stop()
-        pwm.start(angle_to_percent(180))
+        pwm.start(angle_to_percent(90))
         rospy.sleep(3)
         pwm.stop()
         rospy.spin()
