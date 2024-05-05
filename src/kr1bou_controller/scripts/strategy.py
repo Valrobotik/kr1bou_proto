@@ -3,6 +3,7 @@
 import time
 from math import sqrt
 
+import rospy
 from geometry_msgs.msg import Pose2D, PoseArray
 from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 
@@ -262,6 +263,9 @@ class Strategy:
                 rospy.sleep(.1)
 
     def close_enough_to_waypoint(self, threshold=5.0):
+        rospy.loginfo(self.position)
+        rospy.loginfo(self.path)
+        rospy.loginfo(self.path[0])
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
             self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
 
