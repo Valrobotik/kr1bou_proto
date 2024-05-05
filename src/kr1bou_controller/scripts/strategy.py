@@ -269,7 +269,6 @@ class Strategy:
                                                 [(self.enemy_position.x, self.enemy_position.y)],
                                                 self.resolution, self.radius, self.map_boundaries, self.position)
         # rospy.loginfo(f"Obstacles : {len(self.obstacles)}")
-        self.previous_obstacles = self.obstacles1
 
         if self.current_objective is None:  # Get new closest objective
             self.reset_position_from_camera()
@@ -285,9 +284,13 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
             self.maze = setup_maze(np.zeros((self.map_boundaries[2] * self.resolution, self.map_boundaries[3] * self.resolution), dtype=Node), self.obstacles1)
+            
+            #self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
+            self.previous_obstacles = self.obstacles1
+            
             # Get the start and end nodes
             origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
-            origin.orientation = self.position.theta  # self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
+            origin.orientation = self.position.theta  
             rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
             
             self.game_states.append([origin.position,
