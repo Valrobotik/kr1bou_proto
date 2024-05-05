@@ -47,7 +47,7 @@ if __name__ == "__main__":
         rospy.Subscriber("solar_angle", Int16, rotate_to)
 
         rotate_to(Int16(0))
-        rotate_to(Int16(90))
+        rotate_to(Int16(180))
         rospy.spin()
     finally:
         if pwm is not None:
