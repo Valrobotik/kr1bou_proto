@@ -8,9 +8,9 @@ from piservo import Servo
 
 # Set function to calculate percent from angle
 def convert_angle(angle: int):
-    """Maps 180 to 270 degrees"""
+    """Maps the angle from 180 to 270 degrees"""
 
-    return int(angle * 180 / 270)
+    return int(270 - (angle * 270 / 180))
 
 
 def go_to(data: Int16):
