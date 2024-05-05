@@ -213,7 +213,6 @@ class Strategy:
 
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(True)
-            rospy.sleep(.1)
             # Bump
             rospy.loginfo(f"(STRATEGY) back until bumper")
             self.back_until_bumper()
@@ -385,7 +384,6 @@ class Strategy:
             else:
                 setattr(self, f'bumper_{i + 1}', False)
 
-            rospy.loginfo(f"(STRATEGY) Bumper {i + 1} : {getattr(self, f'bumper_{i + 1}')}")
         self.need_for_compute = True
 
     def update_position(self, data):
