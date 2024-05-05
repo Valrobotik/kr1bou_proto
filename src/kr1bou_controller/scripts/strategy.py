@@ -86,7 +86,7 @@ class Strategy:
         self.objectives = []
         self.current_objective = None
         self.current_direction = BEST_DIRECTION
-        self.start_time = time.time()
+        self.start_time = float("inf")
 
         # -- Publishers --
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
@@ -102,6 +102,7 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
+        self.start_time = time.time()
         self.debug_phase()
         #self.plant_phase()
         #self.solar_phase()
