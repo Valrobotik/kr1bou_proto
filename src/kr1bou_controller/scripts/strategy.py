@@ -307,7 +307,7 @@ class Strategy:
         # save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
         rospy.loginfo(f"(STRATEGY) Path : {self.path}")
 
-    def go_to(self, x=-1, y=-1, alpha=-1, speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
+    def go_to(self, x=-1, y=-1, alpha=-1., speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
         """go to position (x, y, alpha)
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]"""
