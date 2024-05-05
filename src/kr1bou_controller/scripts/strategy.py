@@ -287,8 +287,8 @@ class Strategy:
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
             rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
-            # self.maze = setup_maze(np.zeros((self.map_boundaries[2] * self.resolution, self.map_boundaries[3] * self.resolution), dtype=Node), self.obstacles1)
-            self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
+            self.maze = setup_maze(np.zeros((self.map_boundaries[2] * self.resolution, self.map_boundaries[3] * self.resolution), dtype=Node), self.obstacles1)
+            # self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
             # save variables using pickle
             self.game_states.append([origin.position,
                                      self.maze[int(self.current_objective.x * self.resolution)][
