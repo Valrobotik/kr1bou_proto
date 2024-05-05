@@ -5,6 +5,7 @@ from math import atan2
 from utils import *
 import numpy as np
 import pickle as pkl
+import sys
 
 
 def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
@@ -24,6 +25,8 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
 
     # Loop until the open list is empty
     while open_set:
+        print("computing\r",end="")
+        sys.stdout.flush()
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_set)  # Also remove from open set
         closed_set.add(current_node)
