@@ -104,8 +104,12 @@ class Strategy:
 
         #self.debug_phase()
         #self.plant_phase()
-        self.solar_phase()
+        #self.solar_phase()
         # self.home_phase()
+
+        self.go_to(1, 1, 0)
+        self.wait_until_ready()
+        self.rotate_only(pi/2)
 
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
