@@ -102,11 +102,12 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        self.debug_phase()
+        #self.debug_phase()
         #self.plant_phase()
         #self.solar_phase()
         # self.home_phase()
 
+        self.go_to(2.8, 1, on_axis=X_PLUS)
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
     # -- Phases --
@@ -153,12 +154,12 @@ class Strategy:
 
         if self.team == TEAM_BLUE:
             solar_objectives = [
-                Objective(x, y - 0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y - 0.1) ** 2),
+                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2),
                           direction) for
                 x, y, theta, direction in rospy.get_param("/objectives/blue/solar_panel")]
         else:
             solar_objectives = [
-                Objective(x, y - 0.1, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y - 0.1) ** 2),
+                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2),
                           direction) for
                 x, y, theta, direction in rospy.get_param("/objectives/yellow/solar_panel")]
 
@@ -167,25 +168,6 @@ class Strategy:
             self.objectives = [solar_objective]
             self.current_objective = self.objectives[0]
             need_twice = False
-
-            rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
-
-            # self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
-            
-            # # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
-            # #     self.close_enough_to_waypoint()
-            # #     self.compute_path()
-            # #     self.follow_path(self.current_objective.direction)
-            
-            # self.wait_until_ready()
-            # rospy.sleep(0.2)
-            # self.reset_position_from_camera()
-
-            solar_objective.y += 0.1
-            solar_objective.cost = sqrt(
-                (solar_objective.x - self.position.x) ** 2 + (solar_objective.y - self.position.y) ** 2)
-            self.objectives = [solar_objective]
-            self.current_objective = self.objectives[0]
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
 
@@ -201,10 +183,7 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
             # Rotate self
-            self.go_to(self.position.x, self.position.y, 3*pi/2, .25, BEST_DIRECTION)
-            self.wait_until_ready()
-
-            self.reset_position_from_camera()
+            self.rotate_only(3 * pi / 2)
 
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             # Get arm in the right position
@@ -233,7 +212,8 @@ class Strategy:
             self.back_until_bumper()
 
             # Forward
-            self.go_to(self.position.x, self.position.y - .05, 3*pi/2, .15, FORWARD)
+            rospy.loginfo(f"(STRATEGY) Forward")
+            self.go_to(self.position.x, self.position.y - .05, 3*pi/2, .15, FORWARD, Y_MINUS)
             self.wait_until_ready()
             self.solar_mode_pub.publish(False)
             # Rotate solar panel
@@ -241,15 +221,18 @@ class Strategy:
             rospy.sleep(.1)
 
             # Backwards
+            rospy.loginfo(f"(STRATEGY) Backwards")
             self.back_until_bumper()
 
             # Reset arm
+            rospy.loginfo(f"(STRATEGY) Reset arm")
             self.solar_pub.publish(Int16(0))
             rospy.sleep(.1)
 
             if need_twice:
+                rospy.loginfo(f"(STRATEGY) Needs second pass")
                 # Forward
-                self.go_to(self.position.x, self.position.y - .03, 3 * pi / 2, .15, FORWARD)
+                self.go_to(self.position.x, self.position.y - .03, 3 * pi / 2, .15, FORWARD, Y_MINUS)
 
                 # Rotate solar panel
                 self.solar_pub.publish(Int16(90))
@@ -357,10 +340,10 @@ class Strategy:
         rospy.Subscriber('state', Int16, self.update_state)
         rospy.Subscriber('Team', Bool, self.update_team)
 
-    def reset_position_from_camera(self):
+    def reset_position_from_camera(self, wait : float = .3):
         """Publishes the camera position to the odometry topic to correct the odometry"""
         self.wait_until_ready()
-        rospy.sleep(0.3)
+        rospy.sleep(wait)
         if time.time() - self.last_time_cam < 2:
             self.got_cam_data = False
             while not self.got_cam_data:
@@ -462,6 +445,15 @@ class Strategy:
         elif axis == 'x+':
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
         self.wait_until_ready()
+
+    def rotate_only(self, angle : float, speed : float = .2):
+        self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
+        self.reset_position_from_camera()
+        self.wait_until_ready()
+        while abs(self.camera_position.theta - angle) > 0.05:                                      ####### verifier cette ligne entre position depuis odom ou position depuis cammmera
+            rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
+            self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
+            self.reset_position_from_camera(.1)
 
 
 def run(data):

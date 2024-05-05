@@ -7,6 +7,7 @@ from math import atan2, sqrt, cos, sin, atan, pi
 import rospy
 from geometry_msgs.msg import Pose2D, Vector3
 from std_msgs.msg import Float64, Bool, Int16
+import time
 
 READY_LINEAR = 0
 READY = 1
@@ -17,7 +18,8 @@ KAngle = 0.1
 
 ANGLE_PRECISION = 0.05
 DISTANCE_PRECISION = 0.05
-KP_R = -0.22
+KP_R = -0.15
+KI_R = -0.1
 
 GOTO_DELTA = -0.02
 POSITION_SHIFT = 0.0
@@ -82,6 +84,9 @@ class Kr1bou:
 
         self.solar_mode = False
 
+        self.integral_rotation = 0
+        self.time_last_rotation = time.time()
+
         rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
         rospy.Subscriber('max_speed', Float64, set_max_speed)
@@ -97,7 +102,6 @@ class Kr1bou:
 
     def publish_speed(self):
         if self.state == IN_PROGRESS:
-
             self.update_speed()
         elif self.state == READY_LINEAR and self.objectif_theta != -1:
             self.update_rotation_speed()
@@ -127,7 +131,9 @@ class Kr1bou:
 
     def update_rotation_speed(self):
         angle_diff = angleDiffRad(self.objectif_theta, self.theta)
-        w = angle_diff * KP_R
+        self.integral_rotation += angle_diff*(time.time()-self.time_last_rotation)
+        self.time_last_rotation = time.time()
+        w = angle_diff * KP_R+self.integral_rotation*KI_R
         if abs(angle_diff) < ANGLE_PRECISION:
             self.state = READY
             self.publish_state()
@@ -189,7 +195,7 @@ class Kr1bou:
         diff_angle_line_to_robot = angleDiffRad(destination_angle, angle_line_to_robot)
 
         is_on_right_side = diff_angle_line_to_robot > 0.0
-        target_angle = destination_angle + atan(dist_to_line * 3.5) * (-1 if is_on_right_side else 1)
+        target_angle = destination_angle + atan(dist_to_line * 1) * (-1 if is_on_right_side else 1)        ### dist_to_line * 3.5   
 
         dx_base = x2 - pos[0]
         dy_base = y2 - pos[1]
@@ -203,6 +209,8 @@ class Kr1bou:
         if dist_to_base < GOTO_BASE_DISTANCE_THRESHOLD:
             m_goto_base_reached = True
             self.state = READY_LINEAR
+            self.integral_rotation = 0
+            self.time_last_rotation = time.time()
             self.publish_state()
 
         angle_diff = angleDiffRad(target_angle, self.theta)
