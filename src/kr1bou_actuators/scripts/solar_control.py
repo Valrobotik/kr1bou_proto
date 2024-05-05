@@ -37,8 +37,8 @@ if __name__ == "__main__":
         # Initialization
         rospy.init_node("solar_control", anonymous=True)
         rospy.loginfo("[START] Solar Controller node has started.")
-        GPIO.setmode(GPIO.BOARD)  # Use Board numeration mode
-        GPIO.setwarnings(False)  # Disable warnings
+        # GPIO.setmode(GPIO.BOARD)  # Use Board numeration mode
+        # GPIO.setwarnings(False)  # Disable warnings
 
         # Use pin 12 for PWM signal
         pwm_gpio = 12
@@ -47,7 +47,11 @@ if __name__ == "__main__":
         # pwm = GPIO.PWM(pwm_gpio, frequency)
         rospy.loginfo(f"Setting up PWM on GPIO {pwm_gpio}")
         servo = Servo(pwm_gpio)
-        servo.value = -1
+        # move servo to 0 degrees
+        servo.min()
+        time.sleep(1)
+        # move servo to 180 degrees
+        servo.max()
 
         rospy.Subscriber("solar_angle", Int16, rotate_to)
 
