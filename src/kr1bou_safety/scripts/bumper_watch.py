@@ -8,11 +8,13 @@ from std_msgs.msg import Byte, Bool
 from gpiozero import Button
 from typing import List
 
+
 def on_bumper_press():
     global buttons_list
     rospy.loginfo("(Bumper) Pressed")
     state = check_bumpers(buttons_list)
     pub.publish(state)
+
 
 def on_bumper_release():
     rospy.loginfo("(Bumper) Release")
@@ -34,8 +36,6 @@ def setup_buttons(pins):
             pub.publish(state)
             old_state = state
         rate.sleep()
-        
-
 
 
 def check_bumpers(buttons: List[Button]):
@@ -48,6 +48,7 @@ def check_bumpers(buttons: List[Button]):
     state.data = 15-state.data
     return state
 
+
 def run(data: Bool):
     global start
     start = data.data
@@ -56,6 +57,7 @@ def run(data: Bool):
 
 if __name__ == '__main__':
     start = False
+    buttons_list = []
     try:
         # Initialization
         rospy.init_node('bumper_watch', anonymous=True)
@@ -69,6 +71,6 @@ if __name__ == '__main__':
         frequency = rospy.get_param('/frequency')
         queue_size = rospy.get_param('/queue_size')
         pub = rospy.Publisher('bumper', Byte, queue_size=queue_size)
-        buttons_list = setup_buttons(bumper_pins)
+        setup_buttons(bumper_pins)
     finally:
         rospy.loginfo("[STOP] Bumper Watch node has stopped.")

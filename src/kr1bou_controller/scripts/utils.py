@@ -147,7 +147,7 @@ def setup_maze(maze, obstacles: set):
     return maze
 
 
-def update_maze(maze: Union[np.ndarray, List[List[Node]]], new_obstacles: set, obstacles: set) -> np.ndarray:
+def update_maze(maze: Union[np.ndarray, List[List[Node]]], new_obstacles: set, obstacles: set) -> Union[np.ndarray, List[List[Node]]]:
     not_obstacles_anymore = obstacles - new_obstacles
     for not_obstacle in not_obstacles_anymore:
         maze[not_obstacle[0]][not_obstacle[1]].is_obstacle = False

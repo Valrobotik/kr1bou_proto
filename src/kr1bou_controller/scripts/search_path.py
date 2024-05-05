@@ -166,7 +166,7 @@ def test_n(n: int = 1000, verbose: bool = False):
         # Adjust positions and save the game state
         cleaned_path = meters_to_units(cleaned_path, resolution)
         map_boundaries = [0, 0, width / resolution, height / resolution]
-        save_game_state(maze, cleaned_path, obstacles, resolution, map_boundaries, "maze.png", show=True)
+        save_game_state(maze, cleaned_path, obstacles, obstacles, resolution, map_boundaries, "maze.png", show=True)
 
     print(f"Average time: {sum(times) / n} seconds")
 

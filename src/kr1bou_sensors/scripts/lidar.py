@@ -15,10 +15,6 @@ from std_msgs.msg import Bool
 from hokuyo.driver import hokuyo
 from hokuyo.tools import serial_port
 
-uart_port = rospy.get_param("/arduino/arduino_serial_ports/Lidar")
-uart_speed = 19200
-laser = None
-
 
 def get_position(data: Pose2D):
     global x_robot, y_robot, theta_robot
@@ -31,8 +27,8 @@ def run(data: Bool):
     global start
     start = data.data
 
-start_new_odom = False
-def start_new_odom(data: Pose2D):
+
+def start_from_new_odom(data: Pose2D):
     global x_robot, y_robot, theta_robot, start_new_odom
     x_robot = data.x
     y_robot = data.y
@@ -40,13 +36,16 @@ def start_new_odom(data: Pose2D):
     start_new_odom = True
 
 
-
 if __name__ == '__main__':
+    uart_port = rospy.get_param("/arduino/arduino_serial_ports/Lidar")
+    uart_speed = 19200
+    start_new_odom = False
+
     rospy.init_node("Lidar", anonymous=True)
     rospy.loginfo("[START] Lidar node has started.")
     pub_data = rospy.Publisher("lidar_data", PoseArray, queue_size=1)
     rospy.Subscriber("odometry", Pose2D, get_position)
-    rospy.Subscriber("corectedOdometry", Pose2D, start_new_odom)
+    rospy.Subscriber("odom_corrected", Pose2D, start_from_new_odom)
 
     laser_serial = serial.Serial(port=uart_port, baudrate=uart_speed, timeout=0.5)
     port = serial_port.SerialPort(laser_serial)
@@ -63,7 +62,7 @@ if __name__ == '__main__':
     while not start:
         rospy.sleep(0.1)
 
-    while (x_robot == 0.0 and y_robot == 0.0)  or not start_new_odom:
+    while (x_robot == 0.0 and y_robot == 0.0) or not start_new_odom:
         rospy.sleep(0.1)
 
     laser.laser_off()
