@@ -65,13 +65,18 @@ def list_of_obstacles():
     obstacles = []
     for obstacle in lidar_obstacles:
         obstacles.append((obstacle.position.x, obstacle.position.y))
+
     obstacles.append((camera_adverse_position.x, camera_adverse_position.y))
+
     for obstacle in US_obstacles:
         obstacles.append((obstacle[0], obstacle[1]))
+    
+    rospy.loginfo(f"{type(obstacles[0][0])}")
 
     for i in range(len(obstacles)):
         obstacles[i] = ((obstacles[i][0] - robot_position.x)*math.cos(robot_position.theta), (obstacles[i][1] - robot_position.y)**math.sin(robot_position.theta))
 
+    rospy.loginfo(f"{type(obstacles[0][0])}")
     return obstacles
     
 
@@ -84,10 +89,13 @@ def emergency_stop_run():
         emergency_front = False
         emergency_back = False
         for obstacle in obstacles:
-            if obstacle[0]>0 and obstacle[0]<0.3 and obstacle[1]>-0.2 and obstacle[1]<0.2:
-                emergency_front = True
-            if obstacle[0]>-0.3 and obstacle[0]<0 and obstacle[1]>-0.2 and obstacle[1]<0.2:
-                emergency_back = True
+            try :
+                if obstacle[0]>0.0 and obstacle[0]<0.3 and obstacle[1]>-0.2 and obstacle[1]<0.2:
+                    emergency_front = True
+                if obstacle[0]>-0.3 and obstacle[0]<0.0 and obstacle[1]>-0.2 and obstacle[1]<0.2:
+                    emergency_back = True
+            except:
+                rospy.loginfo(f"obstacle : {obstacle}")
         if bumper_1_front or bumper_2_front:
             emergency_front = True
         if bumper_3_back or bumper_4_back:
