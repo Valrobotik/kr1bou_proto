@@ -35,7 +35,7 @@ X_PLUS = 1
 X_MINUS = 2
 Y_PLUS = 3
 Y_MINUS = 4
-PREFERED_AXIS = 5
+PREFERRED_AXIS = 5
 
 
 class Strategy:
