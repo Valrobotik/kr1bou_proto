@@ -3,8 +3,7 @@
 
 import rospy
 from std_msgs.msg import Int16, Bool
-import time
-import RPi.GPIO as GPIO
+from piservo import Servo
 
 
 # Set function to calculate percent from angle
@@ -38,26 +37,21 @@ if __name__ == "__main__":
     start = False
     pwm = None
     time_run = 0
-    try:
-        # Initialization
-        rospy.init_node("solar_control", anonymous=True)
-        rospy.loginfo("[START] Solar Controller node has started.")
-        GPIO.setmode(GPIO.BOARD)  # Use Board numeration mode
-        GPIO.setwarnings(False)  # Disable warnings
+    # Initialization
+    rospy.init_node("solar_control", anonymous=True)
+    rospy.loginfo("[START] Solar Controller node has started.")
 
-        # Use pin 12 for PWM signal
-        pwm_gpio = 12
-        frequency = 50
-        GPIO.setup(pwm_gpio, GPIO.OUT)
-        pwm = GPIO.PWM(pwm_gpio, frequency)
-        rospy.Subscriber("solar_angle", Int16, go_to)
+    # Use pin 12 for PWM signal
+    pwm_gpio = 12
+    frequency = 50
+    rospy.Subscriber("solar_angle", Int16, go_to)
 
-        pwm.start(angle_to_percent(90))
-        rospy.sleep(100)
-        pwm.stop()
-        rospy.spin()
-    finally:
-        if pwm is not None:
-            pwm.stop()
-        GPIO.cleanup()
-        rospy.loginfo("[STOP] Solar Controller node has stopped.")
+    servo = Servo(13)
+    servo.write(0)
+    rospy.sleep(1)
+    servo.write(90)
+    rospy.sleep(1)
+    servo.write(180)
+
+    rospy.spin()
+    rospy.loginfo("[STOP] Solar Controller node has stopped.")
