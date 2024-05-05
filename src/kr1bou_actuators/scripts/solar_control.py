@@ -11,8 +11,9 @@ def convert_angle(angle: int):
     """Maps the angle from 180 to 270 degrees"""
     if angle < 0 and angle > 180:
         return 0
-    rospy.loginfo(f"Angle: {angle}")
-    return int(270 - (angle * 180 / 270))
+    angle = 270 - (angle * 180 / 270)
+    rospy.loginfo(f"Converted angle: {angle}")
+    return int(angle)
 
 
 def go_to(data: Int16):
