@@ -82,13 +82,14 @@ def emergency_stop_run():
     while not rospy.is_shutdown():
         obstacles = list_of_obstacles()
         emergency_front = False
-        if obstacles[0]>0 and obstacles[0]<0.3 and obstacles[1]>-0.2 and obstacles[1]<0.2:
-            emergency_front = True
+        emergency_back = False
+        for obstacle in obstacles:
+            if obstacle[0]>0 and obstacle[0]<0.3 and obstacle[1]>-0.2 and obstacle[1]<0.2:
+                emergency_front = True
+            if obstacle[0]>-0.3 and obstacle[0]<0 and obstacle[1]>-0.2 and obstacle[1]<0.2:
+                emergency_back = True
         if bumper_1_front or bumper_2_front:
             emergency_front = True
-        emergency_back = False
-        if obstacles[0]>-0.3 and obstacles[0]<0 and obstacles[1]>-0.2 and obstacles[1]<0.2:
-            emergency_back = True
         if bumper_3_back or bumper_4_back:
             emergency_back = True
         if emergency_front and emergency_back:
