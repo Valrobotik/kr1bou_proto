@@ -283,9 +283,8 @@ class Strategy:
         if is_path_valid(self.raw_path, self.obstacles2):  # Check if the path is still valid with a 10 cm margin
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
-            self.maze = setup_maze(np.zeros((self.map_boundaries[2] * self.resolution, self.map_boundaries[3] * self.resolution), dtype=Node), self.obstacles1)
-            
-            #self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
+            # self.maze = setup_maze(np.zeros((self.map_boundaries[2] * self.resolution, self.map_boundaries[3] * self.resolution), dtype=Node), self.obstacles1)
+            self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
             self.previous_obstacles = self.obstacles1
             
             # Get the start and end nodes
