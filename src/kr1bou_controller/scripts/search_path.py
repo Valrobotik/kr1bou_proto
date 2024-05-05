@@ -167,11 +167,14 @@ def test_n(n: int = 1000, verbose: bool = False):
 
 
 def debug():
-    with open("/home/valrob/Desktop/all_game_states.pkl", "rb") as f:
+    with open("/home/kribou/Downloads/all_game_states.pkl", "rb") as f:
         game_states = pkl.load(f)
 
-    for count, (origin, end, path, obstacles, resolution, boundaries) in enumerate(game_states[1:], 1):
-        maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=int), obstacles)
+    for count, (origin, end, path, obstacles1, obstacles2, resolution, boundaries) in enumerate(game_states[1:], 1):
+        print(f"Game state {count}")
+        print(f"Origin: {origin}\nEnd: {end}\nPath: {path}\nObstacles1: {len(obstacles1)}\nObstacles2: {len(obstacles2)}")
+        print(f"Resolution: {resolution}\nBoundaries: {boundaries}")
+        maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=Node), obstacles1)
         start = maze[origin[0]][origin[1]]
         end = maze[end[0]][end[1]]
         onset = time.perf_counter()
@@ -185,11 +188,11 @@ def debug():
 
         # Adjust positions and save the game state
         cleaned_path = meters_to_units(cleaned_path, resolution)
-        save_game_state(maze, cleaned_path, obstacles, resolution, boundaries, f"archive/maze{count}.png", show=True)
+        save_game_state(maze, cleaned_path, obstacles1, obstacles2, resolution, boundaries, f"archive/maze{count}.png", show=True)
 
 
 if __name__ == '__main__':
     # test_n(1, True)
     # test_n(1000)
-    # debug()
+    debug()
     pass

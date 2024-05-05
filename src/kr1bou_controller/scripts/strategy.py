@@ -263,9 +263,6 @@ class Strategy:
                 rospy.sleep(.1)
 
     def close_enough_to_waypoint(self, threshold=5.0):
-        rospy.loginfo(self.position)
-        rospy.loginfo(self.path)
-        rospy.loginfo(self.path[0])
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
             self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
 
@@ -321,7 +318,7 @@ class Strategy:
         """go to position (x, y, alpha)
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]"""
-        rospy.loginfo(f"Robot at {self.position}")
+        # rospy.loginfo(f"Robot at {self.position}")
         obj = Pose2D()
         obj.x = x
         obj.y = y
@@ -344,7 +341,7 @@ class Strategy:
 
     def follow_path(self, direction=BEST_DIRECTION):
         if self.path:
-            # rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
+            rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, direction)
             rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
         else:

@@ -142,9 +142,11 @@ def update_maze(maze: np.ndarray, obstacles: set, new_obstacles: set):
     not_obstacles_anymore = obstacles - new_obstacles
     for not_obstacle in not_obstacles_anymore:
         maze[not_obstacle[0]][not_obstacle[1]].obstacle = False
+        
     for new_obstacle in new_obstacles:
         maze[new_obstacle[0]][new_obstacle[1]].obstacle = True
     return maze
+
 
 
 def is_path_valid(path: list, obstacles: set) -> bool:
@@ -205,7 +207,7 @@ def print_maze(start, end, maze, path: Optional[List[Node]] = None):
         print()
 
 
-def save_game_state(maze, path: list, obstacles: set, resolution: int, map_boundaries: list, filename: str, show=False):
+def save_game_state(maze, path: list, obstacles1: set, obstacles2, resolution: int, map_boundaries: list, filename: str, show=False):
     """Save the current game state in a file using matplotlib"""
     fig, ax = plt.subplots()
     ax.set_xlim(0, map_boundaries[2] * resolution)  # Convert to unit
@@ -219,8 +221,10 @@ def save_game_state(maze, path: list, obstacles: set, resolution: int, map_bound
         for node in path:  # convert path to used unit
             ax.add_patch(
                 plt.Rectangle((node.position[0] * resolution, node.position[1] * resolution), 1, 1, color='blue'))
-    for obstacle in obstacles:
+    for obstacle in obstacles1:
         ax.add_patch(plt.Rectangle((obstacle[0], obstacle[1]), 1, 1, color='red'))
+    for obstacle in obstacles2:
+        ax.add_patch(plt.Rectangle((obstacle[0], obstacle[1]), 1, 1, color='yellow'))
     plt.savefig(filename)
     if show:
         plt.show()
