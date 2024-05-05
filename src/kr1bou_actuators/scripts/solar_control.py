@@ -48,10 +48,15 @@ if __name__ == "__main__":
 
     servo = Servo(13)
     servo.write(0)
-    rospy.sleep(1)
+    rospy.sleep(3)
+    servo.write(45)
+    rospy.sleep(3)
     servo.write(90)
-    rospy.sleep(1)
+    rospy.sleep(3)
+    servo.write(135)
+    rospy.sleep(3)
     servo.write(180)
+    rospy.sleep(3)
 
     rospy.spin()
     rospy.loginfo("[STOP] Solar Controller node has stopped.")
