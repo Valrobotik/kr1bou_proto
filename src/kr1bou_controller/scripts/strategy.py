@@ -403,14 +403,11 @@ class Strategy:
         blue_robot = Pose2D()
         yellow_robot = Pose2D()
         blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
-
-        # rospy.loginfo(f"(STRATEGY) Camera - Blue robot : {blue_robot}")
-        # rospy.loginfo(f"(STRATEGY) Camera - Yellow robot : {yellow_robot}")
-
-        if self.team == TEAM_BLUE:  # discriminate between own robot and enemy robot
-            self.camera_position, self.enemy_position = blue_robot, yellow_robot
+        if self.team == TEAM_BLUE:
+            blue_position, yellow_position = blue_robot, yellow_robot
         else:
-            self.camera_position, self.enemy_position = yellow_robot, blue_robot
+            blue_position, yellow_position = yellow_robot, blue_robot
+        self.camera_position, self.enemy_position = parse_camera_data(yellow_robot, blue_robot, blue_position, yellow_position)
         self.camera_position.theta = clamp_theta(self.camera_position.theta)
         self.enemy_position.theta = clamp_theta(self.enemy_position.theta)
 
@@ -420,10 +417,7 @@ class Strategy:
     def update_team(self, data: Bool):
         global start
         if not start or self.team != -1:
-            if data.data:
-                self.team = TEAM_BLUE
-            else:
-                self.team = TEAM_YELLOW
+            self.team = TEAM_BLUE if data.data else TEAM_YELLOW
         else:
             rospy.loginfo("(STRATEGY) YOU CAN'T CHANGE TEAM AFTER STARTING THE GAME !")
 

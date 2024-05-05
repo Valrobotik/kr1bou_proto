@@ -13,14 +13,14 @@ class Node:
     def __init__(self, position: tuple, orientation: float, neighbors=None, obstacle=False):
         if neighbors is None:
             neighbors = {}
+        self.parent = None
         self.position = position
         self.orientation = orientation
+        self.is_obstacle = obstacle
         self.neighbors = neighbors
         self.g = INF  # distance to previous position
         self.h = 0  # estimated distance
         self.f = 0
-        self.parent = None
-        self.is_obstacle = obstacle
 
     def __lt__(self, other: 'Node'):
         return self.f < other.f
@@ -32,7 +32,7 @@ class Node:
         return hash(self.position)
 
     def __str__(self):
-        return f"({self.position})"
+        return f"Node({self.position}, {self.orientation})"
 
     def __repr__(self):
         return f"Node({self.position}, {self.orientation})"
@@ -78,7 +78,7 @@ class Objective:
         self.y = y
         self.theta = theta
         self.cost = cost
-        self.direction = direction
+        self.direction = direction  # forward, backward, or best
 
     def __lt__(self, other):
         return self.cost < other.cost
@@ -87,7 +87,7 @@ class Objective:
         return self.x == other.x and self.y == other.y
 
     def __str__(self):
-        return f"({self.x}, {self.y}, {self.theta}, {self.cost})"
+        return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
 
     def __repr__(self):
         return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
@@ -101,9 +101,7 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, r
     obstacles1, obstacles2 = set(), set()
     # Get the obstacles from the ultrasound sensors (values in meters)
     # obstacles1, obstacles2 = extend_obstacles(us_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
-    # Get the obstacles from the lidar
     obstacles1, obstacles2 = extend_obstacles(lidar_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
-    # Get the obstacles from the camera
     obstacles1, obstacles2 = extend_obstacles(camera_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
     return obstacles1, obstacles2
 
@@ -113,14 +111,12 @@ def extend_obstacles(data: list, obstacles1: set, obstacles2: set, radius: int, 
     if not data:
         return obstacles1, obstacles2
     for i, (x, y) in enumerate(data):
-        if (x, y) not in [(0, 0), (-1, -1)]:
-            # Meters to unit
-            x_, y_ = int(x * resolution), int(y * resolution)
-            # Extend to a square of radius around the obstacle
-            for j in range(-radius, radius + 1):
-                for k in range(-radius, radius + 1):
-                    if 0 <= x_ + j < map_boundaries[2] * resolution and 0 <= y_ + k < map_boundaries[3] * resolution:
-                        obstacles1.add((x_ + j, y_ + k))
+        x_, y_ = int(x * resolution), int(y * resolution)  # Meters to unit
+        # Extend to a square of radius around the obstacle
+        for j in range(-radius, radius + 1):
+            for k in range(-radius, radius + 1):
+                if 0 <= x_ + j < map_boundaries[2] * resolution and 0 <= y_ + k < map_boundaries[3] * resolution:
+                    obstacles1.add((x_ + j, y_ + k))
                     # Extend to a square of radius - 10 around the obstacle
                     if -radius + 10 <= j <= radius - 10 and -radius + 10 <= k <= radius - 10:
                         obstacles2.add((x_ + j, y_ + k))
@@ -166,6 +162,14 @@ def is_path_valid(path: list, obstacles: set) -> bool:
 def meters_to_units(path: list, resolution: int) -> list:
     """Convert the path from meters to units"""
     return [(node.position[0] / resolution, node.position[1] / resolution) for node in path]
+
+
+def parse_camera_data(blue_robot, yellow_robot, blue_position, yellow_position):
+    if (blue_robot.x, blue_robot.y) == (-1, -1):
+        blue_robot.x, blue_robot.y, blue_robot.theta = blue_position.x, blue_position.y, blue_position.theta
+    if (yellow_robot.x, yellow_robot.y) == (-1, -1):
+        yellow_robot.x, yellow_robot.y, yellow_robot.theta = yellow_position.x, yellow_position.y, yellow_position.theta
+    return blue_robot, yellow_robot
 
 
 def clamp_theta(theta: float) -> float:
