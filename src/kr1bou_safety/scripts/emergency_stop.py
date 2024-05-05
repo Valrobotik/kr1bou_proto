@@ -5,7 +5,7 @@ Looks out for Emergency. Stops everything.
 
 import rospy
 from std_msgs.msg import Int16, Byte, Float32MultiArray, Bool
-from geometry_msgs.msg import Pose2D, PoseArray
+from geometry_msgs.msg import Pose2D, PoseArray, Pose
 
 import math
 
@@ -23,9 +23,9 @@ def callback_robot_position(data):
     robot_position = data
 
 lidar_obstacles = []
-def callback_lidar_obstacles(data):
+def callback_lidar_obstacles(data: PoseArray):
     global lidar_obstacles
-    lidar_obstacles = data
+    lidar_obstacles = data.poses
 
 bumper_1_front = False
 bumper_2_front = False
@@ -63,7 +63,7 @@ def callback_US_data(data:Float32MultiArray):
 
 def list_of_obstacles():
     obstacles = []
-    for obstacle in lidar_obstacles.poses:
+    for obstacle in lidar_obstacles:
         obstacles.append((obstacle.position.x, obstacle.position.y))
     obstacles.append((camera_adverse_position.x, camera_adverse_position.y))
     for obstacle in US_obstacles:
