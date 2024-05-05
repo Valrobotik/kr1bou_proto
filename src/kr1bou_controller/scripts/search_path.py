@@ -2,12 +2,11 @@
 A* Pathfinding algorithm implementation
 """
 
-from typing import List, Optional
 import heapq
 import random
 import time
-from math import atan2, pi
-from utils import Node, save_game_state, setup_maze, print_maze, manhattan, euclidian, other_estimate
+from math import atan2
+from utils import *
 import numpy as np
 import pickle as pkl
 
@@ -20,6 +19,7 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     :return: a list of nodes from start to end, or None if no path is found
     """
     open_set = [start_node]
+    heapq.heapify(open_set)
     closed_set = set()
 
     start_node.g = 0
@@ -160,8 +160,9 @@ def test_n(n: int = 1000, verbose: bool = False):
     times = []
     height = 200
     width = 300
-    density = 0.1
+    density = 0.4
     resolution = 10
+    cleaned_path = []
     for _ in range(n):
         maze = generate_random_maze(height, width, density)
         obstacles = set([node.position for row in maze for node in row if node.is_obstacle])
@@ -194,7 +195,8 @@ def test_n(n: int = 1000, verbose: bool = False):
             path = cleaned_path if path else []
             for node in path:
                 node.position = (node.position[0] / resolution, node.position[1] / resolution)
-            save_game_state(maze, path, obstacles, resolution, [0, 0, width / resolution, height / resolution], "maze.png", show=True)
+            map_boundaries = [0, 0, width / resolution, height / resolution]
+            save_game_state(maze, path, obstacles, resolution, map_boundaries, "maze.png", show=True)
         times.append(offset - onset)
     print("Average time:", sum(times) / n, "seconds")
 
@@ -206,6 +208,7 @@ def debug():
     count = 0
     for origin, end, path, obstacles, resolution, boundaries in game_states[1:]:
         count += 1
+        cleaned_path = []
         # replace obstacles by a square of radius 40 around 140, 50
         obstacles = set([(i, j) for i in range(100, 180) for j in range(10, 90)])
         maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=Node), obstacles)
@@ -239,5 +242,5 @@ def debug():
 
 if __name__ == '__main__':
     # test_n(1, True)
-    # test_n(1000)
-    debug()
+    test_n(1000)
+    # debug()
