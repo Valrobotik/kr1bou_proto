@@ -1,7 +1,3 @@
-"""
-A* Pathfinding algorithm implementation
-"""
-
 import heapq
 import random
 import time
@@ -57,24 +53,14 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
 
 
 def heuristic(node: Node, end_node: Node) -> float:
-    """
-    Heuristic function
-    :param node: current node
-    :param end_node: objective node
-    :return: heuristic value
-    """
+    """Heuristic function to estimate the cost of moving from the current node to the objective node"""
     # return other_estimate(node, end_node)
     return euclidian(node, end_node)
     # return manhattan(node, end_node)
 
 
 def distance(node1: Node, node2: Node) -> float:
-    """
-    Distance between two nodes
-    :param node1: node 1
-    :param node2: node 2
-    :return: distance between the two nodes
-    """
+    """Distance between two nodes to be measured as the cost of moving from node1 to node2"""
     # return euclidian(node1, node2)
     # return manhattan(node1, node2)
     return 1 if node1.position[0] == node2.position[0] or node1.position[1] == node2.position[1] else 2
@@ -84,37 +70,24 @@ def distance(node1: Node, node2: Node) -> float:
 def orientation_change(node1: Node, node2: Node) -> float:
     """
     Compute the change in orientation between 2 nodes.
-    :param node1: current node
-    :param node2: next node
-    :return: the angle between the orientation of node1 and the segment between node1 and node2
+    :return: the angle between node1's and 2's orientation
     """
     # get angle between node1 and node2
     x1, y1 = node1.position
     x2, y2 = node2.position
-    if x1 == x2:
-        if y1 < y2:
-            angle = 0
-        else:
-            angle = pi
-    elif y1 == y2:
-        if x1 < x2:
-            angle = pi/2
-        else:
-            angle = 3*pi/2
-    else:
-        angle = atan2(y2 - y1, x2 - x1)
-    
-    # update node2's orientation
-    node2.orientation = angle
+    if x1 == x2:  # vertical line
+        angle = 0 if y1 < y2 else pi  # 0 or 180 degrees
+    elif y1 == y2:  # horizontal line
+        angle = pi/2 if x1 < x2 else 3*pi/2  # 90 or 270 degrees
+    else:  # diagonal line
+        angle = atan2(y2 - y1, x2 - x1)  # angle in radians
+
+    node2.orientation = angle  # update node2's orientation
     return abs(node1.orientation - node2.orientation)  # Compute the change
 
 
 def clean_path(path: List[Node]) -> List[Node]:
-    """
-    Clean the path by removing intermediate nodes. Only keep the start, end, and turning points.
-    :param path: the path to clean
-    :return: the cleaned path
-    """
+    """Clean the path by removing intermediate nodes. Only keep the start, end, and turning points."""
     if not path:
         return []
     if len(path) < 3:
@@ -137,8 +110,7 @@ def generate_random_maze(height: int, width: int, density: float):
     """
     maze = np.zeros((height, width), dtype=Node)
     maze = setup_maze(maze, set())
-    
-    # take a random number of nodes to remove
+
     i_j_to_remove = random.sample([(i, j) for i in range(height) for j in range(width)], int(density * height * width))
     for i, j in i_j_to_remove:
         maze[i][j].is_obstacle = True
@@ -151,98 +123,73 @@ def generate_random_start_end(maze: List[List[Node]]) -> tuple:
     :param maze: the maze
     :return: a tuple of start and end nodes
     """
-    # Go through each node and list them. Then take a random node from the list
     not_obstacle_nodes = [node for row in maze for node in row if not node.is_obstacle]
     start = random.choice(not_obstacle_nodes)
     end = random.choice(not_obstacle_nodes)
     return start, end
 
 
+def verbose_print(condition, *args):
+    if condition:
+        print(*args)
+
+
 def test_n(n: int = 1000, verbose: bool = False):
     times = []
-    height = 200
-    width = 300
-    density = 0.4
-    resolution = 10
-    cleaned_path = []
+    height, width, density, resolution = 200, 300, 0.4, 10
     for _ in range(n):
         maze = generate_random_maze(height, width, density)
-        obstacles = set([node.position for row in maze for node in row if node.is_obstacle])
+        obstacles = {node.position for row in maze for node in row if node.is_obstacle}
         start, end = generate_random_start_end(maze)
-        print("Start and End nodes:", start, end) if verbose else None
+        verbose_print(verbose, f"Start and End nodes: {start} {end}")
         onset = time.perf_counter()
         path = a_star(start, end)
         offset = time.perf_counter()
-        # print_maze(start, end, maze, path) if verbose else None
-        print() if verbose else None
-        print("Path:") if verbose else None
-        if path and verbose:
-            for node in path:
-                print(node, end=" ")
+        execution_time = offset - onset
+        times.append(execution_time)
+
+        if path:
             cleaned_path = clean_path(path)
-            for node in cleaned_path:
-                print(node, end=" ")
-            print()
-        elif verbose:
-            print("No path found")
+        else:
+            cleaned_path = []
+
         if verbose:
-            print()
-            print("Start:", start)
-            print("End:", end)
-            print("Density:", density)
-            print("Height:", height)
-            print("Width:", width)
-            print("Execution time:", offset - onset, "seconds")
-            print()
-            path = cleaned_path if path else []
-            for node in path:
-                node.position = (node.position[0] / resolution, node.position[1] / resolution)
-            map_boundaries = [0, 0, width / resolution, height / resolution]
-            save_game_state(maze, path, obstacles, resolution, map_boundaries, "maze.png", show=True)
-        times.append(offset - onset)
-    print("Average time:", sum(times) / n, "seconds")
+            print(f"Path: {' '.join(map(str, cleaned_path)) if path else 'No path found'}")
+            print(f"Start: {start}\nEnd: {end}\nDensity: {density}\nHeight: {height}\nWidth: {width}")
+            print(f"Execution time: {execution_time} seconds\n")
+
+        # Adjust positions and save the game state
+        cleaned_path = meters_to_units(cleaned_path, resolution)
+        map_boundaries = [0, 0, width / resolution, height / resolution]
+        save_game_state(maze, cleaned_path, obstacles, resolution, map_boundaries, "maze.png", show=True)
+
+    print(f"Average time: {sum(times) / n} seconds")
 
 
 def debug():
-    # load path, obstacles, resolution, boundaries from pickle
     with open("/home/valrob/Desktop/all_game_states.pkl", "rb") as f:
         game_states = pkl.load(f)
-    count = 0
-    for origin, end, path, obstacles, resolution, boundaries in game_states[1:]:
-        count += 1
-        cleaned_path = []
-        # replace obstacles by a square of radius 40 around 140, 50
-        #obstacles = set([(i, j) for i in range(100, 180) for j in range(10, 90)])
-        maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=Node), obstacles)
-        print(maze.shape)
-        print(path)
-        print(origin, end)
+
+    for count, (origin, end, path, obstacles, resolution, boundaries) in enumerate(game_states[1:], 1):
+        maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=int), obstacles)
         start = maze[origin[0]][origin[1]]
         end = maze[end[0]][end[1]]
-        print("Start and End nodes:", start, end)
         onset = time.perf_counter()
         path = a_star(start, end)
         offset = time.perf_counter()
-        print("Path:")
-        if path:
-            for node in path:
-                print(node, end=" ")
-            cleaned_path = clean_path(path)
-            for node in cleaned_path:
-                print(node, end=" ")
-            print()
-        else:
-            print("No path found")
-        print("Execution time:", offset - onset, "seconds")
-        path = cleaned_path if path else []
-        print(path)
-        if path:
-            for node in path:
-                node.position = (node.position[0] / resolution, node.position[1] / resolution)
-        save_game_state(maze, path, obstacles, resolution, boundaries, f"archive/maze{count}.png", show=True)
+        cleaned_path = clean_path(path) if path else []
+
+        print(f"Maze size: {maze.shape}\nPath: {' '.join(map(str, cleaned_path)) if path else 'No path found'}")
+        print(f"Start and End nodes: {start} {end}")
+        print(f"Execution time: {offset - onset} seconds")
+
+        # Adjust positions and save the game state
+        cleaned_path = meters_to_units(cleaned_path, resolution)
+        save_game_state(maze, cleaned_path, obstacles, resolution, boundaries, f"archive/maze{count}.png", show=True)
 
 
 if __name__ == '__main__':
     # test_n(1, True)
-    test_n(1000)
+    # test_n(1000)
     # debug()
+    pass
