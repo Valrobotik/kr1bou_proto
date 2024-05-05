@@ -23,12 +23,19 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
     start_node.h = heuristic(start_node, end_node)
     start_node.f = start_node.h
 
+    onset = time.perf_counter()
+
     # Loop until the open list is empty
     while open_set:
         print("computing\r",end="")
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_set)  # Also remove from open set
         closed_set.add(current_node)
+
+        # if the search is taking too long, stop
+        if time.perf_counter() - onset > 2:
+            print("Time limit reached")
+            return None
 
         if current_node == end_node:  # Path found
             path = []
