@@ -472,7 +472,7 @@ class Strategy:
         self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
         self.reset_position_from_camera()
         self.wait_until_ready()
-        while abs(self.position.theta - angle) > 0.1:
+        while abs(self.position.theta - angle) > 0.05:
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
             self.reset_position_from_camera(.1)
