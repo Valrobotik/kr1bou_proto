@@ -102,10 +102,12 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        self.debug_phase()
+        #self.debug_phase()
         #self.plant_phase()
         #self.solar_phase()
-        self.home_phase()
+        #self.home_phase()
+        
+        self.solar_pub.publish(Int16(90))
 
         self.go_to(2.8, 1, on_axis=X_PLUS)
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
@@ -184,10 +186,12 @@ class Strategy:
 
             # Rotate self
             self.rotate_only(3 * pi / 2)
-
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
+            
             # Get arm in the right position
             self.need_solar_winner = True
+            
+            # Wait for solar panel winner
             rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
             while self.latest_solar_winner == SOLAR_DEFAULT:
                 rospy.sleep(0.1)
@@ -217,12 +221,9 @@ class Strategy:
             self.wait_until_ready()
             self.solar_mode_pub.publish(False)
             # Rotate solar panel
+            rospy.loginfo(f"(STRATEGY) Rotate solar panel")
             self.solar_pub.publish(Int16(90))
             rospy.sleep(.1)
-
-            # Backwards
-            rospy.loginfo(f"(STRATEGY) Backwards")
-            self.back_until_bumper()
 
             # Reset arm
             rospy.loginfo(f"(STRATEGY) Reset arm")
@@ -238,12 +239,12 @@ class Strategy:
                 self.solar_pub.publish(Int16(90))
                 rospy.sleep(.1)
 
-                # Backwards
-                self.back_until_bumper()
-
                 # Reset arm
                 self.solar_pub.publish(Int16(0))
                 rospy.sleep(.1)
+                
+            # Forward
+            self.go_to(self.position.x, self.position.y - .05, 3 * pi / 2, .15, BACKWARD, Y_PLUS)
 
     def close_enough_to_waypoint(self, threshold=5.0):
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
