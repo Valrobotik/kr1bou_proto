@@ -7,17 +7,10 @@ from piservo import Servo
 
 
 # Set function to calculate percent from angle
-def angle_to_percent(angle):
-    if angle > 180 or angle < 0:
-        return False
+def convert_angle(angle: int):
+    """Maps 180 to 270 degrees"""
 
-    lower = 4
-    upper = 12.5
-    ratio = (upper - lower) / 180  # Calcul ratio from angle to percent
-
-    angle_as_percent = angle * ratio
-
-    return lower + angle_as_percent
+    return int(angle * 180 / 270)
 
 
 def go_to(data: Int16):
@@ -49,13 +42,13 @@ if __name__ == "__main__":
     servo = Servo(13)
     servo.write(0)
     rospy.sleep(3)
-    servo.write(45)
+    servo.write(convert_angle(45))
     rospy.sleep(3)
-    servo.write(90)
+    servo.write(convert_angle(90))
     rospy.sleep(3)
-    servo.write(135)
+    servo.write(convert_angle(135))
     rospy.sleep(3)
-    servo.write(180)
+    servo.write(convert_angle(180))
     rospy.sleep(3)
 
     rospy.spin()
