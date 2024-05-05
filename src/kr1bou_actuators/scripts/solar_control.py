@@ -47,9 +47,15 @@ if __name__ == "__main__":
     rospy.Subscriber("solar_angle", Int16, go_to)
 
     servo = Servo(13)
-    servo.write(180)
-    rospy.sleep(3)
     servo.write(0)
+    rospy.sleep(3)
+    servo.write(45)
+    rospy.sleep(3)
+    servo.write(90)
+    rospy.sleep(3)
+    servo.write(135)
+    rospy.sleep(3)
+    servo.write(180)
     rospy.sleep(3)
 
     rospy.spin()
