@@ -53,7 +53,7 @@ if __name__ == '__main__':
     while not start:
         rospy.sleep(0.1)
 
-    while x_robot == 0.0 and y_robot == 0.0 and theta_robot == 0.0:
+    while x_robot == 0.0 and y_robot == 0.0:
         rospy.sleep(0.1)
 
     laser.laser_off()
