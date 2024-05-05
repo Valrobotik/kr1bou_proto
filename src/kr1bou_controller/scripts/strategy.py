@@ -66,6 +66,7 @@ class Strategy:
         # Get the ultrasound sensor data
         self.us_data = [(-1, -1) for _ in range(10)]
         self.latest_solar_winner = SOLAR_DEFAULT
+        self.need_solar_winner = False
         # Get the camera data
         self.need_rst_odom = False
         self.last_time_cam = time.time()
@@ -189,6 +190,7 @@ class Strategy:
 
             self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
 
+            rospy.loginfo(f"(STRATEGY) Waiting for robot to be ready")
             self.wait_until_ready()
             # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
             #     self.close_enough_to_waypoint()
@@ -205,6 +207,8 @@ class Strategy:
 
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             # Get arm in the right position
+            self.need_solar_winner = True
+            rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
             while self.latest_solar_winner == SOLAR_DEFAULT:
                 rospy.sleep(0.1)
 
@@ -217,6 +221,8 @@ class Strategy:
 
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
                 need_twice = True
+
+            self.latest_solar_winner = SOLAR_DEFAULT
 
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(True)
@@ -311,6 +317,7 @@ class Strategy:
         """go to position (x, y, alpha)
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]"""
+        rospy.loginfo(f"Robot at {self.position}")
         obj = Pose2D()
         obj.x = x
         obj.y = y
@@ -426,8 +433,9 @@ class Strategy:
         self.need_for_compute = True
 
     def update_solar_winner(self, winner: Int8):
-        self.latest_solar_winner = winner.data
-
+        if self.need_solar_winner:
+            self.need_solar_winner = False
+            self.latest_solar_winner = winner.data
     def stop(self):
         self.go_to(self.position.x, self.position.y)  # Stop the robot
 
@@ -477,8 +485,10 @@ if __name__ == "__main__":
             rospy.logwarn("Failed to reset the position from the camera. Applying default position.")
             if strategy_manager.team == TEAM_BLUE:
                 strategy_manager.position = Pose2D(.2, 1., 0.0)
+                strategy_manager.publisher_correct_odom.publish(Pose2D(.2, 1., 0.0))
             else:
                 strategy_manager.position = Pose2D(2.8, 1., pi)
+                strategy_manager.publisher_correct_odom.publish(Pose2D(2.8, 1., pi))
 
         rospy.sleep(0.1)
         strategy_manager.run()
