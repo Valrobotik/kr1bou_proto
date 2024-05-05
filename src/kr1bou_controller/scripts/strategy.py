@@ -102,9 +102,9 @@ class Strategy:
             rospy.sleep(0.05)
 
         self.start_time = time.time()
-        self.debug_phase()
+        #self.debug_phase()
         # self.plant_phase()
-        # self.solar_phase()
+        self.solar_phase()
         # self.home_phase()
 
         # self.solar_pub.publish(Int16(90))
