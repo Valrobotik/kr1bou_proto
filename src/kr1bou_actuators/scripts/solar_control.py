@@ -53,6 +53,7 @@ if __name__ == "__main__":
         # rospy.loginfo("0 la ou pas")
         # pwm.start(angle_to_percent(0))
         # rospy.sleep(3)
+        pwm.start(angle_to_percent(90))
         pwm.ChangeDutyCycle(angle_to_percent(90))
         rospy.loginfo("90 la ou pas")
         pwm.stop()
