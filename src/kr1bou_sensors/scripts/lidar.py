@@ -52,6 +52,10 @@ if __name__ == '__main__':
     rospy.Subscriber("runningPhase", Bool, run)
     while not start:
         rospy.sleep(0.1)
+
+    while x_robot == 0.0 and y_robot == 0.0 and theta_robot == 0.0:
+        rospy.sleep(0.1)
+
     laser.laser_off()
     laser.laser_on()
 

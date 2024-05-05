@@ -26,10 +26,15 @@ def setup_buttons(pins):
     rospy.loginfo(f"(BUMPER WATCH) {buttons_list}")
     buttons_list[0].when_pressed = on_bumper_press
     buttons_list[0].when_released = on_bumper_release
-    # while not rospy.is_shutdown():
-    #     state  = check_bumpers(buttons_list)
-    #     rospy.loginfo(f"(BUMPER WATCH) state : {state}")
-    #     pub.publish(state)
+    old_state = check_bumpers(buttons_list)
+    rate = rospy.Rate(30)
+    while not rospy.is_shutdown():
+        state  = check_bumpers(buttons_list)
+        if state.data != old_state.data:
+            pub.publish(state)
+            old_state = state
+        rate.sleep()
+        
 
 
 
@@ -40,6 +45,7 @@ def check_bumpers(buttons: List[Button]):
     for i, button in enumerate(buttons):
         if button.is_active:
             state.data += 2**i
+    state.data = 15-state.data
     return state
 
 def run(data: Bool):
@@ -64,6 +70,5 @@ if __name__ == '__main__':
         queue_size = rospy.get_param('/queue_size')
         pub = rospy.Publisher('bumper', Byte, queue_size=queue_size)
         buttons_list = setup_buttons(bumper_pins)
-        rospy.spin()
     finally:
         rospy.loginfo("[STOP] Bumper Watch node has stopped.")

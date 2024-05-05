@@ -30,6 +30,13 @@ SOLAR_DEFAULT = -2
 
 DEFAULT_MAX_SPEED = 0.25
 
+NO_AXIS_MODE = 0
+X_PLUS = 1
+X_MINUS = 2
+Y_PLUS = 3
+Y_MINUS = 4
+PREFERED_AXIS = 5
+
 
 class Strategy:
     def __init__(self) -> None:
@@ -86,15 +93,16 @@ class Strategy:
         self.speed_ctrl_pub = rospy.Publisher('max_speed', Float64, queue_size=1)
         self.publisher_correct_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
         self.solar_mode_pub = rospy.Publisher('solar_mode', Bool, queue_size=1)
+        self.axis_mode_pub = rospy.Publisher('axis_mode', Int16, queue_size=1)
 
     def run(self):
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        # self.debug_phase()
+        self.debug_phase()
         # self.plant_phase()
-        self.solar_phase()
+        # self.solar_phase()
         # self.home_phase()
 
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
@@ -160,16 +168,16 @@ class Strategy:
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
 
-            self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
-
-            # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
-            #     self.close_enough_to_waypoint()
-            #     self.compute_path()
-            #     self.follow_path(self.current_objective.direction)
-
-            self.wait_until_ready()
-            rospy.sleep(0.2)
-            self.reset_position_from_camera()
+            # self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
+            
+            # # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+            # #     self.close_enough_to_waypoint()
+            # #     self.compute_path()
+            # #     self.follow_path(self.current_objective.direction)
+            
+            # self.wait_until_ready()
+            # rospy.sleep(0.2)
+            # self.reset_position_from_camera()
 
             solar_objective.y += 0.1
             solar_objective.cost = sqrt(
@@ -190,7 +198,10 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
             # Rotate self
-            self.go_to(self.position.x, self.position.y, 3 * pi / 2, .25, BEST_DIRECTION)
+            self.go_to(self.position.x, self.position.y, 3*pi/2, .25, BEST_DIRECTION)
+            self.wait_until_ready()
+
+            self.reset_position_from_camera()
 
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             # Get arm in the right position
@@ -215,7 +226,7 @@ class Strategy:
             self.back_until_bumper()
 
             # Forward
-            self.go_to(self.position.x, self.position.y - .03, 3 * pi / 2, .15, FORWARD)
+            self.go_to(self.position.x, self.position.y - .05, 3*pi/2, .15, FORWARD)
             self.wait_until_ready()
             self.solar_mode_pub.publish(False)
             # Rotate solar panel
@@ -296,7 +307,7 @@ class Strategy:
         # save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
         rospy.loginfo(f"(STRATEGY) Path : {self.path}")
 
-    def go_to(self, x=-1, y=-1, alpha=-1, speed=1.0, direction=0):
+    def go_to(self, x=-1, y=-1, alpha=-1, speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
         """go to position (x, y, alpha)
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]"""
@@ -309,6 +320,7 @@ class Strategy:
         direction_data.data = direction
         speed_data = Float64()
         speed_data.data = speed
+        self.axis_mode_pub.publish(Int16(on_axis))
         self.direction_pub.publish(direction_data)
         self.speed_ctrl_pub.publish(speed_data)
         self.pos_ordre_pub.publish(obj)
@@ -427,24 +439,24 @@ class Strategy:
     def back_until_bumper(self, speed=0.15, axis='y+', direction=BACKWARD):
         while not self.bumper_1 and not self.bumper_2 and not self.bumper_3 and not self.bumper_4:
             if axis == 'y+':
-                self.go_to(self.position.x, self.position.y + 2, speed=speed, direction=direction)
+                self.go_to(self.position.x, self.position.y + 2, speed=speed, direction=direction, on_axis=Y_PLUS)
             elif axis == 'y-':
-                self.go_to(self.position.x, self.position.y - 2, speed=speed, direction=direction)
+                self.go_to(self.position.x, self.position.y - 2, speed=speed, direction=direction, on_axis=Y_MINUS)
             elif axis == 'x+':
-                self.go_to(self.position.x + 3, self.position.y, speed=speed, direction=direction)
+                self.go_to(self.position.x + 3, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
             elif axis == 'x-':
-                self.go_to(self.position.x - 3, self.position.y, speed=speed, direction=direction)
+                self.go_to(self.position.x - 3, self.position.y, speed=speed, direction=direction, on_axis=X_MINUS)
         self.stop()
 
     def move_relative(self, distance, speed=0.20, axis='y-', direction=BEST_DIRECTION):
         if axis == 'y-':
-            self.go_to(self.position.x, self.position.y - distance, speed=speed, direction=direction)
+            self.go_to(self.position.x, self.position.y - distance, speed=speed, direction=direction, on_axis=Y_MINUS)
         elif axis == 'y+':
-            self.go_to(self.position.x, self.position.y + distance, speed=speed, direction=direction)
+            self.go_to(self.position.x, self.position.y + distance, speed=speed, direction=direction, on_axis=Y_PLUS)
         elif axis == 'x-':
-            self.go_to(self.position.x - distance, self.position.y, speed=speed, direction=direction)
+            self.go_to(self.position.x - distance, self.position.y, speed=speed, direction=direction, on_axis=X_MINUS)
         elif axis == 'x+':
-            self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction)
+            self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
         self.wait_until_ready()
 
 
