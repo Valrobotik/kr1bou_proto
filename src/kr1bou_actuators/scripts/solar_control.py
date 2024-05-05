@@ -43,7 +43,7 @@ if __name__ == "__main__":
         GPIO.setwarnings(False)  # Disable warnings
 
         # Use pin 12 for PWM signal
-        pwm_gpio = 12
+        pwm_gpio = 18
         frequency = 50  # Adjust frequency as needed
         GPIO.setup(pwm_gpio, GPIO.OUT)
         pwm = GPIO.PWM(pwm_gpio, frequency)
