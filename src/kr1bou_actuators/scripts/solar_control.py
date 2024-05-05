@@ -6,18 +6,20 @@ from std_msgs.msg import Int16, Bool
 import time
 import RPi.GPIO as GPIO
 
+
 # Set function to calculate percent from angle
 def angle_to_percent(angle):
-    if angle > 270 or angle < 0:
+    if angle > 180 or angle < 0:
         return False
 
     lower = 4
-    upper = 12.5  # Adjust upper limit for 270-degree range
-    ratio = (upper - lower) / 270  # Calculate ratio from angle to percent
+    upper = 12.5
+    ratio = (upper - lower) / 180  # Calcul ratio from angle to percent
 
     angle_as_percent = angle * ratio
 
     return lower + angle_as_percent
+
 
 def go_to(data: Int16):
     global pwm
@@ -30,6 +32,7 @@ def run(data: Bool):
     global start
     start = data.data
     rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
+
 
 if __name__ == "__main__":
     start = False
@@ -44,19 +47,15 @@ if __name__ == "__main__":
 
         # Use pin 12 for PWM signal
         pwm_gpio = 12
-        frequency = 50  # Adjust frequency as needed
+        frequency = 50
         GPIO.setup(pwm_gpio, GPIO.OUT)
         pwm = GPIO.PWM(pwm_gpio, frequency)
         rospy.Subscriber("solar_angle", Int16, go_to)
-        rospy.sleep(3)
-        # pwm.ChangeDutyCycle(angle_to_percent(0))
-        # rospy.loginfo("0 la ou pas")
-        # pwm.start(angle_to_percent(0))
-        # rospy.sleep(3)
+
         pwm.start(angle_to_percent(90))
-        pwm.ChangeDutyCycle(angle_to_percent(90))
-        rospy.loginfo("90 la ou pas")
+        rospy.sleep(1)
         pwm.stop()
+        rospy.spin()
     finally:
         if pwm is not None:
             pwm.stop()
