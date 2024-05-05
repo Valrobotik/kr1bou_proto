@@ -195,7 +195,7 @@ class Kr1bou:
         diff_angle_line_to_robot = angleDiffRad(destination_angle, angle_line_to_robot)
 
         is_on_right_side = diff_angle_line_to_robot > 0.0
-        target_angle = destination_angle + atan(dist_to_line * 3.5) * (-1 if is_on_right_side else 1)
+        target_angle = destination_angle + atan(dist_to_line * 1) * (-1 if is_on_right_side else 1)
 
         dx_base = x2 - pos[0]
         dy_base = y2 - pos[1]
