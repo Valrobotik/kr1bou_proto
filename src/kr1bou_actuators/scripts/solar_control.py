@@ -49,12 +49,13 @@ if __name__ == "__main__":
         pwm = GPIO.PWM(pwm_gpio, frequency)
         rospy.Subscriber("solar_angle", Int16, go_to)
         rospy.sleep(3)
+        pwm.ChangeDutyCycle(angle_to_percent(0))
+        rospy.loginfo("0 la ou pas")
         pwm.start(angle_to_percent(0))
-        rospy.loginfo("Went to 0 degrees")
+        rospy.sleep(3)
+        pwm.ChangeDutyCycle(angle_to_percent(90))
+        rospy.loginfo("90 la ou pas")
         pwm.stop()
-        rospy.loginfo("Went to 150 degrees")
-        pwm.stop()
-        rospy.spin()
     finally:
         if pwm is not None:
             pwm.stop()
