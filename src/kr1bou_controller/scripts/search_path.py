@@ -167,10 +167,10 @@ def test_n(n: int = 1000, verbose: bool = False):
 
 
 def debug():
-    with open("/home/kribou/Downloads/all_game_states.pkl", "rb") as f:
+    with open("/home/kribou/Downloads/all_game_states(1).pkl", "rb") as f:
         game_states = pkl.load(f)
 
-    for count, (origin, end, path, obstacles1, obstacles2, resolution, boundaries) in enumerate(game_states[1:], 1):
+    for count, (origin, end, path, obstacles1, obstacles2, resolution, boundaries) in enumerate(game_states):
         print(f"Game state {count}")
         print(f"Origin: {origin}\nEnd: {end}\nPath: {path}\nObstacles1: {len(obstacles1)}\nObstacles2: {len(obstacles2)}")
         print(f"Resolution: {resolution}\nBoundaries: {boundaries}")

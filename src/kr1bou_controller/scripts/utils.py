@@ -94,15 +94,16 @@ class Objective:
 
 
 def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int,
-                           map_boundaries: list) -> Tuple[set, set]:
+                           map_boundaries: list, position) -> Tuple[set, set]:
     """Get the obstacles from the ultrasound sensors (etc.), the position of the adversary and discretize them
     We extend each obstacle to 2 squares around it to take into account the robot's size. First square is radius, and
-    second is more lenient."""
+    second is more lenient. remove obstacles that are too close to position (10 cm)"""
     obstacles1, obstacles2 = set(), set()
     # Get the obstacles from the ultrasound sensors (values in meters)
     # obstacles1, obstacles2 = extend_obstacles(us_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
     obstacles1, obstacles2 = extend_obstacles(lidar_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
     obstacles1, obstacles2 = extend_obstacles(camera_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
+    
     return obstacles1, obstacles2
 
 
@@ -141,10 +142,10 @@ def setup_maze(maze, obstacles: set):
 def update_maze(maze: np.ndarray, obstacles: set, new_obstacles: set):
     not_obstacles_anymore = obstacles - new_obstacles
     for not_obstacle in not_obstacles_anymore:
-        maze[not_obstacle[0]][not_obstacle[1]].obstacle = False
+        maze[not_obstacle[0]][not_obstacle[1]].is_obstacle = False
         
     for new_obstacle in new_obstacles:
-        maze[new_obstacle[0]][new_obstacle[1]].obstacle = True
+        maze[new_obstacle[0]][new_obstacle[1]].is_obstacle = True
     return maze
 
 
