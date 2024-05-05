@@ -102,14 +102,14 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        #self.debug_phase()
+        self.debug_phase()
         #self.plant_phase()
         #self.solar_phase()
         #self.home_phase()
         
-        self.solar_pub.publish(Int16(90))
+        # self.solar_pub.publish(Int16(90))
 
-        self.go_to(2.8, 1, on_axis=X_PLUS)
+        # self.go_to(2.8, 1, on_axis=X_PLUS)
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
     # -- Phases --
