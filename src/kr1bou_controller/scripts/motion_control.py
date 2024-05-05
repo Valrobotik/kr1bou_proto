@@ -131,8 +131,8 @@ class Kr1bou:
 
     def update_rotation_speed(self):
         angle_diff = angleDiffRad(self.objectif_theta, self.theta)
-        self.integral_rotation += angle_diff*(time.time()-time_last_rotation)
-        time_last_rotation = time.time()
+        self.integral_rotation += angle_diff*(time.time()-self.time_last_rotation)
+        self.time_last_rotation = time.time()
         w = angle_diff * KP_R+self.integral_rotation*KI_R
         if abs(angle_diff) < ANGLE_PRECISION:
             self.state = READY
