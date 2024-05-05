@@ -43,9 +43,9 @@ if __name__ == "__main__":
 
     servo = AngularServo(pwm_gpio, min_angle=-90, max_angle=90)
     rospy.loginfo(f"Servo initialized on GPIO {pwm_gpio}")
-    servo.angle = 100
-    rospy.sleep(3)
     servo.angle = 0
+    rospy.sleep(3)
+    servo.angle = -90
 
     #rospy.Subscriber("solar_angle", Int16, rotate_to)
 
