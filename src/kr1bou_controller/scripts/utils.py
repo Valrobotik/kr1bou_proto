@@ -1,5 +1,4 @@
 import rospy
-# from math import sqrt
 from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
