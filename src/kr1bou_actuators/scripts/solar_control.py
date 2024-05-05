@@ -37,8 +37,8 @@ if __name__ == "__main__":
         # Initialization
         rospy.init_node("solar_control", anonymous=True)
         rospy.loginfo("[START] Solar Controller node has started.")
-        GPIO.setmode(GPIO.BOARD)  # Use Board numeration mode
-        GPIO.setwarnings(False)  # Disable warnings
+        # GPIO.setmode(GPIO.BOARD)  # Use Board numeration mode
+        # GPIO.setwarnings(False)  # Disable warnings
 
         # Use pin 12 for PWM signal
         pwm_gpio = 12
