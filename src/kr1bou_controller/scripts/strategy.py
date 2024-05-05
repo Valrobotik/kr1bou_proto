@@ -253,7 +253,7 @@ class Strategy:
             self.current_objective = None
 
     def close_enough_raw_waypoint(self, threshold=10.0):
-        while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (self.position.y - self.raw_path[0].position[1]) ** 2) < threshold / self.resolution:
+        while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (self.position.y - self.raw_path[0].position[1]) ** 2) < threshold:
             self.raw_path.pop(0)
 
 
@@ -268,7 +268,8 @@ class Strategy:
                                                 [(self.enemy_position.x, self.enemy_position.y)],
                                                 self.resolution, self.radius, self.map_boundaries, self.position)
         # rospy.loginfo(f"Obstacles : {len(self.obstacles)}")
-        self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
+        self.maze = setup_maze(np.zeros((self.map_boundaries[2] * self.resolution, self.map_boundaries[3] * self.resolution), dtype=Node), self.obstacles1)
+        # self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
         self.previous_obstacles = self.obstacles1
 
         if self.current_objective is None:  # Get new closest objective
