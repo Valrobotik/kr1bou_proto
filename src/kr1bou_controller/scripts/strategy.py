@@ -130,6 +130,8 @@ class Strategy:
             self.compute_path()
             self.follow_path()
         rospy.loginfo("(STRATEGY) Debug phase is over")
+        if max_time > time.time() - self.start_time:
+            print("Debug phase is over because of time")
 
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
