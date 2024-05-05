@@ -53,7 +53,7 @@ if __name__ == "__main__":
         rospy.Subscriber("solar_angle", Int16, go_to)
 
         pwm.start(angle_to_percent(90))
-        rospy.sleep(1)
+        rospy.sleep(100)
         pwm.stop()
         rospy.spin()
     finally:
