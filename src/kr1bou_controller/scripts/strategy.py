@@ -311,6 +311,7 @@ class Strategy:
         """go to position (x, y, alpha)
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]"""
+        rospy.loginfo(f"Robot at {self.position}")
         obj = Pose2D()
         obj.x = x
         obj.y = y
