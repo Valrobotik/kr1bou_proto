@@ -63,7 +63,8 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
                 neighbor.f = neighbor.g + neighbor.h
                 if neighbor not in closed_set:  # To be visited
                     heapq.heappush(open_set, neighbor)
-            
+    
+    print("(A*) No path found")            
     return None
 
 
