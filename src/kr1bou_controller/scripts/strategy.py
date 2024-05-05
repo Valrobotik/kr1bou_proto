@@ -249,6 +249,8 @@ class Strategy:
     def close_enough_to_waypoint(self, threshold=5.0):
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
             self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
+        if sqrt((self.position.x - self.current_objective.x) ** 2 + (self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:
+            self.current_objective = None
 
     def close_enough_raw_waypoint(self, threshold=10.0):
         while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (self.position.y - self.raw_path[0].position[1]) ** 2) < threshold / self.resolution:
@@ -269,7 +271,7 @@ class Strategy:
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
         self.previous_obstacles = self.obstacles1
 
-        if self.path == [] and self.objectives != []:  # Get new closest objective
+        if self.current_objective is None:  # Get new closest objective
             self.reset_position_from_camera()
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
