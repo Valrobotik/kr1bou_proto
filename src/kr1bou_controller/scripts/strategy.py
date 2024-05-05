@@ -249,12 +249,18 @@ class Strategy:
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
             self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
 
+    def close_enough_raw_waypoint(self, threshold=10.0):
+        while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (self.position.y - self.raw_path[0].position[1]) ** 2) < threshold / self.resolution:
+            self.raw_path.pop(0)
+
+
     def compute_path(self):
         """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
         the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
         :return: the path to follow
         """
         rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.enemy_position}")
+        self.close_enough_raw_waypoint()
         self.obstacles1, self.obstacles2 = get_discrete_obstacles(self.lidar_data, self.us_data,
                                                 [(self.enemy_position.x, self.enemy_position.y)],
                                                 self.resolution, self.radius, self.map_boundaries, self.position)
@@ -266,6 +272,7 @@ class Strategy:
             self.reset_position_from_camera()
             self.current_objective = self.objectives[0]
             self.objectives.pop(0)
+            self.raw_path = []
             rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
             # rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
 

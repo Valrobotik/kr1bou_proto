@@ -7,12 +7,4 @@
 /.idea/
 /venv/
 src/kr1bou_controller/scripts/__pycache__/
-src/kr1bou_controller/scripts/__pycache__/utils.cpython-38.pyc
-archive/maze1.png
-archive/maze2.png
-archive/maze3.png
-archive/maze4.png
-archive/maze0.png
-archive/maze5.png
-src/kr1bou_controller/scripts/__pycache__/utils.cpython-38.pyc
-src/kr1bou_controller/scripts/__pycache__/search_path.cpython-38.pyc
+archive/maze*
