@@ -74,7 +74,7 @@ def list_of_obstacles():
     rospy.loginfo(f"{type(obstacles[0][0])}")
 
     for i in range(len(obstacles)):
-        obstacles[i] = ((obstacles[i][0] - robot_position.x)*math.cos(robot_position.theta), (obstacles[i][1] - robot_position.y)**math.sin(robot_position.theta))
+        obstacles[i] = ((obstacles[i][0] - robot_position.x)*math.cos(robot_position.theta), (obstacles[i][1] - robot_position.y)*math.sin(robot_position.theta))
 
     rospy.loginfo(f"{type(obstacles[0][0])}")
     return obstacles
