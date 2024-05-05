@@ -46,8 +46,8 @@ if __name__ == "__main__":
         pwm = GPIO.PWM(pwm_gpio, frequency)
         rospy.Subscriber("solar_angle", Int16, rotate_to)
 
-        rotate_to(0)
-        rotate_to(90)
+        rotate_to(Int16(0))
+        rotate_to(Int16(90))
         rospy.spin()
     finally:
         if pwm is not None:
