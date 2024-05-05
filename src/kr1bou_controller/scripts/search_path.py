@@ -27,33 +27,22 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
 
     # Loop until the open list is empty
     while open_set:
-        print("computingSTART")
         # Use a priority queue to get the node with the lowest f value
         current_node = heapq.heappop(open_set)  # Also remove from open set
         closed_set.add(current_node)
-
-        # if the search is taking too long, stop
-        if time.perf_counter() - onset > 2:
-            print("Time limit reached")
-            return None
 
         if current_node == end_node:  # Path found
             path = []
             current = current_node
             while current is not None:
-                print("computingEND")
                 path.append(current)
                 current = current.parent
-            print("Path found")
             return path[::-1]
 
         # Explore neighbors
         for _, neighbor in current_node.neighbors.values():
             if neighbor.is_obstacle:  # WALL / OBSTACLE to ignore
                 continue
-            # if neighbor in closed_set:  # Already visited
-            #     continue
-            print("test")
 
             tentative_g = current_node.g + distance(current_node, neighbor)  # Distance from start to neighbor
             if tentative_g < neighbor.g:
