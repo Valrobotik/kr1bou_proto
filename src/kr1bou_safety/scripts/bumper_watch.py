@@ -11,13 +11,11 @@ from typing import List
 
 def on_bumper_press():
     global buttons_list
-    rospy.loginfo("(Bumper) Pressed")
     state = check_bumpers(buttons_list)
     pub.publish(state)
 
 
 def on_bumper_release():
-    rospy.loginfo("(Bumper) Release")
     state = check_bumpers(buttons_list)
     pub.publish(state)
 
