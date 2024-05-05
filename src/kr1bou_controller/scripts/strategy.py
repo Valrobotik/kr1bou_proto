@@ -100,8 +100,8 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        self.debug_phase()
-        # self.plant_phase()
+        #self.debug_phase()
+        self.plant_phase()
         # self.solar_phase()
         # self.home_phase()
 
