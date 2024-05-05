@@ -62,7 +62,7 @@ class Strategy:
         # -- Subscribers --
         self.position = Pose2D()  # Get the initial position of the robot
         self.enemy_position = Pose2D()  # Get the position of the enemy robot
-        self.lidar_data = None  # Get the lidar data
+        self.lidar_data = []  # Get the lidar data
         # Get the ultrasound sensor data
         self.us_data = [(-1, -1) for _ in range(10)]
         self.latest_solar_winner = SOLAR_DEFAULT

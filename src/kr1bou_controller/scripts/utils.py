@@ -110,6 +110,8 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, r
 
 def extend_obstacles(data: list, obstacles1: set, obstacles2: set, radius: int, resolution: int,
                      map_boundaries: list) -> Tuple[set, set]:
+    if not data:
+        return obstacles1, obstacles2
     for i, (x, y) in enumerate(data):
         if (x, y) not in [(0, 0), (-1, -1)]:
             # Meters to unit
