@@ -290,7 +290,9 @@ class Strategy:
             # Get the start and end nodes
             origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
             origin.orientation = self.position.theta  
-            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
+            end = self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]
+            end.orientation = self.current_objective.theta
+            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {end.position}")
             
             self.game_states.append([origin.position,
                                      self.maze[int(self.current_objective.x * self.resolution)][
@@ -298,8 +300,7 @@ class Strategy:
                                      self.path, self.obstacles1, self.obstacles2, self.resolution, self.map_boundaries])
             with open("all_game_states.pkl", "wb") as f:
                 pickle.dump(self.game_states, f)
-            self.raw_path = a_star(origin, self.maze[int(self.current_objective.x * self.resolution)]
-                                                    [int(self.current_objective.y * self.resolution)])
+            self.raw_path = a_star(origin, end)
             rospy.loginfo(f"(STRATEGY) new Raw path computed : {self.raw_path}")
             self.path = clean_path(self.raw_path)
             self.path = meters_to_units(self.path, self.resolution)
