@@ -5,6 +5,7 @@ import rospy
 from std_msgs.msg import Int16, Bool
 import time
 import RPi.GPIO as GPIO
+from gpiozero import Servo
 
 
 # Set function to calculate percent from angle
@@ -41,13 +42,17 @@ if __name__ == "__main__":
 
         # Use pin 12 for PWM signal
         pwm_gpio = 12
-        frequency = 50
-        GPIO.setup(pwm_gpio, GPIO.OUT)
-        pwm = GPIO.PWM(pwm_gpio, frequency)
+        #frequency = 50
+        # GPIO.setup(pwm_gpio, GPIO.OUT)
+        # pwm = GPIO.PWM(pwm_gpio, frequency)
+        rospy.loginfo(f"Setting up PWM on GPIO {pwm_gpio}")
+        servo = Servo(pwm_gpio)
+        servo.value = -1
+
         rospy.Subscriber("solar_angle", Int16, rotate_to)
 
-        rotate_to(Int16(0))
-        rotate_to(Int16(180))
+        # rotate_to(Int16(0))
+        # rotate_to(Int16(180))
         rospy.spin()
     finally:
         if pwm is not None:
