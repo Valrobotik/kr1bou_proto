@@ -104,8 +104,9 @@ class Strategy:
 
         self.start_time = time.time()
         # self.debug_phase()
+        self.debug_phase_goto()
         # self.plant_phase()
-        self.solar_phase()
+        # self.solar_phase()
         # self.home_phase()
 
         # self.solar_pub.publish(Int16(90))
@@ -132,6 +133,17 @@ class Strategy:
         rospy.loginfo("(STRATEGY) Debug phase is over")
         if max_time > time.time() - self.start_time:
             print("Debug phase is over because of time")
+
+    def debug_phase_goto(self):
+        while not rospy.is_shutdown():
+            self.go_to(2.25, .5, 0, .25, BEST_DIRECTION)
+            self.wait_until_ready()
+            self.go_to(2.25, 1.5, 0, .25, BEST_DIRECTION)
+            self.wait_until_ready()
+            self.go_to(.75, 1.5, 0, .25, BEST_DIRECTION)
+            self.wait_until_ready()
+            self.go_to(.75, .5, 0, .25, BEST_DIRECTION)
+            self.wait_until_ready()
 
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
