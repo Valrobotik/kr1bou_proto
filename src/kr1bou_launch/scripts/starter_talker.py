@@ -36,7 +36,6 @@ if __name__ == '__main__':
         key.when_pressed = on_key_press
         key.when_released = on_key_release
 
-
         rospy.spin()
     except rospy.ROSInterruptException as e:
         rospy.logerr(e)

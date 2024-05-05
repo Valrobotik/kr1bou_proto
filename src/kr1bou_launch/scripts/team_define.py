@@ -7,11 +7,12 @@ import rospy
 from gpiozero import Button
 from std_msgs.msg import Bool, Int8
 
-speaker_state = False
+
 def speaker_state_callback(data: Bool):
     global speaker_state
     speaker_state = data.data
     rospy.loginfo(f"{rospy.get_name()} received: {data.data} from Speaker")
+
 
 def on_button_press():
     rospy.loginfo("Team selected to blue")
@@ -19,11 +20,13 @@ def on_button_press():
     # Sending "Blue" ID to the speaker
     bluetooth_choice.publish(3)
 
+
 def on_button_released():
     rospy.loginfo("Team selected to yellow")
     pub.publish(False)
     # Sending "Yellow" ID to the speaker
     bluetooth_choice.publish(2)
+
 
 def run(data: Bool):
     global start
@@ -33,6 +36,7 @@ def run(data: Bool):
 
 if __name__ == '__main__':
     start = False
+    speaker_state = False
     try:
         # Initialization
         rospy.init_node('team_define', anonymous=True)
@@ -62,7 +66,7 @@ if __name__ == '__main__':
 
         rospy.loginfo("Speaker node is ready")
 
-        if button.is_pressed :
+        if button.is_active:
             rospy.loginfo("True - Is Blue")
             pub.publish(True)
             # Sending "Blue" ID to the speaker
@@ -82,10 +86,10 @@ if __name__ == '__main__':
         rate = rospy.Rate(rospy.get_param('/frequency'))
         while not start:
             rate.sleep()
-        
+
         rospy.sleep(0.1)
-        
-        if button.is_pressed :
+
+        if button.is_active:
             rospy.loginfo("START MATCH WITH TEAM BLUE")
             pub.publish(True)
         else:

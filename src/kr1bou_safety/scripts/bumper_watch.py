@@ -26,16 +26,16 @@ def setup_buttons(pins):
     global buttons_list
     buttons_list = [Button(int(pin)) for pin in pins]
     rospy.loginfo(f"(BUMPER WATCH) {buttons_list}")
-    buttons_list[0].when_pressed = on_bumper_press
-    buttons_list[0].when_released = on_bumper_release
+    buttons_list[0].when_activated = on_bumper_press
+    buttons_list[0].when_activated = on_bumper_release
     old_state = check_bumpers(buttons_list)
-    rate = rospy.Rate(30)
+    custom_rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         state = check_bumpers(buttons_list)
         if state.data != old_state.data:
             pub.publish(state)
             old_state = state
-        rate.sleep()
+        custom_rate.sleep()
 
 
 def check_bumpers(buttons: List[Button]):
