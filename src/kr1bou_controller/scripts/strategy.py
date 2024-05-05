@@ -278,18 +278,17 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
             # rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
 
-        # Get the start and end nodes
-        origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
-        origin.orientation = self.position.theta
 
         # rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
         if is_path_valid(self.raw_path, self.obstacles2):  # Check if the path is still valid with a 10 cm margin
             rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
-            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
             self.maze = setup_maze(np.zeros((self.map_boundaries[2] * self.resolution, self.map_boundaries[3] * self.resolution), dtype=Node), self.obstacles1)
-            # self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
-            # save variables using pickle
+            # Get the start and end nodes
+            origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
+            origin.orientation = self.position.theta  # self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
+            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {self.current_objective}")
+            
             self.game_states.append([origin.position,
                                      self.maze[int(self.current_objective.x * self.resolution)][
                                          int(self.current_objective.y * self.resolution)].position,
