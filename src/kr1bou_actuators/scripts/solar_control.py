@@ -5,7 +5,7 @@ import rospy
 from std_msgs.msg import Int16, Bool
 import time
 import RPi.GPIO as GPIO
-from gpiozero import Servo
+from gpiozero import AngularServo
 
 
 # Set function to calculate percent from angle
@@ -31,39 +31,26 @@ def run(data: Bool):
 
 if __name__ == "__main__":
     start = False
-    pwm = None
     time_run = 0
-    try:
-        # Initialization
-        rospy.init_node("solar_control", anonymous=True)
-        rospy.loginfo("[START] Solar Controller node has started.")
-        # GPIO.setmode(GPIO.BOARD)  # Use Board numeration mode
-        # GPIO.setwarnings(False)  # Disable warnings
+    # Initialization
+    rospy.init_node("solar_control", anonymous=True)
+    rospy.loginfo("[START] Solar Controller node has started.")
 
-        # Use pin 12 for PWM signal
-        pwm_gpio = 12
-        #frequency = 50
-        # GPIO.setup(pwm_gpio, GPIO.OUT)
-        # pwm = GPIO.PWM(pwm_gpio, frequency)
-        rospy.loginfo(f"Setting up PWM on GPIO {pwm_gpio}")
-        servo = Servo(pwm_gpio)
-        # Check if the servo is connected
-        if servo is None:
-            rospy.logerr("Servo not connected")
-            exit(1)
-        # move servo to 0 degrees
-        servo.min()
-        time.sleep(1)
-        # move servo to 180 degrees
-        servo.max()
+    pwm_gpio = 12
+    # frequency = 50
+    # GPIO.setup(pwm_gpio, GPIO.OUT)
+    # pwm = GPIO.PWM(pwm_gpio, frequency)
 
-        rospy.Subscriber("solar_angle", Int16, rotate_to)
+    servo = AngularServo(pwm_gpio, min_angle=-45, max_angle=225)
+    rospy.loginfo(f"Servo initialized on GPIO {pwm_gpio}")
+    servo.angle = 100
+    rospy.sleep(3)
+    servo.angle = 0
 
-        # rotate_to(Int16(0))
-        # rotate_to(Int16(180))
-        rospy.spin()
-    finally:
-        if pwm is not None:
-            pwm.stop()
-        GPIO.cleanup()
-        rospy.loginfo("[STOP] Solar Controller node has stopped.")
+    #rospy.Subscriber("solar_angle", Int16, rotate_to)
+
+    # rotate_to(Int16(0))
+    # rotate_to(Int16(180))
+    rospy.spin()
+
+    rospy.loginfo("[STOP] Solar Controller node has stopped.")
