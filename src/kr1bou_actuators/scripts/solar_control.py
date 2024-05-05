@@ -7,12 +7,18 @@ import time
 import RPi.GPIO as GPIO
 
 
+# Set function to calculate percent from angle
+def angle_to_percent(angle):
+    if angle > 180 or angle < 0:
+        return 0
+    
+    return angle * 100 / 270
+
+
 def rotate_to(data: Int16):
     global pwm
-    angle = data.data
-    duty = angle / 18 + 2
-    pwm.ChangeDutyCycle(duty)
-    rospy.loginfo(f"(SOLAR_CONTROL) {data.data}")
+    pwm.start(angle_to_percent(data.data))
+    rospy.loginfo(f"(SOLAR_CONTROL) Rotating to {data.data}")
     rospy.sleep(3)
     pwm.stop()
 
@@ -40,9 +46,8 @@ if __name__ == "__main__":
         pwm = GPIO.PWM(pwm_gpio, frequency)
         rospy.Subscriber("solar_angle", Int16, rotate_to)
 
-        rotate_to(Int16(0))
-        rospy.sleep(1)
-        rotate_to(Int16(90))
+        rotate_to(0)
+        rotate_to(90)
         rospy.spin()
     finally:
         if pwm is not None:
