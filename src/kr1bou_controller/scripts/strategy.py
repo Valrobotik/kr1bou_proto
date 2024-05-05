@@ -66,6 +66,7 @@ class Strategy:
         # Get the ultrasound sensor data
         self.us_data = [(-1, -1) for _ in range(10)]
         self.latest_solar_winner = SOLAR_DEFAULT
+        self.need_solar_winner = False
         # Get the camera data
         self.need_rst_odom = False
         self.last_time_cam = time.time()
@@ -206,6 +207,8 @@ class Strategy:
 
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             # Get arm in the right position
+            self.need_solar_winner = True
+            rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
             while self.latest_solar_winner == SOLAR_DEFAULT:
                 rospy.sleep(0.1)
 
@@ -218,6 +221,8 @@ class Strategy:
 
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
                 need_twice = True
+
+            self.latest_solar_winner = SOLAR_DEFAULT
 
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(True)
@@ -434,8 +439,9 @@ class Strategy:
         self.need_for_compute = True
 
     def update_solar_winner(self, winner: Int8):
-        self.latest_solar_winner = winner.data
-
+        if self.need_solar_winner:
+            self.need_solar_winner = False
+            self.latest_solar_winner = winner.data
     def stop(self):
         self.go_to(self.position.x, self.position.y)  # Stop the robot
 
