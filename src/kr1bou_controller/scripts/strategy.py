@@ -353,11 +353,12 @@ class Strategy:
         """Publishes the camera position to the odometry topic to correct the odometry"""
         self.wait_until_ready()
         rospy.sleep(0.3)
-        if time.time() - self.last_time_cam < 3:
+        if time.time() - self.last_time_cam < 2:
             self.got_cam_data = False
             while not self.got_cam_data:
                 rospy.sleep(0.05)
-            self.publisher_correct_odom.publish(self.camera_position)
+            if self.camera_position.x != -1 and self.camera_position.y != -1:
+                self.publisher_correct_odom.publish(self.camera_position)
         else:
             rospy.logwarn("(STRATEGY) No connexion with camera")
             return False
