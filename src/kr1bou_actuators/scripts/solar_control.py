@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # GPIO.setup(pwm_gpio, GPIO.OUT)
     # pwm = GPIO.PWM(pwm_gpio, frequency)
 
-    servo = AngularServo(pwm_gpio, min_angle=-45, max_angle=225)
+    servo = AngularServo(pwm_gpio, min_angle=-90, max_angle=90)
     rospy.loginfo(f"Servo initialized on GPIO {pwm_gpio}")
     servo.angle = 100
     rospy.sleep(3)
