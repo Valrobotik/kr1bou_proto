@@ -257,7 +257,7 @@ class Strategy:
         rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.enemy_position}")
         self.obstacles1, self.obstacles2 = get_discrete_obstacles(self.lidar_data, self.us_data,
                                                 [(self.enemy_position.x, self.enemy_position.y)],
-                                                self.resolution, self.radius, self.map_boundaries)
+                                                self.resolution, self.radius, self.map_boundaries, self.position)
         # rospy.loginfo(f"Obstacles : {len(self.obstacles)}")
         self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
         self.previous_obstacles = self.obstacles1

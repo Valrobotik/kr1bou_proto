@@ -167,7 +167,7 @@ def test_n(n: int = 1000, verbose: bool = False):
 
 
 def debug():
-    with open("/home/kribou/Downloads/all_game_states(1).pkl", "rb") as f:
+    with open("/home/valrob/Desktop/all_game_states.pkl", "rb") as f:
         game_states = pkl.load(f)
 
     for count, (origin, end, path, obstacles1, obstacles2, resolution, boundaries) in enumerate(game_states):

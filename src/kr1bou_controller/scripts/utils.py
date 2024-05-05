@@ -94,7 +94,7 @@ class Objective:
 
 
 def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int,
-                           map_boundaries: list) -> Tuple[set, set]:
+                           map_boundaries: list, position) -> Tuple[set, set]:
     """Get the obstacles from the ultrasound sensors (etc.), the position of the adversary and discretize them
     We extend each obstacle to 2 squares around it to take into account the robot's size. First square is radius, and
     second is more lenient. remove obstacles that are too close to position (10 cm)"""
@@ -103,6 +103,15 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, r
     # obstacles1, obstacles2 = extend_obstacles(us_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
     obstacles1, obstacles2 = extend_obstacles(lidar_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
     obstacles1, obstacles2 = extend_obstacles(camera_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
+    # Remove obstacles that are too close to the robot
+    x, y = int(position.x * resolution), int(position.y * resolution)  # Meters to unit
+    for j in range(-10, 11):
+        for k in range(-10, 11):
+            if 0 <= x + j < map_boundaries[2] * resolution and 0 <= y + k < map_boundaries[3] * resolution:
+                if (x + j, y + k) in obstacles1:
+                    obstacles1.remove((x + j, y + k))
+                if (x + j, y + k) in obstacles2:
+                    obstacles2.remove((x + j, y + k))
     
     return obstacles1, obstacles2
 
