@@ -31,12 +31,22 @@ def run(data: Bool):
     global start
     start = data.data
 
+start_new_odom = False
+def start_new_odom(data: Pose2D):
+    global x_robot, y_robot, theta_robot, start_new_odom
+    x_robot = data.x
+    y_robot = data.y
+    theta_robot = data.theta
+    start_new_odom = True
+
+
 
 if __name__ == '__main__':
     rospy.init_node("Lidar", anonymous=True)
     rospy.loginfo("[START] Lidar node has started.")
     pub_data = rospy.Publisher("lidar_data", PoseArray, queue_size=1)
     rospy.Subscriber("odometry", Pose2D, get_position)
+    rospy.Subscriber("corectedOdometry", Pose2D, start_new_odom)
 
     laser_serial = serial.Serial(port=uart_port, baudrate=uart_speed, timeout=0.5)
     port = serial_port.SerialPort(laser_serial)
@@ -53,7 +63,7 @@ if __name__ == '__main__':
     while not start:
         rospy.sleep(0.1)
 
-    while x_robot == 0.0 and y_robot == 0.0:
+    while (x_robot == 0.0 and y_robot == 0.0)  or not start_new_odom:
         rospy.sleep(0.1)
 
     laser.laser_off()
