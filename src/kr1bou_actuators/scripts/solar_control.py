@@ -47,6 +47,10 @@ if __name__ == "__main__":
         # pwm = GPIO.PWM(pwm_gpio, frequency)
         rospy.loginfo(f"Setting up PWM on GPIO {pwm_gpio}")
         servo = Servo(pwm_gpio)
+        # Check if the servo is connected
+        if servo is None:
+            rospy.logerr("Servo not connected")
+            exit(1)
         # move servo to 0 degrees
         servo.min()
         time.sleep(1)
