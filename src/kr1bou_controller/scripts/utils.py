@@ -161,7 +161,7 @@ def is_path_valid(path: list, obstacles: set) -> bool:
 
 def meters_to_units(path: list, resolution: int) -> list:
     """Convert the path from meters to units"""
-    return [(node.position[0] / resolution, node.position[1] / resolution) for node in path]
+    return [Node((node.position[0] / resolution, node.position[1] / resolution), node.orientation) for node in path]
 
 
 def parse_camera_data(blue_robot, yellow_robot, blue_position, yellow_position):
