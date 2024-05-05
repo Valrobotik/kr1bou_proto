@@ -30,6 +30,13 @@ SOLAR_DEFAULT = -2
 
 DEFAULT_MAX_SPEED = 0.25
 
+NO_AXIS_MODE = 0
+X_PLUS = 1
+X_MINUS = 2
+Y_PLUS = 3
+Y_MINUS = 4
+PREFERED_AXIS = 5
+
 
 class Strategy:
     def __init__(self) -> None:
@@ -85,6 +92,7 @@ class Strategy:
         self.speed_ctrl_pub = rospy.Publisher('max_speed', Float64, queue_size=1)
         self.publisher_correct_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
         self.solar_mode_pub = rospy.Publisher('solar_mode', Bool, queue_size=1)
+        self.axis_mode_pub = rospy.Publisher('axis_mode', Int16, queue_size=1)
 
     def run(self):
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
@@ -300,7 +308,7 @@ class Strategy:
         # save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
         rospy.loginfo(f"(STRATEGY) Path : {self.path}")
 
-    def go_to(self, x=-1, y=-1, alpha=-1, speed=1.0, direction=0):
+    def go_to(self, x=-1, y=-1, alpha=-1, speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
         """go to position (x, y, alpha)
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]"""
@@ -313,6 +321,7 @@ class Strategy:
         direction_data.data = direction
         speed_data = Float64()
         speed_data.data = speed
+        self.axis_mode_pub.publish(Int16(on_axis))
         self.direction_pub.publish(direction_data)
         self.speed_ctrl_pub.publish(speed_data)
         self.pos_ordre_pub.publish(obj)
@@ -431,24 +440,24 @@ class Strategy:
     def back_until_bumper(self, speed=0.15, axis='y+', direction=BACKWARD):
         while not self.bumper_1 and not self.bumper_2 and not self.bumper_3 and not self.bumper_4:
             if axis == 'y+':
-                self.go_to(self.position.x, self.position.y + 2, speed=speed, direction=direction)
+                self.go_to(self.position.x, self.position.y + 2, speed=speed, direction=direction, on_axis=Y_PLUS)
             elif axis == 'y-':
-                self.go_to(self.position.x, self.position.y - 2, speed=speed, direction=direction)
+                self.go_to(self.position.x, self.position.y - 2, speed=speed, direction=direction, on_axis=Y_MINUS)
             elif axis == 'x+':
-                self.go_to(self.position.x + 3, self.position.y, speed=speed, direction=direction)
+                self.go_to(self.position.x + 3, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
             elif axis == 'x-':
-                self.go_to(self.position.x - 3, self.position.y, speed=speed, direction=direction)
+                self.go_to(self.position.x - 3, self.position.y, speed=speed, direction=direction, on_axis=X_MINUS)
         self.stop()
 
     def move_relative(self, distance, speed=0.20, axis='y-', direction=BEST_DIRECTION):
         if axis == 'y-':
-            self.go_to(self.position.x, self.position.y - distance, speed=speed, direction=direction)
+            self.go_to(self.position.x, self.position.y - distance, speed=speed, direction=direction, on_axis=Y_MINUS)
         elif axis == 'y+':
-            self.go_to(self.position.x, self.position.y + distance, speed=speed, direction=direction)
+            self.go_to(self.position.x, self.position.y + distance, speed=speed, direction=direction, on_axis=Y_PLUS)
         elif axis == 'x-':
-            self.go_to(self.position.x - distance, self.position.y, speed=speed, direction=direction)
+            self.go_to(self.position.x - distance, self.position.y, speed=speed, direction=direction, on_axis=X_MINUS)
         elif axis == 'x+':
-            self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction)
+            self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
         self.wait_until_ready()
 
 
