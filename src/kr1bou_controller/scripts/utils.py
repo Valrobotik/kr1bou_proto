@@ -150,11 +150,14 @@ def setup_maze(maze, obstacles: set):
 
 def update_maze(maze: np.ndarray, obstacles: set, new_obstacles: set):
     not_obstacles_anymore = obstacles - new_obstacles
-    for not_obstacle in not_obstacles_anymore:
-        maze[not_obstacle[0]][not_obstacle[1]].is_obstacle = False
+    # for not_obstacle in not_obstacles_anymore:
+    #     maze[not_obstacle[0]][not_obstacle[1]].is_obstacle = False
 
-    for new_obstacle in new_obstacles:
-        maze[new_obstacle[0]][new_obstacle[1]].is_obstacle = True
+    # for new_obstacle in new_obstacles:
+    #     maze[new_obstacle[0]][new_obstacle[1]].is_obstacle = True
+    for i in range(maze.shape[0]):
+        for j in range(maze.shape[1]):
+            maze[i][j].is_obstacle = (i, j) in new_obstacles
 
     for i in range(maze.shape[0]):
         for j in range(maze.shape[1]):
