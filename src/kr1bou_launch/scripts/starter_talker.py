@@ -13,10 +13,18 @@ from std_msgs.msg import Bool, Int8
 def on_key_press():
     rospy.loginfo("(STARTER TALKER) Key removed")
     pub.publish(True)
+    # Sending "match-started" ID to the speaker when releasing starter
+    bluetooth_choice.publish(4)
     # Attendre 90 secondes pour envoyer le son de départ du pami
     rospy.sleep(90)
-    # Sending "Start-pami" ID to the speaker
-    bluetooth_choice.publish(5)
+    # Sending "pami" ID to the speaker
+    bluetooth_choice.publish(6)
+    # Envoi d'un signal d'arrêt à tous les noeuds pour arrêter le robot
+    pub.publish(False)
+    # Attendre 10 secondes pour atteindre la fin du temps réglementaire
+    rospy.sleep(10)
+    # Sending "match_end" ID to the speaker
+    bluetooth_choice.publish(7)
 
 
 def on_key_release():
