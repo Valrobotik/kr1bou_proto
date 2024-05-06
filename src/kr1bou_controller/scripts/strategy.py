@@ -11,6 +11,9 @@ from search_path import a_star, clean_path
 from utils import *
 
 import pickle
+import cProfile
+import pstats
+import io
 
 READY_LINEAR = 0
 READY = 1
@@ -471,6 +474,9 @@ def run(data):
 
 
 if __name__ == "__main__":
+    # profile le code stratégie
+    pr = cProfile.Profile()
+    pr.enable()
     try:
         start = False
         rospy.init_node("strategy")
@@ -495,3 +501,11 @@ if __name__ == "__main__":
         strategy_manager.run()
     finally:
         rospy.loginfo("[STOP] Strategy node has stopped.")
+        pr.disable()
+        s = io.StringIO()
+        ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
+        # Sauvegarde des résultats dans un fichier
+        ps.print_stats()
+
+        with open('cProfile.txt', 'w') as f:
+            f.write(s.getvalue())
