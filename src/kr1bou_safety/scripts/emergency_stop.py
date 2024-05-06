@@ -80,8 +80,8 @@ def list_of_obstacles():
         rospy.loginfo(f"Obstacle absolue: {obstacles[i]}")
         dx = obstacles[i][0] - robot_position.x
         dy = obstacles[i][1] - robot_position.y
-        beta = math.pi/2 - robot_position.theta
-        obstacles[i] = (dx*math.sin(beta) - dy*math.cos(beta), -dx*math.cos(beta) - dy*math.sin(beta))
+        alpha = robot_position.theta
+        obstacles[i] = (dx * math.cos(alpha) + dy * math.sin(alpha), -dx * math.sin(alpha) + dy * math.cos(alpha))
         rospy.loginfo(f"Obstacle relatif: {obstacles[i]}")
     return obstacles
     
