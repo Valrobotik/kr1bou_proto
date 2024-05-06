@@ -339,8 +339,7 @@ class Strategy:
             self.got_cam_data = False
             while not self.got_cam_data:
                 rospy.sleep(0.05)
-            if self.camera_position.x != -1 and self.camera_position.y != -1:
-                self.publisher_correct_odom.publish(self.camera_position)
+            self.publisher_correct_odom.publish(self.camera_position)
         else:
             rospy.logwarn("(STRATEGY) No connexion with camera")
             return False
@@ -431,13 +430,16 @@ class Strategy:
         yellow_robot = Pose2D()
         blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
         if self.team == TEAM_BLUE:
-            blue_position, yellow_position = blue_robot, yellow_robot
+            own_robot, enemy_robot = blue_robot, yellow_robot
         else:
-            blue_position, yellow_position = yellow_robot, blue_robot
-        self.camera_position, self.enemy_position = parse_camera_data(yellow_robot, blue_robot, blue_position,
-                                                                      yellow_position)
-        self.camera_position.theta = clamp_theta(self.camera_position.theta)
-        self.enemy_position.theta = clamp_theta(self.enemy_position.theta)
+            own_robot, enemy_robot = yellow_robot, blue_robot
+        camera_position, enemy_position = parse_camera_data(own_robot, enemy_robot)
+        if camera_position is not None:
+            self.camera_position = camera_position
+            self.camera_position.theta = clamp_theta(self.camera_position.theta)
+        if enemy_position is not None:
+            self.enemy_position = enemy_position
+            self.enemy_position.theta = clamp_theta(self.enemy_position.theta)
 
         self.got_cam_data = True
         self.last_time_cam = time.time()
