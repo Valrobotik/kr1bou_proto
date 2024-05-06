@@ -197,7 +197,7 @@ class Strategy:
             self.follow_path()
         rospy.loginfo("(STRATEGY) Debug phase is over")
         if max_time > time.time() - self.start_time:
-            print("Debug phase is over because of time")
+            rospy.loginfo("Debug phase is over because of time")
 
     def debug_phase_goto(self):
         while not rospy.is_shutdown():
@@ -228,7 +228,7 @@ class Strategy:
 
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
-        # max_time = rospy.get_param("/phases/solar_panel")
+        max_time = rospy.get_param("/phases/solar_panel")
         solar_objectives = self.parse_objectives("solar_panel")
 
         for solar_objective in solar_objectives:
@@ -238,15 +238,13 @@ class Strategy:
             need_twice = False
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
-
-            self.go_to(solar_objective.x, solar_objective.y, -1, .25, BACKWARD)
-
             rospy.loginfo(f"(STRATEGY) Waiting for robot to be ready")
             self.wait_until_ready()
-            # while (self.path or self.objectives) and max_time > time.time() - self.start_time:
-            #     self.close_enough_to_waypoint()
-            #     self.compute_path()
-            #     self.follow_path(self.current_objective.direction)
+
+            while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+                self.close_enough_to_waypoint()
+                self.compute_path()
+                self.follow_path(self.current_objective.direction)
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
             # Rotate self
@@ -259,6 +257,7 @@ class Strategy:
             while self.latest_solar_winner == SOLAR_DEFAULT:
                 rospy.sleep(0.1)
 
+            # Check for winner
             rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_NEUTRAL or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BOTH:
                 self.solar_pub.publish(Int16(180))
@@ -269,6 +268,7 @@ class Strategy:
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
                 need_twice = True
 
+            # Disable back US
             self.latest_solar_winner = SOLAR_DEFAULT
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(True)
@@ -281,11 +281,10 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Forward")
             self.go_to(self.position.x, self.position.y - .05, 3 * pi / 2, .15, FORWARD, Y_MINUS)
             self.wait_until_ready()
-            self.solar_mode_pub.publish(False)
             # Rotate solar panel
             rospy.loginfo(f"(STRATEGY) Rotate solar panel")
             self.solar_pub.publish(Int16(90))
-            rospy.sleep(.1)
+            rospy.sleep(.5)
 
             # Reset arm
             rospy.loginfo(f"(STRATEGY) Reset arm")
@@ -304,7 +303,7 @@ class Strategy:
                 rospy.sleep(.1)
 
             # Forward
-            self.go_to(self.position.x, self.position.y - .05, 3 * pi / 2, .15, BACKWARD, Y_PLUS)
+            self.go_to(self.position.x, self.position.y - .1, 3 * pi / 2, .15, BACKWARD, Y_PLUS)
 
     # -- Utils --
     def close_enough_to_waypoint(self, threshold=5.0):
