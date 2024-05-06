@@ -364,8 +364,9 @@ class Strategy:
 
     def is_activated_bumper(self, ids):
         """Return True if all ids of bumpers are activated."""
-        if all(self.bumpers & (1 << i) for i in ids):
-            return True
+        for i in ids:
+            if self.bumpers & (1 << i):
+                return True
         return False
 
     def back_until_bumper(self, speed : float = 0.2, axis : str = 'y+', direction : int = BACKWARD, shift : int = 10):
