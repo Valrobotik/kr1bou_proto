@@ -3,7 +3,7 @@
 
 import rospy
 from std_msgs.msg import Int16
-from piservo import Servo
+from piServo.Servo import servo
 
 PIN = 13
 
@@ -16,10 +16,10 @@ def convert_angle(angle: int):
 
 
 def rotate_to(data: Int16):
-    global servo
+    global solar_arm
     rospy.loginfo(f"{rospy.get_name()} received: {data.data} from solar_angle")
     angle = data.data
-    servo.write(convert_angle(angle))
+    solar_arm.write(convert_angle(angle))
     rospy.sleep(0.5)
     rospy.loginfo(f"{rospy.get_name()} sent: {convert_angle(angle)} to Servo")
 
@@ -33,8 +33,10 @@ if __name__ == "__main__":
     rospy.Subscriber("solar_angle", Int16, rotate_to)
 
     # Initialize servo
-    servo = Servo(13)
-    servo.write(convert_angle(0))
+    solar_arm = servo(13)
+    solar_arm.write(convert_angle(0))
+    rospy.sleep(0.5)
+    solar_arm.write(convert_angle(90))
 
     rospy.spin()
     rospy.loginfo("[STOP] Solar Controller node has stopped.")
