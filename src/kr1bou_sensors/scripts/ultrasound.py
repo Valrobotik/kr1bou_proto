@@ -69,6 +69,9 @@ def read_and_publish_sensor_data():
                     calcul_absolut_position(reading, pos) for reading, pos in
                     zip(sensor_readings, sensor_positions)  # Clamp
                 ]
+                
+                clamped_readings = [item for item in clamped_readings if item is not None]
+
                 # Flatten the list of tuples
                 sensor_data_pub.publish(Float32MultiArray(data=[item for sublist in clamped_readings
                                                                 for item in sublist]))
@@ -83,6 +86,8 @@ def read_and_publish_sensor_data():
 def calcul_absolut_position(raw_data: float, sensor_position: tuple) -> Tuple[float, float]:
     global current_pose
     # repère du robot :
+    if raw_data == 0:
+        return None
     x_cap = sensor_position[0]
     y_cap = sensor_position[1]
     a_cap = sensor_position[3]
