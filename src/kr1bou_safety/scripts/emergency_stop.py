@@ -79,6 +79,15 @@ def is_activated_bumper(ids):
         return True
     return False
 
+def log_debug_obstacles(obstacles):
+    for obstacle in obstacles:
+        dx = obstacle[0] - robot_position.x
+        dy = obstacle[1] - robot_position.y
+        alpha = robot_position.theta
+        rospy.loginfo(f"ROBOT POSITION: ({robot_position.x}, {robot_position.y}, {robot_position.theta})")
+        rospy.loginfo(f"Obstacle absolue: ({obstacle.x}, {obstacle.y})")
+        rospy.loginfo(f"Obstacle relatif: ({dx * math.cos(alpha) + dy * math.sin(alpha)}, {-dx * math.sin(alpha) + dy * math.cos(alpha)})")
+
 
 def list_of_obstacles():
     obstacles = []
@@ -90,6 +99,9 @@ def list_of_obstacles():
 
     obstacles.extend(US_obstacles)
 
+    for obs in US_obstacles:
+        log_debug_obstacles(obs)
+
     for i in range(len(obstacles)):
         # rospy.loginfo(f"ROBOT POSITION: ({robot_position.x}, {robot_position.y}, {robot_position.theta})")
         # rospy.loginfo(f"Obstacle absolue: {obstacles[i]}")
@@ -97,7 +109,6 @@ def list_of_obstacles():
         dy = obstacles[i][1] - robot_position.y
         alpha = robot_position.theta
         obstacles[i] = (dx * math.cos(alpha) + dy * math.sin(alpha), -dx * math.sin(alpha) + dy * math.cos(alpha))
-        rospy.loginfo(f"Obstacle relatif: {obstacles[i]}")
     return obstacles
 
 
