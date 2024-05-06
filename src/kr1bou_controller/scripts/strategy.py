@@ -189,7 +189,7 @@ class Strategy:
         max_time = rospy.get_param("/phases/debug")
         self.objectives = self.parse_objectives("debug")
 
-        while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+        while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
             self.update_current_objective()
             self.close_enough_raw_waypoint()
             self.compute_path()
