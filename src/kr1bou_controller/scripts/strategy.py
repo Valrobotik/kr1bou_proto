@@ -106,10 +106,10 @@ class Strategy:
             rospy.sleep(0.05)
 
         self.start_time = time.time()
-        self.debug_phase()
+        # self.debug_phase()
         # self.debug_phase_goto()
         # self.plant_phase()
-        # self.solar_phase()
+        self.solar_phase()
         # self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
