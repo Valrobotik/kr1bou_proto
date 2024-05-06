@@ -76,8 +76,7 @@ class Strategy:
         self.camera_position = Pose2D()
         self.got_cam_data = False
         # Bumpers
-        for i in range(1, 5):
-            setattr(self, f'bumper_{i}', False)
+        self.bumpers = 0
         # State of the robot
         self.state_robot = READY
         # Team Color
@@ -353,8 +352,14 @@ class Strategy:
     def stop(self):
         self.go_to(self.position.x, self.position.y)  # Stop the robot
 
+    def is_activated_bumper(self, ids):
+        """Return True if all ids of bumpers are activated."""
+        if self.bumpers & sum([2 ** i for i in ids]) > 0:
+            return True
+        return False
+
     def back_until_bumper(self, speed=0.15, axis='y+', direction=BACKWARD):
-        while not self.bumper_1 and not self.bumper_2 and not self.bumper_3 and not self.bumper_4:
+        while not self.is_activated_bumper([2, 3]):  # back bumpers should be activated
             if axis == 'y+':
                 self.go_to(self.position.x, self.position.y + 2, speed=speed, direction=direction, on_axis=Y_PLUS)
             elif axis == 'y-':
@@ -400,12 +405,6 @@ class Strategy:
     def update_bumpers(self, data: Byte):
         """Update the bumper states by reading the Byte message from the bumper topic."""
         data = int(data.data)
-        for i in range(4):
-            if data & 2 ** i:
-                setattr(self, f'bumper_{i + 1}', True)
-            else:
-                setattr(self, f'bumper_{i + 1}', False)
-
         self.need_for_compute = True
 
     def update_position(self, data):

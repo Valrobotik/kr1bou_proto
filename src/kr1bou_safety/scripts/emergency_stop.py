@@ -5,7 +5,7 @@ Looks out for Emergency. Stops everything.
 
 import rospy
 from std_msgs.msg import Int16, Byte, Float32MultiArray, Bool
-from geometry_msgs.msg import Pose2D, PoseArray, Pose
+from geometry_msgs.msg import Pose2D, PoseArray
 
 import math
 
@@ -18,52 +18,64 @@ TEAM_BLUE = 1
 TEAM_YELLOW = 0
 
 robot_position = Pose2D()
-def callback_robot_position(data):
-    global robot_position
-    robot_position = data
-
 lidar_obstacles = []
-def callback_lidar_obstacles(data: PoseArray):
-    global lidar_obstacles
-    lidar_obstacles = data.poses
 
-bumper_1_front = False
-bumper_2_front = False
-bumper_3_back = False
-bumper_4_back = False
-def callback_bumper(data:Byte):
-    global bumper_1_front, bumper_2_front, bumper_3_back, bumper_4_back
-    bumper_1_front = data.data & 0b0001
-    bumper_2_front = data.data & 0b0010
-    bumper_3_back = data.data & 0b0100
-    bumper_4_back = data.data & 0b1000
-
+bumpers = 0
 team_color = -1
-def callback_team_color(data:Bool):
-    global team_color
-    team_color = data.data
 
 camera_adverse_position = Pose2D()
 camera_adverse_position.x = -1
 camera_adverse_position.y = -1
 camera_adverse_position.theta = -1
-def callback_camera(data:Float32MultiArray):
+
+US_obstacles = []
+
+
+def callback_robot_position(data):
+    global robot_position
+    robot_position = data
+
+
+def callback_lidar_obstacles(data: PoseArray):
+    global lidar_obstacles
+    lidar_obstacles = data.poses
+
+
+def callback_bumper(data: Byte):
+    global bumpers
+    bumpers = data.data
+
+
+def callback_team_color(data: Bool):
+    global team_color
+    team_color = data.data
+
+
+def callback_camera(data: Float32MultiArray):
     if team_color == -1:
         rospy.logwarn("Team color not set")
         return
     blue_robot_x, blue_robot_y, blue_robot_theta, yellow_robot_x, yellow_robot_y, yellow_robot_theta = data.data
     if team_color == TEAM_YELLOW:
-        camera_adverse_position.x = blue_robot_x 
+        camera_adverse_position.x = blue_robot_x
         camera_adverse_position.y = blue_robot_y
         camera_adverse_position.theta = blue_robot_theta
     else:
-        camera_adverse_position.x = yellow_robot_x 
+        camera_adverse_position.x = yellow_robot_x
         camera_adverse_position.y = yellow_robot_y
         camera_adverse_position.theta = yellow_robot_theta
 
-US_obstacles = []
-def callback_US_data(data:Float32MultiArray):
-    pass ### TODO
+
+def callback_US_data(data: Float32MultiArray):
+    pass  # TODO
+
+
+def is_activated_bumper(ids):
+    """Return True if all ids of bumpers are activated."""
+    if bumpers & sum([2 ** i for i in ids]) > 0:
+        return True
+    return False
+
 
 def list_of_obstacles():
     obstacles = []
@@ -85,24 +97,24 @@ def list_of_obstacles():
         obstacles[i] = (dx * math.cos(alpha) + dy * math.sin(alpha), -dx * math.sin(alpha) + dy * math.cos(alpha))
         # rospy.loginfo(f"Obstacle relatif: {obstacles[i]}")
     return obstacles
-    
+
 
 def emergency_stop_run():
     global robot_position, lidar_obstacles, team_color, camera_adverse_position, US_obstacles, bumper_1_front, bumper_2_front, bumper_3_back, bumper_4_back
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(10)  # 10hz
     emergency_state = NO_EMERGENCY
     while not rospy.is_shutdown():
         obstacles = list_of_obstacles()
         emergency_front = False
         emergency_back = False
         for obstacle in obstacles:
-            if obstacle[0]>0.0 and obstacle[0]<0.40 and obstacle[1]>-0.22 and obstacle[1]<0.22:
+            if 0.0 < obstacle[0] < 0.40 and -0.22 < obstacle[1] < 0.22:
                 emergency_front = True
-            if obstacle[0]>-0.50 and obstacle[0]<0.0 and obstacle[1]>-0.22 and obstacle[1]<0.22:
+            if -0.50 < obstacle[0] < 0.0 and -0.22 < obstacle[1] < 0.22:
                 emergency_back = True
-        if bumper_1_front or bumper_2_front:
+        if is_activated_bumper([0, 1]):
             emergency_front = True
-        if bumper_3_back or bumper_4_back:
+        if is_activated_bumper([2, 3]):
             emergency_back = True
         if emergency_front and emergency_back:
             if emergency_state != EMERGENCY_BOTH:
@@ -124,7 +136,7 @@ def emergency_stop_run():
                 rospy.logwarn("NO EMERGENCY")
                 emergency_state = NO_EMERGENCY
             pub.publish(NO_EMERGENCY)
-            
+
         rate.sleep()
 
 
@@ -132,12 +144,12 @@ if __name__ == '__main__':
     rospy.init_node('emergency_stop')
     pub = rospy.Publisher('emergency_stop', Int16, queue_size=10)
 
-    ## Subscribers
+    # Subscribers
     rospy.Subscriber('odometry', Pose2D, callback_robot_position)
     rospy.Subscriber('lidar_data', PoseArray, callback_lidar_obstacles)
     rospy.Subscriber('bumper', Byte, callback_bumper)
     rospy.Subscriber('team', Bool, callback_team_color)
     rospy.Subscriber('camera', Float32MultiArray, callback_camera)
     rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, callback_US_data)
-    
+
     emergency_stop_run()

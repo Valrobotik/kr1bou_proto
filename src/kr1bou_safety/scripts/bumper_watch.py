@@ -37,7 +37,6 @@ def setup_buttons(pins):
 
 
 def check_bumpers(buttons: List[Button]):
-    # Check if both front or both back buttons are pressed
     state = Byte()
     state.data = 0
     for i, button in enumerate(buttons):
