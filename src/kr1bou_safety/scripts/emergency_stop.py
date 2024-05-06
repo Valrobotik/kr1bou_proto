@@ -77,13 +77,13 @@ def list_of_obstacles():
         obstacles.append((obstacle[0], obstacle[1]))
 
     for i in range(len(obstacles)):
-        rospy.loginfo(f"ROBOT POSITION: ({robot_position.x}, {robot_position.y}, {robot_position.theta})")
-        rospy.loginfo(f"Obstacle absolue: {obstacles[i]}")
+        # rospy.loginfo(f"ROBOT POSITION: ({robot_position.x}, {robot_position.y}, {robot_position.theta})")
+        # rospy.loginfo(f"Obstacle absolue: {obstacles[i]}")
         dx = obstacles[i][0] - robot_position.x
         dy = obstacles[i][1] - robot_position.y
         alpha = robot_position.theta
         obstacles[i] = (dx * math.cos(alpha) + dy * math.sin(alpha), -dx * math.sin(alpha) + dy * math.cos(alpha))
-        rospy.loginfo(f"Obstacle relatif: {obstacles[i]}")
+        # rospy.loginfo(f"Obstacle relatif: {obstacles[i]}")
     return obstacles
     
 
@@ -123,7 +123,7 @@ def emergency_stop_run():
             if emergency_state != NO_EMERGENCY:
                 rospy.logwarn("NO EMERGENCY")
                 emergency_state = NO_EMERGENCY
-                pub.publish(NO_EMERGENCY)
+            pub.publish(NO_EMERGENCY)
             
         rate.sleep()
 
