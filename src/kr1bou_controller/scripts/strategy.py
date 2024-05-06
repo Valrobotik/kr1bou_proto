@@ -13,6 +13,7 @@ from utils import *
 import pickle
 import cProfile
 import pstats
+import math
 import io
 
 READY_LINEAR = 0
@@ -299,7 +300,10 @@ class Strategy:
 
             # Forward
             rospy.loginfo(f"(STRATEGY) Forward")
-            self.go_to(self.position.x, self.position.y - .05, 3 * pi / 2, .15, FORWARD, Y_MINUS)
+            #calcule de la position du robot avancé
+            obj_x = self.position.x + 0.03 * math.cos(self.position.theta)
+            obj_y = self.position.y + 0.03 * math.sin(self.position.theta)
+            self.go_to(obj_x, obj_y, -1, .15, FORWARD, PREFERRED_AXIS)
             self.wait_until_ready()
             # Rotate solar panel
             rospy.loginfo(f"(STRATEGY) Rotate solar panel")
