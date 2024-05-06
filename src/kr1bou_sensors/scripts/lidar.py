@@ -58,7 +58,7 @@ if __name__ == '__main__':
     y_robot = 0.0
     theta_robot = 0.0
     start = False
-    rospy.Subscriber("runningPhase", Bool, run)
+    rospy.Subscriber("running_phase", Bool, run)
     while not start:
         rospy.sleep(0.1)
 

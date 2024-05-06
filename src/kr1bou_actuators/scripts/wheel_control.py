@@ -89,7 +89,7 @@ if __name__ == "__main__":
         # Initialization
         rospy.init_node('wheel_controller')
         rospy.loginfo("[START] Wheel Controller node has started.")
-        # Wait for the runningPhase True signal
+        # Wait for the running_phase True signal
         rospy.sleep(2)
         wheel_controller = WheelController()
         rate = rospy.Rate(rospy.get_param('/frequency'))

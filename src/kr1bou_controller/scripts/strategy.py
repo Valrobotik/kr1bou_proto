@@ -62,7 +62,7 @@ class Strategy:
         self.maze = setup_maze(self.maze, self.obstacles1)
         self.custom_waiting_rate = rospy.Rate(20)
 
-        # -- Subscribers --
+        # -- Variables for Subscribers --
         self.position = Pose2D()  # Get the initial position of the robot
         self.enemy_position = Pose2D()  # Get the position of the enemy robot
         self.lidar_data = []  # Get the lidar data
@@ -82,6 +82,7 @@ class Strategy:
         self.state_robot = READY
         # Team Color
         self.team = -1
+        # -- Subscribers --
         self.setup_subscribers()
 
         # -- Strategy related --
@@ -110,10 +111,6 @@ class Strategy:
         # self.plant_phase()
         # self.solar_phase()
         # self.home_phase()
-
-        # self.solar_pub.publish(Int16(90))
-
-        # self.go_to(2.8, 1, on_axis=X_PLUS)
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
     def update_current_objective(self):
@@ -123,7 +120,6 @@ class Strategy:
             self.objectives.pop(0)
             self.raw_path = []
             rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
-            # rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
 
     def compute_path(self):
         """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
@@ -168,33 +164,29 @@ class Strategy:
             self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, direction)
             rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
         else:
-            rospy.loginfo("(STRATEGY) No path found")
+            rospy.loginfo("(STRATEGY) No path to follow")
 
-    def go_to(self, x=-1, y=-1, alpha=-1., speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
-        """Send Go to position (x, y, alpha) for Motion Control
+    def go_to(self, x=-1., y=-1., alpha=-1., speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
+        """Update topic for going to a position (x, y, alpha) ==> Motion Control
         -> if alpha = -1 go to (x,y)
         -> direction = [0 : best option, 1 : forward, -1 : backward]
         """
-        obj = Pose2D(x, y, alpha)
-        self.next_pos_obj = [x, y, alpha]
-        direction_data = Int16(direction)
-        speed_data = Float64(speed)
         self.axis_mode_pub.publish(Int16(on_axis))
-        self.direction_pub.publish(direction_data)
-        self.speed_ctrl_pub.publish(speed_data)
-        self.pos_ordre_pub.publish(obj)
+        self.direction_pub.publish(Int16(direction))
+        self.speed_ctrl_pub.publish(Float64(speed))
+        self.pos_ordre_pub.publish(Pose2D(x, y, alpha))
         self.state_robot = IN_PROGRESS
 
     # -- Phases --
-    def parse_objectives(self, team, phase):
-        team = "blue" if team == TEAM_BLUE else "yellow"
+    def parse_objectives(self, phase):
+        team = "blue" if self.team == TEAM_BLUE else "yellow"
         return [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
                 x, y, theta, direction in rospy.get_param(f"/objectives/{team}/{phase}")]
 
     def debug_phase(self):
         rospy.loginfo("(STRATEGY) Starting debug phase")
         max_time = rospy.get_param("/phases/debug")
-        self.objectives = self.parse_objectives(self.team, "debug")
+        self.objectives = self.parse_objectives("debug")
 
         while (self.path or self.objectives) and max_time > time.time() - self.start_time:
             self.update_current_objective()
@@ -224,15 +216,7 @@ class Strategy:
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
         max_time = rospy.get_param("/phases/plant")
-        if self.team == TEAM_BLUE:
-            self.objectives = [
-                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                x, y, theta, direction in rospy.get_param("/objectives/blue/plant")]
-        else:
-            self.objectives = [
-                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                x, y, theta, direction in rospy.get_param("/objectives/yellow/plant")]
-        self.current_objective = self.objectives[0]
+        self.objectives = self.parse_objectives("plant")
 
         while (self.path or self.objectives) and max_time > time.time() - self.start_time:
             self.close_enough_to_waypoint()
@@ -244,17 +228,7 @@ class Strategy:
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
         # max_time = rospy.get_param("/phases/solar_panel")
-
-        if self.team == TEAM_BLUE:
-            solar_objectives = [
-                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2),
-                          direction) for
-                x, y, theta, direction in rospy.get_param("/objectives/blue/solar_panel")]
-        else:
-            solar_objectives = [
-                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2),
-                          direction) for
-                x, y, theta, direction in rospy.get_param("/objectives/yellow/solar_panel")]
+        solar_objectives = self.parse_objectives("solar_panel")
 
         for solar_objective in solar_objectives:
             # Move to start position
@@ -272,15 +246,12 @@ class Strategy:
             #     self.close_enough_to_waypoint()
             #     self.compute_path()
             #     self.follow_path(self.current_objective.direction)
-
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
             # Rotate self
             self.rotate_only(3 * pi / 2)
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
-
-            # Get arm in the right position
-            self.need_solar_winner = True
+            self.need_solar_winner = True  # Get arm in the right position
 
             # Wait for solar panel winner
             rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
@@ -298,9 +269,9 @@ class Strategy:
                 need_twice = True
 
             self.latest_solar_winner = SOLAR_DEFAULT
-
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(True)
+
             # Bump
             rospy.loginfo(f"(STRATEGY) back until bumper")
             self.back_until_bumper()
@@ -324,11 +295,9 @@ class Strategy:
                 rospy.loginfo(f"(STRATEGY) Needs second pass")
                 # Forward
                 self.go_to(self.position.x, self.position.y - .03, 3 * pi / 2, .15, FORWARD, Y_MINUS)
-
                 # Rotate solar panel
                 self.solar_pub.publish(Int16(90))
                 rospy.sleep(.1)
-
                 # Reset arm
                 self.solar_pub.publish(Int16(0))
                 rospy.sleep(.1)
@@ -336,6 +305,7 @@ class Strategy:
             # Forward
             self.go_to(self.position.x, self.position.y - .05, 3 * pi / 2, .15, BACKWARD, Y_PLUS)
 
+    # -- Utils --
     def close_enough_to_waypoint(self, threshold=5.0):
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (
                 self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
@@ -361,16 +331,6 @@ class Strategy:
             # rospy.loginfo("(STRATEGY) Waiting for the robot to be ready...")
             self.custom_waiting_rate.sleep()
 
-    def setup_subscribers(self):
-        rospy.Subscriber('odometry', Pose2D, self.update_position)
-        rospy.Subscriber('lidar_data', PoseArray, self.update_lidar_data)
-        rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
-        rospy.Subscriber('camera', Float32MultiArray, self.update_camera)
-        rospy.Subscriber('solar_aruco', Int8, self.update_solar_winner)
-        rospy.Subscriber('bumper', Byte, self.update_bumpers)
-        rospy.Subscriber('state', Int16, self.update_state)
-        rospy.Subscriber('Team', Bool, self.update_team)
-
     def reset_position_from_camera(self, wait: float = .3):
         """Publishes the camera position to the odometry topic to correct the odometry"""
         self.wait_until_ready()
@@ -388,69 +348,6 @@ class Strategy:
         self.got_cam_data = False
         self.position = self.camera_position
         return True
-
-    def update_bumpers(self, data: Byte):
-        """Update the bumper states by reading the Byte message from the bumper topic."""
-        data = int(data.data)
-        for i in range(4):
-            if data & 2 ** i:
-                setattr(self, f'bumper_{i + 1}', True)
-            else:
-                setattr(self, f'bumper_{i + 1}', False)
-
-        self.need_for_compute = True
-
-    def update_position(self, data):
-        self.position = data
-        # rospy.loginfo(f"(STRATEGY) Position received : {self.position}")
-        self.need_for_compute = True
-
-    def update_lidar_data(self, data: PoseArray):
-        raw = data
-        self.lidar_data = [(raw.poses[i].position.x, raw.poses[i].position.y) for i in range(len(raw.poses))]
-        self.need_for_compute = True
-
-    def update_us_data(self, data):
-        raw = data.data
-        self.us_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]  # Unflatten the data
-        self.need_for_compute = True
-
-    def update_camera(self, data: Float32MultiArray):
-        """Updates the info from the camera [team_blue_x, team_blue_y, team_blue_theta, team_yellow_x, team_yellow_y,
-        team_yellow_theta]"""
-
-        if self.team == -1:
-            return
-        blue_robot = Pose2D()
-        yellow_robot = Pose2D()
-        blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
-        if self.team == TEAM_BLUE:
-            blue_position, yellow_position = blue_robot, yellow_robot
-        else:
-            blue_position, yellow_position = yellow_robot, blue_robot
-        self.camera_position, self.enemy_position = parse_camera_data(yellow_robot, blue_robot, blue_position,
-                                                                      yellow_position)
-        self.camera_position.theta = clamp_theta(self.camera_position.theta)
-        self.enemy_position.theta = clamp_theta(self.enemy_position.theta)
-
-        self.got_cam_data = True
-        self.last_time_cam = time.time()
-
-    def update_team(self, data: Bool):
-        global start
-        if not start or self.team != -1:
-            self.team = TEAM_BLUE if data.data else TEAM_YELLOW
-        else:
-            rospy.loginfo("(STRATEGY) YOU CAN'T CHANGE TEAM AFTER STARTING THE GAME !")
-
-    def update_state(self, data: Int16):
-        self.state_robot = data.data
-        self.need_for_compute = True
-
-    def update_solar_winner(self, winner: Int8):
-        if self.need_solar_winner:
-            self.need_solar_winner = False
-            self.latest_solar_winner = winner.data
 
     def stop(self):
         self.go_to(self.position.x, self.position.y)  # Stop the robot
@@ -488,6 +385,78 @@ class Strategy:
             self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
             self.reset_position_from_camera(.1)
 
+    def setup_subscribers(self):
+        rospy.Subscriber('odometry', Pose2D, self.update_position)
+        rospy.Subscriber('lidar_data', PoseArray, self.update_lidar_data)
+        rospy.Subscriber('ultrasound_sensor_data', Float32MultiArray, self.update_us_data)
+        rospy.Subscriber('camera', Float32MultiArray, self.update_camera)
+        rospy.Subscriber('solar_aruco', Int8, self.update_solar_winner)
+        rospy.Subscriber('bumper', Byte, self.update_bumpers)
+        rospy.Subscriber('state', Int16, self.update_state)
+        rospy.Subscriber('team', Bool, self.update_team)
+
+    # -- Callbacks --
+    def update_bumpers(self, data: Byte):
+        """Update the bumper states by reading the Byte message from the bumper topic."""
+        data = int(data.data)
+        for i in range(4):
+            if data & 2 ** i:
+                setattr(self, f'bumper_{i + 1}', True)
+            else:
+                setattr(self, f'bumper_{i + 1}', False)
+
+        self.need_for_compute = True
+
+    def update_position(self, data):
+        self.position = data
+        self.need_for_compute = True
+
+    def update_lidar_data(self, data: PoseArray):
+        raw = data
+        self.lidar_data = [(raw.poses[i].position.x, raw.poses[i].position.y) for i in range(len(raw.poses))]
+        self.need_for_compute = True
+
+    def update_us_data(self, data):
+        raw = data.data
+        self.us_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]  # Unflatten the data
+        self.need_for_compute = True
+
+    def update_camera(self, data: Float32MultiArray):
+        """Updates the info from the camera [team_blue_x, team_blue_y, team_blue_theta, team_yellow_x, team_yellow_y,
+        team_yellow_theta]"""
+        if self.team == -1:
+            return
+        blue_robot = Pose2D()
+        yellow_robot = Pose2D()
+        blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
+        if self.team == TEAM_BLUE:
+            blue_position, yellow_position = blue_robot, yellow_robot
+        else:
+            blue_position, yellow_position = yellow_robot, blue_robot
+        self.camera_position, self.enemy_position = parse_camera_data(yellow_robot, blue_robot, blue_position,
+                                                                      yellow_position)
+        self.camera_position.theta = clamp_theta(self.camera_position.theta)
+        self.enemy_position.theta = clamp_theta(self.enemy_position.theta)
+
+        self.got_cam_data = True
+        self.last_time_cam = time.time()
+
+    def update_team(self, data: Bool):
+        global start
+        if not start or self.team != -1:
+            self.team = TEAM_BLUE if data.data else TEAM_YELLOW
+        else:
+            rospy.loginfo("(STRATEGY) YOU CAN'T CHANGE TEAM AFTER STARTING THE GAME !")
+
+    def update_state(self, data: Int16):
+        self.state_robot = data.data
+        self.need_for_compute = True
+
+    def update_solar_winner(self, winner: Int8):
+        if self.need_solar_winner:
+            self.need_solar_winner = False
+            self.latest_solar_winner = winner.data
+
 
 def run(data):
     global start
@@ -502,7 +471,7 @@ if __name__ == "__main__":
         rospy.loginfo("[START] Strategy node has started.")
         strategy_manager = Strategy()
 
-        rospy.Subscriber('runningPhase', Bool, run)
+        rospy.Subscriber('running_phase', Bool, run)
         rate = rospy.Rate(rospy.get_param('/frequency'))
         while not start:
             rate.sleep()
