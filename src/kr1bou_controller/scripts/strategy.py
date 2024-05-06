@@ -38,6 +38,8 @@ Y_PLUS = 3
 Y_MINUS = 4
 PREFERRED_AXIS = 5
 
+SAVE_GAME_STATE = False
+
 
 class Strategy:
     def __init__(self) -> None:
@@ -114,21 +116,91 @@ class Strategy:
         # self.go_to(2.8, 1, on_axis=X_PLUS)
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
+    def update_current_objective(self):
+        if self.current_objective is None:  # Get new closest objective
+            self.reset_position_from_camera()
+            self.current_objective = self.objectives[0]
+            self.objectives.pop(0)
+            self.raw_path = []
+            rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
+            # rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
+
+    def compute_path(self):
+        """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
+        the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
+        :return: the path to follow
+        """
+        rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.enemy_position} \n SELF POS : {self.position}")
+        self.obstacles1, self.obstacles2 = get_discrete_obstacles(self.lidar_data, self.us_data,
+                                                                  [(self.enemy_position.x, self.enemy_position.y)],
+                                                                  self.resolution, self.radius, self.map_boundaries,
+                                                                  self.position)
+
+        if is_path_valid(self.raw_path, self.obstacles2):  # Check if the path is still valid with a 10 cm margin
+            rospy.loginfo("(STRATEGY) Path still exists")
+        else:  # Compute a new path
+            self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
+            self.previous_obstacles = self.obstacles1
+
+            # Get the start and end nodes
+            origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
+            origin.orientation = self.position.theta
+            end = self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]
+            end.orientation = self.current_objective.theta
+            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {end.position}")
+
+            self.register_game_state(origin, end)
+
+            # Before computing A*, check if a direct line is valid.
+            straight_path = [self.maze[i][j] for i, j in bresenham(origin.position, end.position)]
+            if is_path_valid(straight_path, self.obstacles2):
+                self.raw_path = straight_path
+                rospy.loginfo(f"(STRATEGY) Computed path using Bresenham : {self.raw_path}")
+            else:
+                self.raw_path = a_star(origin, end)
+                rospy.loginfo(f"(STRATEGY) Computed path using A* : {self.raw_path}")
+            self.path = clean_path(self.raw_path)
+            self.path = meters_to_units(self.path, self.resolution)
+
+    def follow_path(self, direction=BEST_DIRECTION):
+        if self.path:
+            rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
+            self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, direction)
+            rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
+        else:
+            rospy.loginfo("(STRATEGY) No path found")
+
+    def go_to(self, x=-1, y=-1, alpha=-1., speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
+        """Send Go to position (x, y, alpha) for Motion Control
+        -> if alpha = -1 go to (x,y)
+        -> direction = [0 : best option, 1 : forward, -1 : backward]
+        """
+        obj = Pose2D(x, y, alpha)
+        self.next_pos_obj = [x, y, alpha]
+        direction_data = Int16(direction)
+        speed_data = Float64(speed)
+        self.axis_mode_pub.publish(Int16(on_axis))
+        self.direction_pub.publish(direction_data)
+        self.speed_ctrl_pub.publish(speed_data)
+        self.pos_ordre_pub.publish(obj)
+        self.state_robot = IN_PROGRESS
+
     # -- Phases --
+    def parse_objectives(self, team, phase):
+        team = "blue" if team == TEAM_BLUE else "yellow"
+        return [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
+                x, y, theta, direction in rospy.get_param(f"/objectives/{team}/{phase}")]
+
     def debug_phase(self):
         rospy.loginfo("(STRATEGY) Starting debug phase")
         max_time = rospy.get_param("/phases/debug")
-        if self.team == TEAM_BLUE:
-            self.objectives = [
-                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                x, y, theta, direction in rospy.get_param("/objectives/blue/debug")]
-        else:
-            self.objectives = [
-                Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                x, y, theta, direction in rospy.get_param("/objectives/yellow/debug")]
-        self.current_objective = self.objectives[0]
+        self.objectives = self.parse_objectives(self.team, "debug")
+
         while (self.path or self.objectives) and max_time > time.time() - self.start_time:
+            self.update_current_objective()
+            self.close_enough_raw_waypoint()
             self.compute_path()
+            self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
             self.follow_path()
         rospy.loginfo("(STRATEGY) Debug phase is over")
         if max_time > time.time() - self.start_time:
@@ -277,91 +349,17 @@ class Strategy:
                 self.position.y - self.raw_path[0].position[1]) ** 2) < threshold:
             self.raw_path.pop(0)
 
-    def compute_path(self):
-        """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
-        the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
-        :return: the path to follow
-        """
-        rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.enemy_position} \n SELF POS : {self.position}")
-        self.close_enough_raw_waypoint()
-        self.obstacles1, self.obstacles2 = get_discrete_obstacles(self.lidar_data, self.us_data,
-                                                                  [(self.enemy_position.x, self.enemy_position.y)],
-                                                                  self.resolution, self.radius, self.map_boundaries,
-                                                                  self.position)
-        # rospy.loginfo(f"Obstacles : {len(self.obstacles)}")
-
-        if self.current_objective is None:  # Get new closest objective
-            self.reset_position_from_camera()
-            self.current_objective = self.objectives[0]
-            self.objectives.pop(0)
-            self.raw_path = []
-            rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
-            # rospy.loginfo(f"(STRATEGY) Remaining objectives : {self.objectives}")
-
-        # rospy.loginfo(f"(STRATEGY) Current start/end : {origin.position}/{self.current_objective}")
-        if is_path_valid(self.raw_path, self.obstacles2):  # Check if the path is still valid with a 10 cm margin
-            rospy.loginfo("(STRATEGY) Path still exists")
-        else:  # Compute a new path
-            self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
-            self.previous_obstacles = self.obstacles1
-
-            # Get the start and end nodes
-            origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
-            origin.orientation = self.position.theta
-            end = self.maze[int(self.current_objective.x * self.resolution)][
-                int(self.current_objective.y * self.resolution)]
-            end.orientation = self.current_objective.theta
-            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {end.position}")
-
-            self.game_states.append([origin.position,
-                                     self.maze[int(self.current_objective.x * self.resolution)][
-                                         int(self.current_objective.y * self.resolution)].position,
+    def register_game_state(self, origin, end):
+        if SAVE_GAME_STATE:
+            self.game_states.append([origin.position, end.position,
                                      self.path, self.obstacles1, self.obstacles2, self.resolution, self.map_boundaries])
             with open("all_game_states.pkl", "wb") as f:
                 pickle.dump(self.game_states, f)
-            self.raw_path = a_star(origin, end)
-            rospy.loginfo(f"(STRATEGY) new Raw path computed : {self.raw_path}")
-            self.path = clean_path(self.raw_path)
-            self.path = meters_to_units(self.path, self.resolution)
-            # rospy.loginfo(f"(STRATEGY) Converted path : {self.path}")
-
-        # Remove node if the robot is already on it if the robot is already following a path
-        self.close_enough_to_waypoint(threshold=4.0)
-        # save_game_state(self.maze, self.path, self.obstacles, self.resolution, self.map_boundaries, "maze.png")
-        rospy.loginfo(f"(STRATEGY) Path : {self.path}")
-
-    def go_to(self, x=-1, y=-1, alpha=-1., speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
-        """go to position (x, y, alpha)
-        -> if alpha = -1 go to (x,y)
-        -> direction = [0 : best option, 1 : forward, -1 : backward]"""
-        # rospy.loginfo(f"Robot at {self.position}")
-        obj = Pose2D()
-        obj.x = x
-        obj.y = y
-        obj.theta = alpha
-        self.next_pos_obj = [x, y, alpha]
-        direction_data = Int16()
-        direction_data.data = direction
-        speed_data = Float64()
-        speed_data.data = speed
-        self.axis_mode_pub.publish(Int16(on_axis))
-        self.direction_pub.publish(direction_data)
-        self.speed_ctrl_pub.publish(speed_data)
-        self.pos_ordre_pub.publish(obj)
-        self.state_robot = IN_PROGRESS
 
     def wait_until_ready(self):
         while self.state_robot != READY:
             # rospy.loginfo("(STRATEGY) Waiting for the robot to be ready...")
             self.custom_waiting_rate.sleep()
-
-    def follow_path(self, direction=BEST_DIRECTION):
-        if self.path:
-            rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
-            self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, direction)
-            rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
-        else:
-            rospy.loginfo("(STRATEGY) No path found")
 
     def setup_subscribers(self):
         rospy.Subscriber('odometry', Pose2D, self.update_position)

@@ -2,7 +2,7 @@
 # -- coding: utf-8 --
 
 import rospy
-from std_msgs.msg import Int16, Bool
+from std_msgs.msg import Int16
 from piservo import Servo
 
 PIN = 13

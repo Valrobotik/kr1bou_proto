@@ -95,10 +95,20 @@ def clean_path(path: List[Node]) -> List[Node]:
     if len(path) < 3:
         return path
     cleaned_path = [path[0]]
+    # Remove intermediate nodes that have the same orientation
     for i in range(1, len(path) - 1):
         if orientation_change(path[i - 1], path[i]) != orientation_change(path[i], path[i + 1]):
             cleaned_path.append(path[i])
     cleaned_path.append(path[-1])
+    # Group nodes that are in a certain radius=5 of each other
+    groups = []
+    for node in cleaned_path:
+        if not groups or euclidian(node, groups[-1][-1]) > 5:
+            groups.append([node])
+        else:
+            groups[-1].append(node)
+    # Keep only the node closest to the objective in each group
+    cleaned_path = [group[-1] for group in groups]
     return cleaned_path
 
 
