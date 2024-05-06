@@ -205,6 +205,7 @@ class Strategy:
             rospy.loginfo("Debug phase is over because of time")
 
     def debug_phase_goto(self):
+        self.current_max_time = 1000
         while not rospy.is_shutdown():
             rospy.loginfo("(STRATEGY) Going to 2.25, .5")
             self.go_to(2.25, .5, -1, .25, BEST_DIRECTION)
