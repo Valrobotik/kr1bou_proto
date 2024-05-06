@@ -7,7 +7,7 @@
 
     <node name="team_define" pkg="kr1bou_launch" type="team_define.py" output="screen" />
 
-    <node name="ui_controller" pkg="kr1bou_launch" type="ui_controller.py" output="screen" />
+    <node name="ui_controller" pkg="kr1bou_launch" type="UI_controler.py" output="screen" />
 
     <!-- Include Controller Package Launch File -->
     <include file="$(find kr1bou_controller)/launch/controller.launch"/>
