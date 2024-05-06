@@ -279,7 +279,7 @@ class Strategy:
             if self.phase_end(): break
 
     def phase_end(self):
-        return self.current_max_time > time.time() - self.start_time
+        return self.current_max_time < time.time() - self.start_time
 
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
