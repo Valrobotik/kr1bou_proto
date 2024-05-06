@@ -72,6 +72,7 @@ def list_of_obstacles():
         obstacles.append((obstacle[0], obstacle[1]))
 
     for i in range(len(obstacles)):
+        rospy.loginfo(f"Obstacle: {obstacles[i]}")
         obstacles[i] = ((obstacles[i][0] - robot_position.x)*math.cos(robot_position.theta), (obstacles[i][1] - robot_position.y)*math.sin(robot_position.theta))
 
     return obstacles
@@ -86,7 +87,7 @@ def emergency_stop_run():
         emergency_front = False
         emergency_back = False
         for obstacle in obstacles:
-            rospy.loginfo(f"Obstacle: {obstacle}")
+            # rospy.loginfo(f"Obstacle: {obstacle}")
             if obstacle[0]>0.0 and obstacle[0]<0.3 and obstacle[1]>-0.2 and obstacle[1]<0.2:
                 emergency_front = True
             if obstacle[0]>-0.3 and obstacle[0]<0.0 and obstacle[1]>-0.2 and obstacle[1]<0.2:
