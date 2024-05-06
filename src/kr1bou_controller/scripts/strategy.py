@@ -266,7 +266,7 @@ class Strategy:
             # Disable back bumpers and enable back camera
             self.latest_solar_winner = SOLAR_DEFAULT
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
-            self.solar_mode_pub.publish(True)
+            self.solar_mode_pub.publish(Bool(True))
 
             # Check for winner
             rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")
@@ -311,7 +311,9 @@ class Strategy:
                 rospy.sleep(.1)
 
             # Forward
+            self.solar_mode_pub.publish(Bool(False))
             self.go_to(self.position.x, self.position.y - .2, 3 * pi / 2, .15, FORWARD, Y_PLUS)
+            
 
     # -- Utils --
     def close_enough_to_waypoint(self, threshold=5.0):
