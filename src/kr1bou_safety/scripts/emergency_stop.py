@@ -96,7 +96,7 @@ def list_of_obstacles():
 
     obstacles.extend(US_obstacles)
 
-    log_debug_obstacles(US_obstacles)
+    # log_debug_obstacles(US_obstacles)
 
     for i in range(len(obstacles)):
         # rospy.loginfo(f"ROBOT POSITION: ({robot_position.x}, {robot_position.y}, {robot_position.theta})")
