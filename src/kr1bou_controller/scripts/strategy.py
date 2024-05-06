@@ -231,9 +231,10 @@ class Strategy:
         while sequences:
             self.objectives = sequences.pop(0)
             max_time = times.pop(0)
+            direction = BEST_DIRECTION
             while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
-                direction = self.current_objective.direction if self.current_objective else BEST_DIRECTION
                 self.update_current_objective()
+                direction = self.current_objective.direction if self.current_objective else direction
                 self.close_enough_raw_waypoint()
                 self.compute_path()
                 self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
