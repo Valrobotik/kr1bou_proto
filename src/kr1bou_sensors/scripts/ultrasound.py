@@ -131,7 +131,6 @@ def pose_callback(pose_msg: Pose2D):
     current_pose.theta = pose_msg.theta
     
 
-
 def near(x, y, epsilon=0.01):
     return True if abs(x - y) < epsilon else False
 
@@ -148,8 +147,8 @@ if __name__ == '__main__':
         rospy.init_node('ultrasound_sensor_manager')
         rospy.loginfo("[START] Ultrasound Sensor node has started.")
 
-        start = False  # Wait for the runningPhase True signal
-        rospy.Subscriber('runningPhase', Bool, run)
+        start = False  # Wait for the running_phase True signal
+        rospy.Subscriber('running_phase', Bool, run)
 
         # Manage robot's pose
         current_pose = Pose2D()
@@ -168,7 +167,7 @@ if __name__ == '__main__':
 
         # Publisher and Subscriber
         sensor_data_pub = rospy.Publisher('ultrasound_sensor_data', Float32MultiArray, queue_size=queue_size)
-        emergency_stop_pub = rospy.Publisher('Emergency_stop', Int16, queue_size=queue_size)
+        emergency_stop_pub = rospy.Publisher('emergency_stop', Int16, queue_size=queue_size)
         rospy.Subscriber('odometry', Pose2D, pose_callback)
         while not start:
             rospy.sleep(0.1)

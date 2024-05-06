@@ -33,12 +33,12 @@ if __name__ == '__main__':
     TEAM_YELLOW = 0
     try:
         # Initialization
-        rospy.init_node('UI_controler', anonymous=True)
+        rospy.init_node('ui_controller', anonymous=True)
 
         ser = serial.Serial("/dev/ttyUSB0", 115200)
-        rospy.Subscriber("Team", Bool, update_team)
+        rospy.Subscriber("team", Bool, update_team)
 
-        rospy.Subscriber('runningPhase', Bool, run)
+        rospy.Subscriber('running_phase', Bool, run)
         rospy.sleep(6)
         ser.write(b'INI\r')
         rospy.spin()

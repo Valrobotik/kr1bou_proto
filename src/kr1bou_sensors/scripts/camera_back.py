@@ -62,7 +62,7 @@ def get_winner(img: np.ndarray, detector: cv2.aruco.ArucoDetector):
 def run(data):
     global start
     start = data
-    rospy.loginfo(f"{rospy.get_name()} received {start} from runningPhase")
+    rospy.loginfo(f"{rospy.get_name()} received {start} from running_phase")
 
 
 if __name__ == "__main__":
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         aruco_detector = cv2.aruco.ArucoDetector(arucoDict, params)
 
         rate = rospy.Rate(frequency)
-        rospy.Subscriber("runningPhase", Bool, run)
+        rospy.Subscriber("running_phase", Bool, run)
         cam_back_pub = rospy.Publisher("solar_aruco", Int8, queue_size=queue_size)
 
         while not start:

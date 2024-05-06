@@ -60,11 +60,11 @@ if __name__ == '__main__':
         # Initialization
         rospy.init_node('bumper_watch', anonymous=True)
         rospy.loginfo("[START] Bumper Watch node has started.")
-        # Wait for the runningPhase True signal
+        # Wait for the running_phase True signal
         frequency = rospy.get_param('/frequency')
         rate = rospy.Rate(frequency)
-        # Wait for the runningPhase True signal
-        rospy.Subscriber('runningPhase', Bool, run)
+        # Wait for the running_phase True signal
+        rospy.Subscriber('running_phase', Bool, run)
         bumper_pins = rospy.get_param('/gpio/bumper_pins')
         frequency = rospy.get_param('/frequency')
         queue_size = rospy.get_param('/queue_size')

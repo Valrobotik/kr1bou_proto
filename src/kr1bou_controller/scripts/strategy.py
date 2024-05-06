@@ -393,7 +393,7 @@ class Strategy:
         rospy.Subscriber('solar_aruco', Int8, self.update_solar_winner)
         rospy.Subscriber('bumper', Byte, self.update_bumpers)
         rospy.Subscriber('state', Int16, self.update_state)
-        rospy.Subscriber('Team', Bool, self.update_team)
+        rospy.Subscriber('team', Bool, self.update_team)
 
     # -- Callbacks --
     def update_bumpers(self, data: Byte):
@@ -471,7 +471,7 @@ if __name__ == "__main__":
         rospy.loginfo("[START] Strategy node has started.")
         strategy_manager = Strategy()
 
-        rospy.Subscriber('runningPhase', Bool, run)
+        rospy.Subscriber('running_phase', Bool, run)
         rate = rospy.Rate(rospy.get_param('/frequency'))
         while not start:
             rate.sleep()

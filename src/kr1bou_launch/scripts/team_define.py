@@ -41,10 +41,10 @@ if __name__ == '__main__':
         # Initialization
         rospy.init_node('team_define', anonymous=True)
         rospy.loginfo("[START] Team Selector node has started.")
-        # Wait for the runningPhase True signal
+        # Wait for the running_phase True signal
 
         queue_size = rospy.get_param('/queue_size')
-        pub = rospy.Publisher('Team', Bool, queue_size=queue_size)
+        pub = rospy.Publisher('team', Bool, queue_size=queue_size)
         bluetooth_choice = rospy.Publisher('speaker_choice', Int8, queue_size=queue_size)
         rospy.Subscriber('speaker_state', Bool, speaker_state_callback)
 
@@ -54,8 +54,8 @@ if __name__ == '__main__':
 
         frequency = rospy.get_param('/frequency')
         rate = rospy.Rate(frequency)
-        # Wait for the runningPhase True signal
-        rospy.Subscriber('runningPhase', Bool, run)
+        # Wait for the running_phase True signal
+        rospy.Subscriber('running_phase', Bool, run)
 
         rospy.sleep(1)
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
         # Spin to keep the script for exiting
 
-        rospy.Subscriber('runningPhase', Bool, run)
+        rospy.Subscriber('running_phase', Bool, run)
         rate = rospy.Rate(rospy.get_param('/frequency'))
         while not start:
             rate.sleep()

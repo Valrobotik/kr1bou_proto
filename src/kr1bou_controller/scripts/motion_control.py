@@ -80,7 +80,6 @@ class Kr1bou:
         self.freq = rospy.get_param('/frequency')
 
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
-
         self.publisher_state = rospy.Publisher('state', Int16, queue_size=1)
 
         self.solar_mode = False
@@ -93,7 +92,7 @@ class Kr1bou:
         rospy.Subscriber('max_speed', Float64, set_max_speed)
         rospy.Subscriber('stop', Bool, self.stop)
         rospy.Subscriber('direction', Int16, self.update_moving_direction)
-        rospy.Subscriber('Emergency_stop', Int16, self.stop_move)
+        rospy.Subscriber('emergency_stop', Int16, self.stop_move)
         rospy.Subscriber('solar_mode', Bool, self.update_solar_mode)
         rospy.Subscriber('axis_mode', Int16, self.update_axis_mode)
 
@@ -304,7 +303,7 @@ def set_max_speed(data: Float64):
 def run(data: Bool):
     global start
     start = data.data
-    rospy.loginfo(f"{rospy.get_name()} received {start} from runningPhase")
+    rospy.loginfo(f"{rospy.get_name()} received {start} from running_phase")
 
 
 if __name__ == "__main__":
@@ -313,9 +312,9 @@ if __name__ == "__main__":
         # Initialization
         rospy.init_node('controller', anonymous=True)
         rospy.loginfo("[START] Controller node has started.")
-        # Wait for the runningPhase True signal
+        # Wait for the running_phase True signal
         rate = rospy.Rate(rospy.get_param('/frequency'))
-        rospy.Subscriber('runningPhase', Bool, run)
+        rospy.Subscriber('running_phase', Bool, run)
         robot = Kr1bou()
         while not start:
             rate.sleep()
