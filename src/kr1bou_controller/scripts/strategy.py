@@ -224,7 +224,7 @@ class Strategy:
 
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
-        times = rospy.get_param("/phases/plant").values()
+        times = list(rospy.get_param("/phases/plant").values())
         sequences = self.parse_sequences("plant")
 
         while sequences:
