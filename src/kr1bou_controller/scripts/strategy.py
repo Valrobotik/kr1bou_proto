@@ -112,9 +112,9 @@ class Strategy:
         self.start_time = time.time()
         # self.debug_phase()
         # self.debug_phase_goto()
-        self.debug_phase_rotate()
+        #self.debug_phase_rotate()
         # self.plant_phase()
-        # self.solar_phase()
+        self.solar_phase()
         # self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
@@ -449,6 +449,7 @@ class Strategy:
             return
         blue_robot = Pose2D()
         yellow_robot = Pose2D()
+
         blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
         if self.team == TEAM_BLUE:
             own_robot, enemy_robot = blue_robot, yellow_robot
