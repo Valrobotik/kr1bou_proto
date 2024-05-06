@@ -132,6 +132,32 @@ def extend_obstacles(data: list, obstacles1: set, obstacles2: set, radius: int, 
     return obstacles1, obstacles2
 
 
+def bresenham(start: tuple, end: tuple) -> list:
+    """Bresenham algorithm to get the path between two points."""
+    x0, y0 = start
+    x1, y1 = end
+    points = []
+    dx = abs(x1 - x0)
+    dy = -abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx + dy  # error value e_xy
+
+    while True:
+        points.append((x0, y0))
+        if x0 == x1 and y0 == y1:
+            break
+        e2 = 2 * err
+        if e2 >= dy:  # e_xy+e_x > 0
+            err += dy
+            x0 += sx
+        if e2 <= dx:  # e_xy+e_y < 0
+            err += dx
+            y0 += sy
+
+    return points
+
+
 def setup_maze(maze, obstacles: set):
     """Create the maze with the obstacles"""
     for i in range(maze.shape[0]):
