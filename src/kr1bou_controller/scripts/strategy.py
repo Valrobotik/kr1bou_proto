@@ -13,6 +13,7 @@ from utils import *
 import pickle
 import cProfile
 import pstats
+import math
 import io
 
 READY_LINEAR = 0
@@ -263,6 +264,10 @@ class Strategy:
                 self.close_enough_to_waypoint()
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
+            # Backwards
+            self.reset_position_from_camera()
+            self.go_to(solar_objective.x, solar_objective.y + .2, 3 * pi / 2, .2, BACKWARD, Y_PLUS)
+
             # Rotate self
             self.rotate_only(3 * pi / 2)
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
@@ -298,7 +303,10 @@ class Strategy:
 
             # Forward
             rospy.loginfo(f"(STRATEGY) Forward")
-            self.go_to(self.position.x, self.position.y - .05, 3 * pi / 2, .15, FORWARD, Y_MINUS)
+            #calcule de la position du robot avancé
+            obj_x = self.position.x + 0.03 * math.cos(self.position.theta)
+            obj_y = self.position.y + 0.03 * math.sin(self.position.theta)
+            self.go_to(obj_x, obj_y, -1, .15, FORWARD, PREFERRED_AXIS)
             self.wait_until_ready()
             # Rotate solar panel
             rospy.loginfo(f"(STRATEGY) Rotate solar panel")
@@ -422,11 +430,11 @@ class Strategy:
 
         use_cam = self.reset_position_from_camera()
 
-        self.wait_until_ready()
-        while (abs(self.camera_position.theta - angle) > 0.05 and use_cam) or (abs(self.position.theta - angle) > 0.05 and not use_cam):
+        while (abs(self.camera_position.theta - angle) > 0.15 and use_cam) or (abs(self.position.theta - angle) > 0.15 and not use_cam):
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(-1, -1, angle)
-            use_cam = self.reset_position_from_camera(.1)
+            use_cam = self.reset_position_from_camera()
+        rospy.loginfo(f"(STRATEGY) Rotated to {angle} SUCESSFULLY")
 
     def setup_subscribers(self):
         rospy.Subscriber('odometry', Pose2D, self.update_position)
@@ -465,6 +473,7 @@ class Strategy:
             return
         blue_robot = Pose2D()
         yellow_robot = Pose2D()
+
         blue_robot.x, blue_robot.y, blue_robot.theta, yellow_robot.x, yellow_robot.y, yellow_robot.theta = data.data
         if self.team == TEAM_BLUE:
             own_robot, enemy_robot = blue_robot, yellow_robot
