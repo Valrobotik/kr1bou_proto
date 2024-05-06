@@ -60,6 +60,7 @@ def get_winner(img: np.ndarray, detector: cv2.aruco.ArucoDetector):
     
 def enable_camera(data):
     global cam_enabled
+    rospy.loginfo(f"{rospy.get_name()} received {data.data} from solar_mode")
     cam_enabled = data.data
     if cam_enabled:
         rospy.loginfo("Camera back is enabled")
@@ -84,7 +85,11 @@ if __name__ == "__main__":
         queue_size = rospy.get_param("/queue_size")
 
         # Initialize camera
-        cam = cv2.VideoCapture(0)
+        try :
+            cam = cv2.VideoCapture(0)
+        except:
+            rospy.logerr("Camera back not detected")
+            exit(1)
         arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         params = cv2.aruco.DetectorParameters()
 
