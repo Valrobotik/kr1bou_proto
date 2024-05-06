@@ -258,15 +258,16 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             self.need_solar_winner = True  # Get arm in the right position
 
-            # Wait for solar panel winner
-            rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
-            while self.latest_solar_winner == SOLAR_DEFAULT:
-                rospy.sleep(0.1)
 
             # Disable back bumpers and enable back camera
             self.latest_solar_winner = SOLAR_DEFAULT
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(Bool(True))
+
+            # Wait for solar panel winner
+            rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
+            while self.latest_solar_winner == SOLAR_DEFAULT:
+                rospy.sleep(0.1)
 
             # Check for winner
             rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")

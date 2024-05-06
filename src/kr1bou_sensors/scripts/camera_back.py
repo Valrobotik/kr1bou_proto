@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
         while not start:
             rate.sleep()
-
+        
         while not rospy.is_shutdown() :
             if cam_enabled:
                 ret, frame = cam.read()
