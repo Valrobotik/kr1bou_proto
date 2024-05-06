@@ -407,7 +407,7 @@ class Strategy:
 
         use_cam = self.reset_position_from_camera()
 
-        while (abs(self.camera_position.theta - angle) > 0.08 and use_cam) or (abs(self.position.theta - angle) > 0.08 and not use_cam):
+        while (abs(self.camera_position.theta - angle) > 0.1 and use_cam) or (abs(self.position.theta - angle) > 0.1 and not use_cam):
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(-1, -1, angle)
             use_cam = self.reset_position_from_camera()
