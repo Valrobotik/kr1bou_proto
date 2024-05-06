@@ -86,6 +86,7 @@ def emergency_stop_run():
         emergency_front = False
         emergency_back = False
         for obstacle in obstacles:
+            rospy.loginfo(f"Obstacle: {obstacle}")
             if obstacle[0]>0.0 and obstacle[0]<0.3 and obstacle[1]>-0.2 and obstacle[1]<0.2:
                 emergency_front = True
             if obstacle[0]>-0.3 and obstacle[0]<0.0 and obstacle[1]>-0.2 and obstacle[1]<0.2:
