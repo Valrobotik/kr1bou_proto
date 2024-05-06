@@ -243,8 +243,8 @@ class Strategy:
 
             while (self.path or self.objectives) and max_time > time.time() - self.start_time:
                 self.close_enough_to_waypoint()
+                self.compute_path()
                 if self.current_objective:
-                    self.compute_path()
                     self.follow_path(self.current_objective.direction)
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
