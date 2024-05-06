@@ -67,7 +67,10 @@ def callback_camera(data: Float32MultiArray):
 
 
 def callback_US_data(data: Float32MultiArray):
-    pass  # TODO
+    global US_obstacles
+    US_obstacles = []
+    for i in range(0, len(data.data), 2):
+        US_obstacles.append((data.data[i], data.data[i + 1]))
 
 
 def is_activated_bumper(ids):
@@ -85,8 +88,7 @@ def list_of_obstacles():
     if camera_adverse_position.x != -1 and camera_adverse_position.y != -1:
         obstacles.append((camera_adverse_position.x, camera_adverse_position.y))
 
-    for obstacle in US_obstacles:
-        obstacles.append((obstacle[0], obstacle[1]))
+    obstacles.extend(US_obstacles)
 
     for i in range(len(obstacles)):
         # rospy.loginfo(f"ROBOT POSITION: ({robot_position.x}, {robot_position.y}, {robot_position.theta})")
