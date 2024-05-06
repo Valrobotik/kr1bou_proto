@@ -68,10 +68,7 @@ def callback_camera(data: Float32MultiArray):
 
 def callback_US_data(data: Float32MultiArray):
     global US_obstacles
-    US_obstacles = []
-    for i in range(0, len(data.data), 2):
-        US_obstacles.append((data.data[i], data.data[i + 1]))
-
+    US_obstacles = [(data.data[i], data.data[i + 1]) for i in range(0, len(data.data), 2)]
 
 def is_activated_bumper(ids):
     """Return True if all ids of bumpers are activated."""
@@ -99,8 +96,7 @@ def list_of_obstacles():
 
     obstacles.extend(US_obstacles)
 
-    for obs in US_obstacles:
-        log_debug_obstacles(obs)
+    log_debug_obstacles(US_obstacles)
 
     for i in range(len(obstacles)):
         # rospy.loginfo(f"ROBOT POSITION: ({robot_position.x}, {robot_position.y}, {robot_position.theta})")
