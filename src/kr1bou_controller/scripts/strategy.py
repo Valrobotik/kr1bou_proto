@@ -241,10 +241,11 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Waiting for robot to be ready")
             self.wait_until_ready()
 
-            while ((self.path or self.objectives) and self.current_objective) and max_time > time.time() - self.start_time:
+            while (self.path or self.objectives) and max_time > time.time() - self.start_time:
                 self.close_enough_to_waypoint()
-                self.compute_path()
-                self.follow_path(self.current_objective.direction)
+                if self.current_objective:
+                    self.compute_path()
+                    self.follow_path(self.current_objective.direction)
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
             # Rotate self
