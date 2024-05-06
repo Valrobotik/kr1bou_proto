@@ -162,7 +162,7 @@ class Strategy:
         if self.path:
             rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, direction)
-            rospy.loginfo(f"(STRATEGY) Going to {self.path[0]}")
+            rospy.loginfo(f"(STRATEGY) Going to {self.path[0]} with direction {direction}")
         else:
             rospy.loginfo("(STRATEGY) No path to follow")
 
@@ -268,7 +268,7 @@ class Strategy:
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
                 need_twice = True
 
-            # Disable back US
+            # Disable back bumpers
             self.latest_solar_winner = SOLAR_DEFAULT
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
             self.solar_mode_pub.publish(True)
@@ -303,7 +303,7 @@ class Strategy:
                 rospy.sleep(.1)
 
             # Forward
-            self.go_to(self.position.x, self.position.y - .1, 3 * pi / 2, .15, BACKWARD, Y_PLUS)
+            self.go_to(self.position.x, self.position.y - .2, 3 * pi / 2, .15, FORWARD, Y_PLUS)
 
     # -- Utils --
     def close_enough_to_waypoint(self, threshold=5.0):
@@ -357,17 +357,19 @@ class Strategy:
             return True
         return False
 
-    def back_until_bumper(self, speed=0.15, axis='y+', direction=BACKWARD):
+    def back_until_bumper(self, speed : float = 0.2, axis : str = 'y+', direction : int = BACKWARD, shift : int = 2):
+        shift /= self.resolution
         while not self.is_activated_bumper([2, 3]):  # back bumpers should be activated
             rospy.loginfo(f"Back bumpers not activated: {self.bumpers}")
+
             if axis == 'y+':
-                self.go_to(self.position.x, self.position.y + 2, speed=speed, direction=direction, on_axis=Y_PLUS)
+                self.go_to(self.position.x, self.position.y + shift, speed=speed, direction=direction, on_axis=Y_PLUS)
             elif axis == 'y-':
-                self.go_to(self.position.x, self.position.y - 2, speed=speed, direction=direction, on_axis=Y_MINUS)
+                self.go_to(self.position.x, self.position.y - shift, direction=direction, on_axis=Y_MINUS)
             elif axis == 'x+':
-                self.go_to(self.position.x + 3, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
+                self.go_to(self.position.x + shift, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
             elif axis == 'x-':
-                self.go_to(self.position.x - 3, self.position.y, speed=speed, direction=direction, on_axis=X_MINUS)
+                self.go_to(self.position.x - shift, self.position.y, speed=speed, direction=direction, on_axis=X_MINUS)
         self.stop()
 
     def move_relative(self, distance, speed=0.20, axis='y-', direction=BEST_DIRECTION):
