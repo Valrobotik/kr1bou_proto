@@ -1,10 +1,12 @@
-import heapq
 import random
+import sys
 import time
 from math import atan2
 from utils import *
 import numpy as np
 import pickle as pkl
+
+import heapq
 
 
 def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
@@ -28,13 +30,9 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
         current_node = heapq.heappop(open_set)  # Also remove from open set
         closed_set.add(current_node)
 
-        if current_node == end_node:  # Path found
-            path = []
-            current = current_node
-            while current is not None:
-                path.append(current)
-                current = current.parent
-            return path[::-1]
+        # Path found
+        if current_node == end_node:
+            return reconstruct_path(current_node)
 
         # Explore neighbors
         for _, neighbor in current_node.neighbors.values():
@@ -49,9 +47,17 @@ def a_star(start_node: Node, end_node: Node) -> Optional[List[Node]]:
                 neighbor.f = neighbor.g + neighbor.h
                 if neighbor not in closed_set:  # To be visited
                     heapq.heappush(open_set, neighbor)
-    
-    print("(A*) No path found")            
+
+    print("(A*) No path found")
     return None
+
+
+def reconstruct_path(node):
+    path = []
+    while node:
+        path.append(node)
+        node = node.parent
+    return path[::-1]
 
 
 def heuristic(node: Node, end_node: Node) -> float:
@@ -148,32 +154,29 @@ def verbose_print(condition, *args):
 
 def test_n(n: int = 1000, verbose: bool = False):
     times = []
-    height, width, density, resolution = 200, 300, 0.4, 10
-    for _ in range(n):
+    height, width, density, resolution = 200, 300, 0.1, 100
+    for i in range(n):
+        print(f"Iteration {i}", end="\r")
         maze = generate_random_maze(height, width, density)
-        obstacles = {node.position for row in maze for node in row if node.is_obstacle}
         start, end = generate_random_start_end(maze)
-        verbose_print(verbose, f"Start and End nodes: {start} {end}")
         onset = time.perf_counter()
         path = a_star(start, end)
         offset = time.perf_counter()
         execution_time = offset - onset
         times.append(execution_time)
 
-        if path:
-            cleaned_path = clean_path(path)
-        else:
-            cleaned_path = []
+        # cleaned_path = clean_path(path)
 
         if verbose:
-            print(f"Path: {' '.join(map(str, cleaned_path)) if path else 'No path found'}")
+            print(f"Path: {' '.join(map(str, path)) if path else 'No path found'}")
             print(f"Start: {start}\nEnd: {end}\nDensity: {density}\nHeight: {height}\nWidth: {width}")
             print(f"Execution time: {execution_time} seconds\n")
 
         # Adjust positions and save the game state
-        cleaned_path = meters_to_units(cleaned_path, resolution)
-        map_boundaries = [0, 0, width / resolution, height / resolution]
-        save_game_state(maze, cleaned_path, obstacles, obstacles, resolution, map_boundaries, "maze.png", show=True)
+        # obstacles = {node.position for row in maze for node in row if node.is_obstacle}
+        # cleaned_path = meters_to_units(cleaned_path, resolution)
+        # map_boundaries = [0, 0, width / resolution, height / resolution]
+        # save_game_state(maze, cleaned_path, obstacles, obstacles, resolution, map_boundaries, "maze.png", show=True)
 
     print(f"Average time: {sum(times) / n} seconds")
 
@@ -184,15 +187,17 @@ def debug():
 
     for count, (origin, end, path, obstacles1, obstacles2, resolution, boundaries) in enumerate(game_states):
         print(f"Game state {count}")
-        print(f"Origin: {origin}\nEnd: {end}\nPath: {path}\nObstacles1: {len(obstacles1)}\nObstacles2: {len(obstacles2)}")
+        print(f"Origin: {origin}\nEnd: {end}\nPath (previous): {path}\nObstacles1: {len(obstacles1)}\nObstacles2: {len(obstacles2)}")
         print(f"Resolution: {resolution}\nBoundaries: {boundaries}")
+
         maze = setup_maze(np.zeros((boundaries[2] * resolution, boundaries[3] * resolution), dtype=Node), obstacles1)
         start = maze[origin[0]][origin[1]]
         end = maze[end[0]][end[1]]
+
         onset = time.perf_counter()
         path = a_star(start, end)
         offset = time.perf_counter()
-        cleaned_path = clean_path(path) if path else []
+        cleaned_path = clean_path(path)
 
         print(f"Maze size: {maze.shape}\nPath: {' '.join(map(str, cleaned_path)) if path else 'No path found'}")
         print(f"Start and End nodes: {start} {end}")
@@ -205,6 +210,6 @@ def debug():
 
 if __name__ == '__main__':
     # test_n(1, True)
-    # test_n(1000)
-    debug()
+    # test_n(1000, False)
+    # debug()
     pass
