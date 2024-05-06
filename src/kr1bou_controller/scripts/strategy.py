@@ -411,6 +411,7 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(-1, -1, angle)
             use_cam = self.reset_position_from_camera()
+        rospy.loginfo(f"(STRATEGY) Rotated to {angle} SUCESSFULLY")
 
     def setup_subscribers(self):
         rospy.Subscriber('odometry', Pose2D, self.update_position)
