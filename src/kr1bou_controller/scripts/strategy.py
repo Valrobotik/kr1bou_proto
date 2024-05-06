@@ -279,8 +279,6 @@ class Strategy:
         return self.current_max_time > time.time() - self.start_time
 
 
-
-
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
         max_time = rospy.get_param("/phases/solar_panel")
