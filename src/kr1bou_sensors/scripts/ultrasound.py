@@ -51,6 +51,9 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, f
     else:
         x_obstacle = sensor_x_absolute + raw_data * math.cos(sensor_absolute_angle)
         y_obstacle = sensor_y_absolute + raw_data * math.sin(sensor_absolute_angle)
+    
+    if x_obstacle > 3.0 or x_obstacle < 0 or y_obstacle > 2.0 or y_obstacle < 0:
+        return None
     return x_obstacle, y_obstacle
 
 
