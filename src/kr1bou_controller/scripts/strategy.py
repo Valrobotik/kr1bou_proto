@@ -107,6 +107,8 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
+        # Start debug
+        pr.enable()
         self.start_time = time.time()
         # self.debug_phase()
         # self.debug_phase_goto()
@@ -479,7 +481,6 @@ def run(data):
 if __name__ == "__main__":
     # profile le code stratégie
     pr = cProfile.Profile()
-    pr.enable()
     try:
         start = False
         rospy.init_node("strategy")
