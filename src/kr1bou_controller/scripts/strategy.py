@@ -209,16 +209,16 @@ class Strategy:
         while not rospy.is_shutdown():
             rospy.loginfo("(STRATEGY) Going to 2.25, .5")
             self.go_to(2.25, .5, -1, .25, BEST_DIRECTION)
-            self.wait_until_ready()
+            self.reset_position_from_camera()
             rospy.loginfo("(STRATEGY) Going to 2.25, 1.5")
             self.go_to(2.25, 1.5, -1, .25, BEST_DIRECTION)
-            self.wait_until_ready()
+            self.reset_position_from_camera()
             rospy.loginfo("(STRATEGY) Going to .75, 1.5")
             self.go_to(.75, 1.5, -1, .25, BEST_DIRECTION)
-            self.wait_until_ready()
+            self.reset_position_from_camera()
             rospy.loginfo("(STRATEGY) Going to .75, .5")
             self.go_to(.75, .5, -1, .25, BEST_DIRECTION)
-            self.wait_until_ready()
+            self.reset_position_from_camera()
 
     def debug_phase_rotate(self):
         while not rospy.is_shutdown():
