@@ -57,6 +57,14 @@ def get_winner(img: np.ndarray, detector: cv2.aruco.ArucoDetector):
         return BOTH
     else:
         return BLUE
+    
+def enable_camera(data):
+    global cam_enabled
+    cam_enabled = data.data
+    if cam_enabled:
+        rospy.loginfo("Camera back is enabled")
+    else:
+        rospy.loginfo("Camera back is disabled")
 
 
 def run(data):
@@ -79,18 +87,22 @@ if __name__ == "__main__":
         cam = cv2.VideoCapture(0)
         arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         params = cv2.aruco.DetectorParameters()
-        # Make detector more lenient
+
+        # Setup detector
         params.detectInvertedMarker = True
         aruco_detector = cv2.aruco.ArucoDetector(arucoDict, params)
 
+        # Subscribers and publishers
         rate = rospy.Rate(frequency)
+        cam_enabled = False
         rospy.Subscriber("running_phase", Bool, run)
+        rospy.Subscriber("solar_mode", Bool, enable_camera)
         cam_back_pub = rospy.Publisher("solar_aruco", Int8, queue_size=queue_size)
 
         while not start:
             rate.sleep()
 
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown() and cam_enabled:
             ret, frame = cam.read()
             if not ret:
                 continue

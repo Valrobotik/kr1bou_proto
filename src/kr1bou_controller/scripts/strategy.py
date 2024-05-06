@@ -111,7 +111,7 @@ class Strategy:
         # self.debug_phase()
         # self.debug_phase_goto()
         # self.plant_phase()
-        # self.solar_phase()
+        self.solar_phase()
         # self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
@@ -238,6 +238,7 @@ class Strategy:
             self.objectives = [solar_objective]
             self.current_objective = self.objectives[0]
             need_twice = False
+            startup_arm_pos = 0
 
             rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
             rospy.loginfo(f"(STRATEGY) Waiting for robot to be ready")
@@ -260,10 +261,15 @@ class Strategy:
             while self.latest_solar_winner == SOLAR_DEFAULT:
                 rospy.sleep(0.1)
 
+            # Disable back bumpers and enable back camera
+            self.latest_solar_winner = SOLAR_DEFAULT
+            rospy.loginfo(f"(STRATEGY) Solar panel mode set")
+            self.solar_mode_pub.publish(True)
+
             # Check for winner
             rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_NEUTRAL or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BOTH:
-                self.solar_pub.publish(Int16(180))
+                startup_arm_pos = 180
 
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_BLUE or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_YELLOW:
                 continue
@@ -271,10 +277,7 @@ class Strategy:
             if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
                 need_twice = True
 
-            # Disable back bumpers
-            self.latest_solar_winner = SOLAR_DEFAULT
-            rospy.loginfo(f"(STRATEGY) Solar panel mode set")
-            self.solar_mode_pub.publish(True)
+            self.solar_pub.publish(Int16(startup_arm_pos))
 
             # Bump
             rospy.loginfo(f"(STRATEGY) back until bumper")
@@ -360,15 +363,15 @@ class Strategy:
             return True
         return False
 
-    def back_until_bumper(self, speed : float = 0.2, axis : str = 'y+', direction : int = BACKWARD, shift : int = 2):
-        shift /= self.resolution
+    def back_until_bumper(self, speed : float = 0.2, axis : str = 'y+', direction : int = BACKWARD, shift : int = 10):
+        # shift /= self.resolution
         while not self.is_activated_bumper([2, 3]):  # back bumpers should be activated
             rospy.loginfo(f"Back bumpers not activated: {self.bumpers}")
 
             if axis == 'y+':
-                self.go_to(self.position.x, self.position.y + shift, speed=speed, direction=direction, on_axis=Y_PLUS)
+                self.go_to(self.position.x + .1, self.position.y + shift, speed=speed, direction=direction, on_axis=Y_PLUS)
             elif axis == 'y-':
-                self.go_to(self.position.x, self.position.y - shift, direction=direction, on_axis=Y_MINUS)
+                self.go_to(self.position.x - .1, self.position.y - shift, direction=direction, on_axis=Y_MINUS)
             elif axis == 'x+':
                 self.go_to(self.position.x + shift, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
             elif axis == 'x-':
