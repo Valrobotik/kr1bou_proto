@@ -230,10 +230,7 @@ class Strategy:
         while sequences:
             self.objectives = sequences.pop(0)
             max_time = times.pop(0)
-            max_sequence_time = rospy.get_param("/phases/plant")
             while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
-                if max_sequence_time < time.time() - self.start_time:
-                    break
                 self.update_current_objective()
                 self.close_enough_raw_waypoint()
                 self.compute_path()
