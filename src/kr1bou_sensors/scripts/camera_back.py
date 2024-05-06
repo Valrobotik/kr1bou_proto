@@ -102,15 +102,16 @@ if __name__ == "__main__":
         while not start:
             rate.sleep()
 
-        while not rospy.is_shutdown() and cam_enabled:
-            ret, frame = cam.read()
-            if not ret:
-                continue
+        while not rospy.is_shutdown() :
+            if cam_enabled:
+                ret, frame = cam.read()
+                if not ret:
+                    continue
 
-            winner = get_winner(frame, aruco_detector)
-            if winner is not None:
-                cam_back_pub.publish(Int8(data=winner))
-                rospy.loginfo("(CAMERA_BACK) winner : " + str(winner))
+                winner = get_winner(frame, aruco_detector)
+                if winner is not None:
+                    cam_back_pub.publish(Int8(data=winner))
+                    rospy.loginfo("(CAMERA_BACK) winner : " + str(winner))
             rate.sleep()
 
     finally:
