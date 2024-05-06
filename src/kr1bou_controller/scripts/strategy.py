@@ -383,13 +383,14 @@ class Strategy:
 
     def rotate_only(self, angle: float, speed: float = .2):
         self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
-        self.reset_position_from_camera()
+
+        use_cam = self.reset_position_from_camera()
+
         self.wait_until_ready()
-        # TODO verifier cette ligne entre position depuis odom ou position depuis camera
-        while abs(self.camera_position.theta - angle) > 0.05:
+        while (abs(self.camera_position.theta - angle) > 0.05 and use_cam) or (abs(self.position.theta - angle) > 0.05 and not use_cam):
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
-            self.reset_position_from_camera(.1)
+            use_cam = self.reset_position_from_camera(.1)
 
     def setup_subscribers(self):
         rospy.Subscriber('odometry', Pose2D, self.update_position)
