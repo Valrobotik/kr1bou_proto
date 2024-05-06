@@ -51,6 +51,7 @@ class Strategy:
         self.need_for_compute = True  # Whether to ask for a new path
         self.next_pos_obj = [0, 0, 0]  # Next position to go to / Intermediate objective
         self.game_states = []
+        self.current_max_time = 0
 
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
@@ -240,6 +241,43 @@ class Strategy:
 
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
 
+    def solar_alt_phase(self):
+        rospy.loginfo("(STRATEGY) Starting solar alternative phase")
+        self.current_max_time = rospy.get_param("/phases/solar_panel_alt")
+        solar_objectives = self.parse_objectives("solar_panel_alt")
+
+        for solar_objective in solar_objectives:
+            self.objectives = [solar_objective]
+            self.current_objective = self.objectives[0]
+            startup_arm_pos = 0
+
+            rospy.loginfo(f"(STRATEGY) going to original solar_pannel at {solar_objective}")
+
+            while (self.path or self.objectives or self.current_objective) and self.phase_end():
+                self.update_current_objective()
+                
+                self.compute_path()
+                self.follow_path(self.current_objective.direction)
+                self.close_enough_to_waypoint()
+            rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
+
+            self.reset_position_from_camera()
+
+            # Rotate self
+            self.go_to(1, solar_objective.y, speed=0.2, direction=BACKWARD, on_axis=X_PLUS)
+            self.reset_position_from_camera()
+            if self.phase_end(): break
+            self.go_to(2, solar_objective.y, 0, speed=0.2, direction=FORWARD, on_axis=X_PLUS)
+            self.reset_position_from_camera()
+            if self.phase_end(): break
+        
+
+    def phase_end(self):
+        return self.current_max_time > time.time() - self.start_time
+
+
+
+
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
         max_time = rospy.get_param("/phases/solar_panel")
@@ -370,10 +408,12 @@ class Strategy:
         while self.state_robot != READY:
             # rospy.loginfo("(STRATEGY) Waiting for the robot to be ready...")
             self.custom_waiting_rate.sleep()
+            if self.phase_end(): return
 
     def reset_position_from_camera(self, wait: float = .3):
         """Publishes the camera position to the odometry topic to correct the odometry"""
         self.wait_until_ready()
+        if self.phase_end(): return
         rospy.sleep(wait)
         if time.time() - self.last_time_cam < 2:
             self.got_cam_data = False

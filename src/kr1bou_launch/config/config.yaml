@@ -58,6 +58,7 @@ objectives: # Objectives are defined for each team.
                   [1.275, 1.6, 1.57, -1],
                   [1.5, 1.6, 1.57, -1],
                   [1.725, 1.6, 1.57, -1]]
+    solar_panel_alt: [[0.2, 1.8, 0, -1]]
     home:
       sequence0: [[.2, 1.8, 0, 0], [.2, .4, 0, 1], [.2, 1.8, 0, 0]]
     debug:
@@ -68,6 +69,7 @@ phases: # robot has the declared below game elapsed time to complete each sequen
     sequence0: 20
     sequence1: 40
   solar_panel: 70
+  solar_panel_alt: 70
   home: 80
   debug:
     sequence0: 100
