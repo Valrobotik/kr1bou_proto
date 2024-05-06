@@ -109,7 +109,7 @@ def clean_path(path: List[Node]) -> List[Node]:
     # Group nodes that are in a certain radius=5 of each other
     groups = []
     for node in cleaned_path:
-        if not groups or euclidian(node, groups[-1][-1]) > 5:
+        if not groups or euclidian(node, groups[-1][-1]) > 10:
             groups.append([node])
         else:
             groups[-1].append(node)

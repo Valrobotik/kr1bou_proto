@@ -112,8 +112,9 @@ class Strategy:
         self.start_time = time.time()
         # self.debug_phase()
         # self.debug_phase_goto()
+        self.debug_phase_rotate()
         # self.plant_phase()
-        self.solar_phase()
+        # self.solar_phase()
         # self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
@@ -218,6 +219,12 @@ class Strategy:
             self.go_to(.75, .5, -1, .25, BEST_DIRECTION)
             self.wait_until_ready()
 
+    def debug_phase_rotate(self):
+        while not rospy.is_shutdown():
+            rospy.loginfo("(STRATEGY) Rotating to 0")
+            self.rotate_only(pi)
+            self.wait_until_ready()
+
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
         max_time = rospy.get_param("/phases/plant")
@@ -258,15 +265,16 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             self.need_solar_winner = True  # Get arm in the right position
 
-            # Wait for solar panel winner
-            rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
-            while self.latest_solar_winner == SOLAR_DEFAULT:
-                rospy.sleep(0.1)
 
             # Disable back bumpers and enable back camera
             self.latest_solar_winner = SOLAR_DEFAULT
             rospy.loginfo(f"(STRATEGY) Solar panel mode set")
-            self.solar_mode_pub.publish(True)
+            self.solar_mode_pub.publish(Bool(True))
+
+            # Wait for solar panel winner
+            rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
+            while self.latest_solar_winner == SOLAR_DEFAULT:
+                rospy.sleep(0.1)
 
             # Check for winner
             rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")
@@ -311,7 +319,9 @@ class Strategy:
                 rospy.sleep(.1)
 
             # Forward
+            self.solar_mode_pub.publish(Bool(False))
             self.go_to(self.position.x, self.position.y - .2, 3 * pi / 2, .15, FORWARD, Y_PLUS)
+            
 
     # -- Utils --
     def close_enough_to_waypoint(self, threshold=5.0):
@@ -361,8 +371,9 @@ class Strategy:
 
     def is_activated_bumper(self, ids):
         """Return True if all ids of bumpers are activated."""
-        if all(self.bumpers & (1 << i) for i in ids):
-            return True
+        for i in ids:
+            if self.bumpers & (1 << i):
+                return True
         return False
 
     def back_until_bumper(self, speed : float = 0.2, axis : str = 'y+', direction : int = BACKWARD, shift : int = 10):
@@ -391,15 +402,15 @@ class Strategy:
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
         self.wait_until_ready()
 
-    def rotate_only(self, angle: float, speed: float = .2):
-        self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
+    def rotate_only(self, angle: float):
+        self.go_to(-1, -1, angle)
 
         use_cam = self.reset_position_from_camera()
 
         self.wait_until_ready()
         while (abs(self.camera_position.theta - angle) > 0.05 and use_cam) or (abs(self.position.theta - angle) > 0.05 and not use_cam):
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
-            self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
+            self.go_to(-1, -1, angle)
             use_cam = self.reset_position_from_camera(.1)
 
     def setup_subscribers(self):
