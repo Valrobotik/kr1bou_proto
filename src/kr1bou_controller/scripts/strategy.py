@@ -354,7 +354,7 @@ class Strategy:
 
     def is_activated_bumper(self, ids):
         """Return True if all ids of bumpers are activated."""
-        if self.bumpers & sum([2 ** i for i in ids]) > 0:
+        if all(self.bumpers & (1 << i) for i in ids):
             return True
         return False
 

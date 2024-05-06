@@ -72,7 +72,7 @@ def callback_US_data(data: Float32MultiArray):
 
 def is_activated_bumper(ids):
     """Return True if all ids of bumpers are activated."""
-    if bumpers & sum([2 ** i for i in ids]) > 0:
+    if all(bumpers & (1 << i) for i in ids):
         return True
     return False
 
