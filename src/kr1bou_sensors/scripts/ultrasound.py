@@ -51,6 +51,9 @@ def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, f
     else:
         x_obstacle = sensor_x_absolute + raw_data * math.cos(sensor_absolute_angle)
         y_obstacle = sensor_y_absolute + raw_data * math.sin(sensor_absolute_angle)
+    
+    if x_obstacle > 3.0 or x_obstacle < 0 or y_obstacle > 2.0 or y_obstacle < 0:
+        return None
     return x_obstacle, y_obstacle
 
 
@@ -64,10 +67,14 @@ def read_and_publish_sensor_data():
                                    raw_data.decode('utf-8').replace('\r\n', '').replace('b', '')
                                    .replace("'", '').strip('[]').split('; ')]  # Parse
                 #emergency_stop_needed(sensor_readings)
+                rospy.loginfo(f" US DATA : {sensor_readings}")
                 clamped_readings = [
                     calcul_absolut_position(reading, pos) for reading, pos in
                     zip(sensor_readings, sensor_positions)  # Clamp
                 ]
+                
+                clamped_readings = [item for item in clamped_readings if item is not None]
+
                 # Flatten the list of tuples
                 sensor_data_pub.publish(Float32MultiArray(data=[item for sublist in clamped_readings
                                                                 for item in sublist]))
@@ -82,6 +89,8 @@ def read_and_publish_sensor_data():
 def calcul_absolut_position(raw_data: float, sensor_position: tuple) -> Tuple[float, float]:
     global current_pose
     # repère du robot :
+    if raw_data == 0:
+        return None
     x_cap = sensor_position[0]
     y_cap = sensor_position[1]
     a_cap = sensor_position[3]
@@ -93,8 +102,11 @@ def calcul_absolut_position(raw_data: float, sensor_position: tuple) -> Tuple[fl
     d = math.sqrt(x1 ** 2 + y1 ** 2)
     a = math.atan2(y1, x1)
 
-    x_obs = current_pose.x + d * math.cos(a + current_pose.theta)
-    y_obs = current_pose.y + d * math.sin(a + current_pose.theta)
+    x_obs = current_pose.x + d * math.sin(a  - current_pose.theta + math.pi/2)
+    y_obs = current_pose.y + d * math.cos(a  - current_pose.theta + math.pi/2)
+
+    #rospy.loginfo(f"Obstacle at {x_obs, y_obs}") if x_obs != -1 else None
+
     return x_obs, y_obs
 
 
