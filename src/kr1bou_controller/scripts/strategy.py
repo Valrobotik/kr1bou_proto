@@ -410,7 +410,7 @@ class Strategy:
         while (abs(self.camera_position.theta - angle) > 0.08 and use_cam) or (abs(self.position.theta - angle) > 0.08 and not use_cam):
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(-1, -1, angle)
-            use_cam = self.reset_position_from_camera(.3)
+            use_cam = self.reset_position_from_camera()
 
     def setup_subscribers(self):
         rospy.Subscriber('odometry', Pose2D, self.update_position)
