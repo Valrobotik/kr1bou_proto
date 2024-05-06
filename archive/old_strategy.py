@@ -119,7 +119,7 @@ class Strategy:
         # self.debug_phase_rotate()
         self.plant_phase()
         self.solar_phase()
-        self.home_phase()
+        # self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
     def update_current_objective(self):
@@ -168,7 +168,7 @@ class Strategy:
                 self.path = clean_path(self.raw_path)
             self.path = meters_to_units(self.path, self.resolution)
 
-    def follow_path(self, speed=MAX_SPEED, direction=BEST_DIRECTION):
+    def follow_path(self, speed = MAX_SPEED, direction = BEST_DIRECTION):
         if self.path:
             rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.path[0].position[0], self.path[0].position[1], -1, speed, direction)
@@ -186,22 +186,6 @@ class Strategy:
         self.speed_ctrl_pub.publish(Float64(speed))
         self.pos_ordre_pub.publish(Pose2D(x, y, alpha))
         self.state_robot = IN_PROGRESS
-
-    def follow_sequences(self, sequences, times):
-        while sequences:
-            self.objectives = sequences.pop(0)
-            max_time = times.pop(0)
-            direction = BEST_DIRECTION
-            speed = MAX_SPEED
-            while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
-                self.update_current_objective()
-                direction = self.current_objective.direction if self.current_objective else direction
-                speed = self.current_objective.speed if self.current_objective else speed
-                self.close_enough_raw_waypoint()
-                self.compute_path()
-                self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
-                self.follow_path(speed, direction)
-            self.collect_paths()
 
     # -- Phases --
     def debug_phase_goto(self):
@@ -225,40 +209,25 @@ class Strategy:
             self.rotate_only(pi)
             self.wait_until_ready()
 
-    def home_phase(self):
-        rospy.loginfo("(STRATEGY) Starting home phase")
-        times = list(rospy.get_param("/phases/home").values())
-        sequences = self.parse_sequences("home")
-
-        self.follow_sequences(sequences, times)
-        rospy.loginfo("(STRATEGY) Home phase is over" + (": time over" if not sequences else ": next sequence"))
-
-    def solar_phase(self):
-        rospy.loginfo("(STRATEGY) Starting solar phase")
-        times = list(rospy.get_param("/phases/solar_panel").values())
-        sequences = self.parse_sequences("solar_panel")
-
-        # Move arm
-        if self.team == TEAM_BLUE:
-            self.solar_pub.publish(Int16(180))
-        else:
-            self.solar_pub.publish(Int16(0))
-
-        self.follow_sequences(sequences, times)
-
-        if self.team == TEAM_BLUE:
-            self.solar_pub.publish(Int16(0))
-        else:
-            self.solar_pub.publish(Int16(180))
-
-        rospy.loginfo("(STRATEGY) Solar phase is over" + (": time over" if not sequences else ": next sequence"))
-
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
         times = list(rospy.get_param("/phases/plant").values())
         sequences = self.parse_sequences("plant")
 
-        self.follow_sequences(sequences, times)
+        while sequences:
+            self.objectives = sequences.pop(0)
+            max_time = times.pop(0)
+            direction = BEST_DIRECTION
+            speed = MAX_SPEED
+            while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
+                self.update_current_objective()
+                direction = self.current_objective.direction if self.current_objective else direction
+                speed = self.current_objective.speed if self.current_objective else speed
+                self.close_enough_raw_waypoint()
+                self.compute_path()
+                self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
+                self.follow_path(speed, direction)
+            self.collect_paths()
 
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
 
@@ -294,6 +263,97 @@ class Strategy:
 
     def phase_end(self):
         return self.current_max_time > time.time() - self.start_time
+
+    def solar_phase(self):
+        rospy.loginfo("(STRATEGY) Starting solar phase")
+        max_time = rospy.get_param("/phases/solar_panel")
+        solar_objectives = self.parse_objectives("solar_panel")
+
+        for solar_objective in solar_objectives:
+            # Move to start position
+            self.objectives = [solar_objective]
+            self.current_objective = self.objectives[0]
+            need_twice = False
+            startup_arm_pos = 0
+
+            rospy.loginfo(f"(STRATEGY) Moving to solar panel at {solar_objective}")
+            rospy.loginfo(f"(STRATEGY) Waiting for robot to be ready")
+            self.wait_until_ready()
+
+            while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
+                self.update_current_objective()
+                self.compute_path()
+                self.follow_path(self.current_objective.direction)
+                self.close_enough_to_waypoint()
+            rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
+
+            # Backwards
+            self.reset_position_from_camera()
+            self.go_to(solar_objective.x, solar_objective.y + .2, 3 * pi / 2, .2, BACKWARD, Y_PLUS)
+
+            # Rotate self
+            self.rotate_only(3 * pi / 2)
+            rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
+            self.need_solar_winner = True  # Get arm in the right position
+
+            # Disable back bumpers and enable back camera
+            self.latest_solar_winner = SOLAR_DEFAULT
+            rospy.loginfo(f"(STRATEGY) Solar panel mode set")
+            self.solar_mode_pub.publish(Bool(True))
+
+            # Wait for solar panel winner
+            rospy.loginfo(f"(STRATEGY) Waiting for solar panel winner. Current winner : {self.latest_solar_winner}")
+            while self.latest_solar_winner == SOLAR_DEFAULT:
+                rospy.sleep(0.1)
+
+            # Check for winner
+            rospy.loginfo(f"(STRATEGY) Solar panel winner : {self.latest_solar_winner}")
+            if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_NEUTRAL or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BOTH:
+                startup_arm_pos = 180
+
+            if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_BLUE or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_YELLOW:
+                continue
+
+            if self.team == TEAM_BLUE and self.latest_solar_winner == SOLAR_YELLOW or self.team == TEAM_YELLOW and self.latest_solar_winner == SOLAR_BLUE:
+                need_twice = True
+
+            self.solar_pub.publish(Int16(startup_arm_pos))
+
+            # Bump
+            rospy.loginfo(f"(STRATEGY) back until bumper")
+            self.back_until_bumper()
+
+            # Forward
+            rospy.loginfo(f"(STRATEGY) Forward")
+            #calcule de la position du robot avancé
+            obj_x = self.position.x + 0.03 * math.cos(self.position.theta)
+            obj_y = self.position.y + 0.03 * math.sin(self.position.theta)
+            self.go_to(obj_x, obj_y, -1, .15, FORWARD, PREFERRED_AXIS)
+            self.wait_until_ready()
+            # Rotate solar panel
+            rospy.loginfo(f"(STRATEGY) Rotate solar panel")
+            self.solar_pub.publish(Int16(90))
+            rospy.sleep(.5)
+
+            # Reset arm
+            rospy.loginfo(f"(STRATEGY) Reset arm")
+            self.solar_pub.publish(Int16(0))
+            rospy.sleep(.1)
+
+            if need_twice:
+                rospy.loginfo(f"(STRATEGY) Needs second pass")
+                # Forward
+                self.go_to(self.position.x, self.position.y - .03, 3 * pi / 2, .15, FORWARD, Y_MINUS)
+                # Rotate solar panel
+                self.solar_pub.publish(Int16(90))
+                rospy.sleep(.1)
+                # Reset arm
+                self.solar_pub.publish(Int16(0))
+                rospy.sleep(.1)
+
+            # Forward
+            self.solar_mode_pub.publish(Bool(False))
+            self.go_to(self.position.x, self.position.y - .2, 3 * pi / 2, .15, FORWARD, Y_PLUS)
 
     # -- Utils --
     def parse_sequences(self, phase):
