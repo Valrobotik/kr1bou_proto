@@ -224,7 +224,7 @@ class Strategy:
 
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
-        times = rospy.get_param("/phases/plant")
+        times = rospy.get_param("/phases/plant").values()
         sequences = self.parse_sequences("plant")
 
         while sequences:
@@ -232,6 +232,8 @@ class Strategy:
             max_time = times.pop(0)
             max_sequence_time = rospy.get_param("/phases/plant")
             while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
+                if max_sequence_time < time.time() - self.start_time:
+                    break
                 self.update_current_objective()
                 self.close_enough_raw_waypoint()
                 self.compute_path()
@@ -336,7 +338,7 @@ class Strategy:
     # -- Utils --
     def parse_sequences(self, phase):
         team = "blue" if self.team == TEAM_BLUE else "yellow"
-        return [self.parse_objectives(team, phase, i) for i in range(rospy.get_param(f"/sequences/{team}/{phase}"))]
+        return [self.parse_objectives(team, phase, i) for i in range(len(rospy.get_param(f"/objectives/{team}/{phase}").values()))]
 
     def parse_objectives(self, team, phase, index_of_sequence):
         return [Objective(x, y, theta, direction) for
