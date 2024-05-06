@@ -28,8 +28,8 @@ radius: 40 # radius around obstacles
 #                    [8, -5, 0, 0]]
 
 sensor_positions: [
-                   [-0.10, 0.05, 0, 3.141592],
-                   [-0.10, -0.05, 0, 3.141592]]
+                   [-10, 5, 0, 3.141592],
+                   [-10, -5, 0, 3.141592]]
 
 objectives: # Objectives are defined for each team.
   blue:
@@ -50,7 +50,8 @@ objectives: # Objectives are defined for each team.
 
   yellow: # Multiple phases to complete in the given order.
     plant: # Multiple possibilities. If a path is not found for a sequence, the next closest sequence is chosen
-      sequence0: [[2.55, 0.85, 3.49, 2, 1], [0.82, 0.2, 3.14, 0, 1], [0.4, 0.2, 3.14, 0, 1]]
+      # [[x, y, theta, speed=(0 | 1 | 2), direction=(Best, ], ...]
+      sequence0: [[2.55, 0.92, 3.49, 2, 1], [0.73, 0.2, 3.14, 1, 1], [0.4, 0.2, 3.14, 1, 1]]
     solar_panel:
       sequence0: [[0.275, 1.6, 1.57, -1],
                   [0.5, 1.6, 1.57, -1],
@@ -66,12 +67,10 @@ objectives: # Objectives are defined for each team.
   
 phases: # robot has the declared below game elapsed time to complete each sequence
   plant:
-    sequence0: 25
-    sequence1: 50
-  solar_panel:
-    sequence0: 75
-  home:
-    sequence0: 90
-    sequence1: 90
-    sequence2: 90
-
+    sequence0: 30
+    sequence1: 40
+  solar_panel: 70
+  solar_panel_alt: 70
+  home: 80
+  debug:
+    sequence0: 100

@@ -9,6 +9,8 @@ INF = float('inf')
 SLOW_SPEED = 0.15
 MEDIUM_SPEED = 0.25
 MAX_SPEED = 0.32
+TEAM_BLUE = 1
+TEAM_YELLOW = 0
 
 
 class Node:
@@ -74,11 +76,19 @@ def other_estimate(node1: Node, node2: Node) -> float:
     return dx + dy + (2 ** 0.5 - 2) * min(dx, dy)
 
 
+def objective_clamp(theta: float) -> float:
+    """Clamp the angle between 0 and 2pi"""
+    new_theta = theta
+    if theta < 0:
+        new_theta += 2 * pi
+    return new_theta - 2 * pi if new_theta > 2 * pi else new_theta
+
+
 class Objective:
-    def __init__(self, x, y, theta, speed, direction):
-        self.x = x
+    def __init__(self, x, y, theta, speed, direction, team):
+        self.x = x if team == TEAM_BLUE else 3 - x
         self.y = y
-        self.theta = theta
+        self.theta = theta if team == TEAM_BLUE else objective_clamp(pi - theta)
         self.speed = SLOW_SPEED if speed == 0 else MEDIUM_SPEED if speed == 1 else MAX_SPEED
         self.direction = direction  # forward, backward, or best
 

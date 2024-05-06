@@ -66,8 +66,8 @@ def read_and_publish_sensor_data():
                 sensor_readings = [float(x) / 100 for x in
                                    raw_data.decode('utf-8').replace('\r\n', '').replace('b', '')
                                    .replace("'", '').strip('[]').split('; ')]  # Parse
-                #emergency_stop_needed(sensor_readings)
-                rospy.loginfo(f" US DATA : {sensor_readings}")
+                # emergency_stop_needed(sensor_readings)
+                # rospy.loginfo(f" US DATA : {sensor_readings}")
                 clamped_readings = [
                     calcul_absolut_position(reading, pos) for reading, pos in
                     zip(sensor_readings, sensor_positions)  # Clamp
