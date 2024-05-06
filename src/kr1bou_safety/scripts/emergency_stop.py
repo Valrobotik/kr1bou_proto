@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     ## Subscribers
     rospy.Subscriber('odometry', Pose2D, callback_robot_position)
-    rospy.Subscriber('lidar_obstacles', PoseArray, callback_lidar_obstacles)
+    rospy.Subscriber('lidar_data', PoseArray, callback_lidar_obstacles)
     rospy.Subscriber('bumper', Byte, callback_bumper)
     rospy.Subscriber('Team', Bool, callback_team_color)
     rospy.Subscriber('camera', Float32MultiArray, callback_camera)
