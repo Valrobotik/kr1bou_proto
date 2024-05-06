@@ -23,7 +23,7 @@ def on_bumper_release():
 def setup_buttons(pins):
     global buttons_list
     buttons_list = [Button(int(pin)) for pin in pins]
-    rospy.loginfo(f"(BUMPER WATCH) {buttons_list}")
+    #rospy.loginfo(f"(BUMPER WATCH) {buttons_list}")
     buttons_list[0].when_activated = on_bumper_press
     buttons_list[0].when_activated = on_bumper_release
     old_state = check_bumpers(buttons_list)
