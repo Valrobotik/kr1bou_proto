@@ -231,10 +231,7 @@ class Strategy:
         while sequences:
             self.objectives = sequences.pop(0)
             max_time = times.pop(0)
-            max_sequence_time = rospy.get_param("/phases/plant")
             while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
-                if max_sequence_time < time.time() - self.start_time:
-                    break
                 self.update_current_objective()
                 self.close_enough_raw_waypoint()
                 self.compute_path()
@@ -258,7 +255,7 @@ class Strategy:
 
             while (self.path or self.objectives or self.current_objective) and self.phase_end():
                 self.update_current_objective()
-                
+
                 self.compute_path()
                 self.follow_path(self.current_objective.direction)
                 self.close_enough_to_waypoint()
@@ -273,11 +270,9 @@ class Strategy:
             self.go_to(2, solar_objective.y, 0, speed=0.2, direction=FORWARD, on_axis=X_PLUS)
             self.reset_position_from_camera()
             if self.phase_end(): break
-        
 
     def phase_end(self):
         return self.current_max_time > time.time() - self.start_time
-
 
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
@@ -310,7 +305,6 @@ class Strategy:
             self.rotate_only(3 * pi / 2)
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
             self.need_solar_winner = True  # Get arm in the right position
-
 
             # Disable back bumpers and enable back camera
             self.latest_solar_winner = SOLAR_DEFAULT
@@ -439,7 +433,7 @@ class Strategy:
                 return True
         return False
 
-    def back_until_bumper(self, speed : float = 0.2, axis : str = 'y+', direction : int = BACKWARD, shift : int = 10):
+    def back_until_bumper(self, speed: float = 0.2, axis: str = 'y+', direction: int = BACKWARD, shift: int = 10):
         # shift /= self.resolution
         while not self.is_activated_bumper([2, 3]):  # back bumpers should be activated
             rospy.loginfo(f"Back bumpers not activated: {self.bumpers}")
@@ -470,7 +464,8 @@ class Strategy:
 
         use_cam = self.reset_position_from_camera()
 
-        while (abs(self.camera_position.theta - angle) > 0.15 and use_cam) or (abs(self.position.theta - angle) > 0.15 and not use_cam):
+        while (abs(self.camera_position.theta - angle) > 0.15 and use_cam) or (
+                abs(self.position.theta - angle) > 0.15 and not use_cam):
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(-1, -1, angle)
             use_cam = self.reset_position_from_camera()
