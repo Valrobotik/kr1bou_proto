@@ -255,6 +255,9 @@ class Kr1bou:
 
         if self.axis_mode == PREFERRED_AXIS:
             self.angle_to_follow = atan2(self.objectif_y - self.y, self.objectif_x - self.x)
+        
+        if self.objectif_x == -1 and self.objectif_y == -1:
+            self.state = READY_LINEAR
 
     def stop(self, data: Bool):
         if data.data:
