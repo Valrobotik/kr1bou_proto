@@ -151,11 +151,12 @@ class Strategy:
             straight_path = [self.maze[i][j] for i, j in bresenham(origin.position, end.position)]
             if is_path_valid(straight_path, self.obstacles2):
                 self.raw_path = straight_path
+                self.path = [straight_path[-1]]
                 rospy.loginfo(f"(STRATEGY) Computed path using Bresenham : {self.raw_path}")
             else:
                 self.raw_path = a_star(origin, end)
                 rospy.loginfo(f"(STRATEGY) Computed path using A* : {self.raw_path}")
-            self.path = clean_path(self.raw_path)
+                self.path = clean_path(self.raw_path)
             self.path = meters_to_units(self.path, self.resolution)
 
     def follow_path(self, direction=BEST_DIRECTION):
