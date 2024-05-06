@@ -405,7 +405,7 @@ class Strategy:
     # -- Callbacks --
     def update_bumpers(self, data: Byte):
         """Update the bumper states by reading the Byte message from the bumper topic."""
-        data = int(data.data)
+        self.bumpers = int(data.data)
         self.need_for_compute = True
 
     def update_position(self, data):
