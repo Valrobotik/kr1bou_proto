@@ -90,7 +90,7 @@ def read_and_publish_sensor_data():
                 sensor_readings = [float(x) / 100 for x in
                                    raw_data.decode('utf-8').replace('\r\n', '').replace('b', '')
                                    .replace("'", '').strip('[]').split('; ')]  # Parse
-                emergency_stop_needed(sensor_readings)
+                #emergency_stop_needed(sensor_readings)
                 clamped_readings = [
                     calcul_absolut_position(reading, pos) for reading, pos in
                     zip(sensor_readings, sensor_positions)  # Clamp
@@ -129,30 +129,7 @@ def pose_callback(pose_msg: Pose2D):
     current_pose.x = pose_msg.x
     current_pose.y = pose_msg.y
     current_pose.theta = pose_msg.theta
-    data = Int16()
-    data.data = NO_EMERGENCY
-    for i in front_sensor:
-        dist_robot_obstacle = math.sqrt(
-            (current_pose.x - clamped_readings[i][0]) ** 2 + (current_pose.y - clamped_readings[i][1]) ** 2)
-        if dist_robot_obstacle < emergency_threshold and sensor_readings[i] != 0:
-            # rospy.logwarn(f"/!\ ATTENTION : OBSTACLE AVANT A {dist_robot_obstacle} CM sur {i}
-            # (recalculer) dist mesurée précédemment : {sensor_readings[i]}")
-            data.data = EMERGENCY_FRONT
-    for i in back_sensor:
-        dist_robot_obstacle = math.sqrt(
-            (current_pose.x - clamped_readings[i][0]) ** 2 + (current_pose.y - clamped_readings[i][1]) ** 2)
-        if dist_robot_obstacle < emergency_threshold and sensor_readings[i] != 0:
-            # rospy.logwarn(f"/!\ ATTENTION : OBSTACLE ARRIERE A {dist_robot_obstacle} CM sur {i}
-            # (recalculer) dist mesurée précédemment : {sensor_readings[i]}")
-            data.data = EMERGENCY_BACK if data.data == NO_EMERGENCY else EMERGENCY_BOTH
-            if data.data == EMERGENCY_FRONT:
-                data.data = EMERGENCY_BOTH
-            else:
-                data.data = EMERGENCY_BACK
-    if data.data != NO_EMERGENCY:
-        # emergency_stop_pub.publish(data)
-        pass
-    # rospy.loginfo(f"{rospy.get_name()} received {current_pose} from Pose")
+    
 
 
 def near(x, y, epsilon=0.01):

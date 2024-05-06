@@ -3,4 +3,8 @@
     <node name="bumper_watch" pkg="kr1bou_safety" type="bumper_watch.py" output="screen">
         <!-- Optional parameters can be added here -->
     </node>
+
+    <node name="emergency_stop" pkg="kr1bou_safety" type="emergency_stop.py" output="screen">
+        <!-- Optional parameters can be added here -->
+    </node>
 </launch>
