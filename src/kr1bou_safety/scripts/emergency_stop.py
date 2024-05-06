@@ -44,6 +44,9 @@ def callback_team_color(data:Bool):
     team_color = data.data
 
 camera_adverse_position = Pose2D()
+camera_adverse_position.x = -1
+camera_adverse_position.y = -1
+camera_adverse_position.theta = -1
 def callback_camera(data:Float32MultiArray):
     if team_color == -1:
         return
@@ -66,7 +69,8 @@ def list_of_obstacles():
     for obstacle in lidar_obstacles:
         obstacles.append((obstacle.position.x, obstacle.position.y))
 
-    obstacles.append((camera_adverse_position.x, camera_adverse_position.y))
+    if camera_adverse_position.x != -1 and camera_adverse_position.y != -1:
+        obstacles.append((camera_adverse_position.x, camera_adverse_position.y))
 
     for obstacle in US_obstacles:
         obstacles.append((obstacle[0], obstacle[1]))
