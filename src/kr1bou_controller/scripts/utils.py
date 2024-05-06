@@ -72,24 +72,20 @@ def other_estimate(node1: Node, node2: Node) -> float:
 
 
 class Objective:
-    def __init__(self, x, y, theta, cost, direction):
+    def __init__(self, x, y, theta, direction):
         self.x = x
         self.y = y
         self.theta = theta
-        self.cost = cost
         self.direction = direction  # forward, backward, or best
-
-    def __lt__(self, other):
-        return self.cost < other.cost
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
     def __str__(self):
-        return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
+        return f"Objective({self.x}, {self.y}, {self.theta})"
 
     def __repr__(self):
-        return f"Objective({self.x}, {self.y}, {self.theta}, {self.cost})"
+        return f"Objective({self.x}, {self.y}, {self.theta})"
 
 
 def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int,

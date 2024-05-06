@@ -31,37 +31,45 @@ sensor_positions: [
                    [-10, 5, 0, 3.141592],
                    [-10, -5, 0, 3.141592]]
 
-# An objective is a list of waypoints with (x, y, theta) coordinates
-#objectives: [[2.25, 0.5, 0], [2.25, 1.5, 0], [0.75, 1.5, 0], [0.75, 0.5, 0], [1.5, 1, 0]]
-
-# TODO : Add the preferred orientation of the robot as 4th element of the waypoint
-objectives: 
+objectives: # Objectives are defined for each team.
   blue:
-    plant: [[2.8, .2, 0, 1]]
-    solar_panel: [[2.275, 1.6, 4.71, -1],
-                  [2.5, 1.6, 4.71, -1],
-                  [2.725, 1.6, 4.71, -1],
-                  [1.275, 1.6, 4.71, -1],
-                  [1.5, 1.6, 4.71, -1],
-                  [1.725, 1.6, 4.71, -1]]
-    home: [[2.8, 1.8, 0, 0], [2.8, .4, 4.71, 1], [2.8, 1.8, 0, 0]]
-    debug: [[2.25, 0.5, 0, 1], [2.25, 1.5, 0, 1], [0.75, 1.5, 0, 1], [0.75, 0.5, 0, 1], [1.5, 1, 0, 1]]
+    plant:
+      sequence0: [[2.8, .2, 0, 1]]
+      sequence1: [[2.8, .2, 0, 1]]
+    solar_panel:
+      sequence0: [[2.275, 1.6, 1.57, -1],
+                  [2.5, 1.6, 1.57, -1],
+                  [2.725, 1.6, 1.57, -1],
+                  [1.275, 1.6, 1.57, -1],
+                  [1.5, 1.6, 1.57, -1],
+                  [1.725, 1.6, 1.57, -1]]
+    home:
+      sequence0: [[2.8, 1.8, 0, 0], [2.8, .4, 4.71, 1], [2.8, 1.8, 0, 0]]
+    debug:
+      sequence0: [[2.25, 0.5, 0, 1], [2.25, 1.5, 0, 1], [0.75, 1.5, 0, 1], [0.75, 0.5, 0, 1], [1.5, 1, 0, 1]]
 
-  yellow:
-    plant: [[.2, .2, 0, 1]]
-    solar_panel: [[0.275, 1.45, 4.71, -1],
-                  [0.5, 1.45, 4.71, -1],
-                  [0.725, 1.45, 4.71, -1],
-                  [1.275, 1.45, 4.71, -1],
-                  [1.5, 1.45, 4.71, -1],
-                  [1.725, 1.45, 4.71, -1]]
+  yellow: # Multiple phases to complete in the given order.
+    plant: # Multiple possibilities. If a path is not found for a sequence, the next closest sequence is chosen
+      sequence0: [[2.55, 0.9, 3.49, 1], [0.82, 0.2, 3.14, 1], [0.2, 0.2, 3.14, 1]]
+    solar_panel:
+      sequence0: [[0.275, 1.6, 1.57, -1],
+                  [0.5, 1.6, 1.57, -1],
+                  [0.725, 1.6, 1.57, -1],
+                  [1.275, 1.6, 1.57, -1],
+                  [1.5, 1.6, 1.57, -1],
+                  [1.725, 1.6, 1.57, -1]]
     solar_panel_alt: [[0.2, 1.8, 0, -1]]
-    home: [[.2, 1.8, 0, 0], [.2, .4, 0, 1], [.2, 1.8, 0, 0]]
-    debug: [[2.25, 0.5, 0, 1], [2.25, 1.5, 0, 1], [0.75, 1.5, 0, 1], [0.75, 0.5, 0, 1], [1.5, 1, 0, 1]]
+    home:
+      sequence0: [[.2, 1.8, 0, 0], [.2, .4, 0, 1], [.2, 1.8, 0, 0]]
+    debug:
+      sequence0: [[2.25, 0.5, 0, 1], [2.25, 1.5, 0, 1], [0.75, 1.5, 0, 1], [0.75, 0.5, 0, 1], [1.5, 1, 0, 1]]
   
-phases:
-  plant: 30
-  solar_panel: 80
-  solar_panel_alt: 80
-  home: 90
-  debug: 100
+phases: # robot has the declared below game elapsed time to complete each sequence
+  plant:
+    sequence0: 20
+    sequence1: 40
+  solar_panel: 70
+  solar_panel_alt: 70
+  home: 80
+  debug:
+    sequence0: 100

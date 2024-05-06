@@ -114,9 +114,9 @@ class Strategy:
         self.start_time = time.time()
         # self.debug_phase()
         # self.debug_phase_goto()
-        #self.debug_phase_rotate()
-        # self.plant_phase()
-        self.solar_phase()
+        # self.debug_phase_rotate()
+        self.plant_phase()
+        # self.solar_phase()
         # self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
@@ -186,11 +186,6 @@ class Strategy:
         self.state_robot = IN_PROGRESS
 
     # -- Phases --
-    def parse_objectives(self, phase):
-        team = "blue" if self.team == TEAM_BLUE else "yellow"
-        return [Objective(x, y, theta, sqrt((x - self.position.x) ** 2 + (y - self.position.y) ** 2), direction) for
-                x, y, theta, direction in rospy.get_param(f"/objectives/{team}/{phase}")]
-
     def debug_phase(self):
         rospy.loginfo("(STRATEGY) Starting debug phase")
         max_time = rospy.get_param("/phases/debug")
@@ -202,6 +197,7 @@ class Strategy:
             self.compute_path()
             self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
             self.follow_path()
+
         rospy.loginfo("(STRATEGY) Debug phase is over")
         if max_time > time.time() - self.start_time:
             rospy.loginfo("Debug phase is over because of time")
@@ -229,15 +225,24 @@ class Strategy:
 
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
-        max_time = rospy.get_param("/phases/plant")
-        self.objectives = self.parse_objectives("plant")
+        times = rospy.get_param("/phases/plant").values()
+        sequences = self.parse_sequences("plant")
 
-        while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
-            self.close_enough_to_waypoint()
-            self.compute_path()
-            self.follow_path(self.current_objective.direction)
+        while sequences:
+            self.objectives = sequences.pop(0)
+            max_time = times.pop(0)
+            max_sequence_time = rospy.get_param("/phases/plant")
+            while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
+                if max_sequence_time < time.time() - self.start_time:
+                    break
+                self.update_current_objective()
+                self.close_enough_raw_waypoint()
+                self.compute_path()
+                self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
+                self.follow_path(self.current_objective.direction)
+            self.collect_paths()
 
-        rospy.loginfo("(STRATEGY) Plant phase is over")
+        rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
 
     def solar_alt_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar alternative phase")
@@ -367,9 +372,16 @@ class Strategy:
             # Forward
             self.solar_mode_pub.publish(Bool(False))
             self.go_to(self.position.x, self.position.y - .2, 3 * pi / 2, .15, FORWARD, Y_PLUS)
-            
 
     # -- Utils --
+    def parse_sequences(self, phase):
+        team = "blue" if self.team == TEAM_BLUE else "yellow"
+        return [self.parse_objectives(team, phase, i) for i in range(len(rospy.get_param(f"/objectives/{team}/{phase}").values()))]
+
+    def parse_objectives(self, team, phase, index_of_sequence):
+        return [Objective(x, y, theta, direction) for
+                x, y, theta, direction in rospy.get_param(f"/objectives/{team}/{phase}/sequence{index_of_sequence}")]
+
     def close_enough_to_waypoint(self, threshold=5.0):
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (
                 self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
@@ -382,6 +394,11 @@ class Strategy:
         while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (
                 self.position.y - self.raw_path[0].position[1]) ** 2) < threshold:
             self.raw_path.pop(0)
+
+    def collect_paths(self):
+        self.raw_path = []
+        self.path = []
+        self.current_objective = None
 
     def register_game_state(self, origin, end):
         if SAVE_GAME_STATE:
@@ -451,6 +468,7 @@ class Strategy:
         self.wait_until_ready()
 
     def rotate_only(self, angle: float):
+        self.go_to(-1, -1, angle)
 
         use_cam = self.reset_position_from_camera()
 
