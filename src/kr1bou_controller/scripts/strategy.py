@@ -222,16 +222,7 @@ class Strategy:
     def debug_phase_rotate(self):
         while not rospy.is_shutdown():
             rospy.loginfo("(STRATEGY) Rotating to 0")
-            self.rotate_only(0)
-            self.wait_until_ready()
-            rospy.loginfo("(STRATEGY) Rotating to pi/2")
-            self.rotate_only(pi / 2)
-            self.wait_until_ready()
-            rospy.loginfo("(STRATEGY) Rotating to pi")
             self.rotate_only(pi)
-            self.wait_until_ready()
-            rospy.loginfo("(STRATEGY) Rotating to 3pi/2")
-            self.rotate_only(3 * pi / 2)
             self.wait_until_ready()
 
     def plant_phase(self):
