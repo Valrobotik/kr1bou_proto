@@ -49,6 +49,7 @@ camera_adverse_position.y = -1
 camera_adverse_position.theta = -1
 def callback_camera(data:Float32MultiArray):
     if team_color == -1:
+        rospy.logwarn("Team color not set")
         return
     blue_robot_x, blue_robot_y, blue_robot_theta, yellow_robot_x, yellow_robot_y, yellow_robot_theta = data.data
     if team_color == TEAM_YELLOW:
