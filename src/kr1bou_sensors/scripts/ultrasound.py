@@ -9,37 +9,10 @@ import serial
 import math
 from typing import Tuple
 
-EMERGENCY_FRONT = 1
-EMERGENCY_BACK = 2
-EMERGENCY_BOTH = 3
-NO_EMERGENCY = 0
-
-front_sensor = [8, 9]
-back_sensor = [6, 7, 1, 3]
-
-emergency_threshold = 0.30
-
-clamped_readings = [(1000, 1000), (1000, 1000), (1000, 1000), (1000, 1000), (1000, 1000), (1000, 1000), (1000, 1000),
-                    (1000, 1000), (1000, 1000), (1000, 1000)]
-sensor_readings = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000]
+clamped_readings = [(1000, 1000), (1000, 1000)]
+sensor_readings = [1000, 1000]
 
 serial_port = None
-
-
-def emergency_stop_needed(us_data: list):
-    data = Int16()
-    data.data = NO_EMERGENCY
-    for i in range(0, len(us_data)):
-        if i in front_sensor:
-            if us_data[i] < emergency_threshold and us_data[i] != 0:
-                data.data = EMERGENCY_FRONT
-                rospy.logwarn(f"(ULTRASOUND) WARNING : OBSTACLE FORWARDS AT {us_data[i]} CM ON {i}")
-        elif i in back_sensor:
-            if us_data[i] < emergency_threshold and us_data[i] != 0:
-                rospy.logwarn(f"(ULTRASOUND) WARNING : OBSTACLE BACKWARDS AT {us_data[i]} CM ON {i}")
-                data.data = EMERGENCY_BACK if data.data == NO_EMERGENCY else EMERGENCY_BOTH
-    emergency_stop_pub.publish(data)
-
 
 def clamp_sensor_data(raw_data: float, sensor_position: tuple) -> Tuple[float, float]:
     # Extract the robot's yaw angle from its orientation
@@ -98,6 +71,7 @@ def read_and_publish_sensor_data():
                 # Flatten the list of tuples
                 sensor_data_pub.publish(Float32MultiArray(data=[item for sublist in clamped_readings
                                                                 for item in sublist]))
+                rospy.loginfo(f" US DATA : {[item for sublist in clamped_readings for item in sublist]}")
                 # rospy.loginfo(f" US DATA : {[item for sublist in clamped_readings for item in sublist]}")
             except ValueError:
                 rospy.logwarn(raw_data)
@@ -158,7 +132,7 @@ if __name__ == '__main__':
         queue_size = rospy.get_param('/queue_size')
         baudrate = rospy.get_param('/arduino/baudrate')
         map_boundaries = rospy.get_param('/map_boundaries')  # (x_min, y_min, x_max, y_max)
-        rate = rospy.Rate(frequency)
+        rate = rospy.Rate(20)
 
         # Load sensor parameters
         sensor_positions = rospy.get_param('/sensor_positions')  # [(x, y, z, angle), ...]. Angle is in radians
