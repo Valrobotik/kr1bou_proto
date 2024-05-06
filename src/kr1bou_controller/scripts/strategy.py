@@ -394,15 +394,15 @@ class Strategy:
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
         self.wait_until_ready()
 
-    def rotate_only(self, angle: float, speed: float = .2):
-        self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
+    def rotate_only(self, angle: float):
+        self.go_to(-1, -1, angle)
 
         use_cam = self.reset_position_from_camera()
 
         self.wait_until_ready()
         while (abs(self.camera_position.theta - angle) > 0.05 and use_cam) or (abs(self.position.theta - angle) > 0.05 and not use_cam):
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
-            self.go_to(self.position.x, self.position.y, angle, speed, BEST_DIRECTION)
+            self.go_to(-1, -1, angle)
             use_cam = self.reset_position_from_camera(.1)
 
     def setup_subscribers(self):
