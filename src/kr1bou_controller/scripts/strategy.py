@@ -232,11 +232,12 @@ class Strategy:
             self.objectives = sequences.pop(0)
             max_time = times.pop(0)
             while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
+                direction = self.current_objective.direction
                 self.update_current_objective()
                 self.close_enough_raw_waypoint()
                 self.compute_path()
                 self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
-                self.follow_path(self.current_objective.direction)
+                self.follow_path(direction)
             self.collect_paths()
 
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
