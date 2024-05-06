@@ -6,6 +6,9 @@ from typing import List, Optional, Tuple, Union
 
 DIRECTIONS = {(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)}
 INF = float('inf')
+SLOW_SPEED = 0.15
+MEDIUM_SPEED = 0.25
+MAX_SPEED = 0.32
 
 
 class Node:
@@ -72,10 +75,11 @@ def other_estimate(node1: Node, node2: Node) -> float:
 
 
 class Objective:
-    def __init__(self, x, y, theta, direction):
+    def __init__(self, x, y, theta, speed, direction):
         self.x = x
         self.y = y
         self.theta = theta
+        self.speed = SLOW_SPEED if speed == 0 else MEDIUM_SPEED if speed == 1 else MAX_SPEED
         self.direction = direction  # forward, backward, or best
 
     def __eq__(self, other):

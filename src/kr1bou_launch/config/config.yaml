@@ -50,7 +50,7 @@ objectives: # Objectives are defined for each team.
 
   yellow: # Multiple phases to complete in the given order.
     plant: # Multiple possibilities. If a path is not found for a sequence, the next closest sequence is chosen
-      sequence0: [[2.55, 0.9, 3.49, 1], [0.82, 0.2, 3.14, 1], [0.2, 0.2, 3.14, 1]]
+      sequence0: [[2.55, 0.85, 3.49, 2, 1], [0.82, 0.2, 3.14, 0, 1], [0.4, 0.2, 3.14, 0, 1]]
     solar_panel:
       sequence0: [[0.275, 1.6, 1.57, -1],
                   [0.5, 1.6, 1.57, -1],

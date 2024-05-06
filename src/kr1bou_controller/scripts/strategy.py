@@ -33,7 +33,9 @@ SOLAR_NEUTRAL = 0
 SOLAR_BOTH = 2
 SOLAR_DEFAULT = -2
 
-DEFAULT_MAX_SPEED = 0.32
+SLOW_SPEED = 0.15
+MEDIUM_SPEED = 0.25
+MAX_SPEED = 0.32
 
 NO_AXIS_MODE = 0
 X_PLUS = 1
@@ -166,10 +168,10 @@ class Strategy:
                 self.path = clean_path(self.raw_path)
             self.path = meters_to_units(self.path, self.resolution)
 
-    def follow_path(self, direction=BEST_DIRECTION):
+    def follow_path(self, speed = MAX_SPEED, direction = BEST_DIRECTION):
         if self.path:
             rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
-            self.go_to(self.path[0].position[0], self.path[0].position[1], -1, DEFAULT_MAX_SPEED, direction)
+            self.go_to(self.path[0].position[0], self.path[0].position[1], -1, speed, direction)
             rospy.loginfo(f"(STRATEGY) Going to {self.path[0]} with direction {direction}")
         else:
             rospy.loginfo("(STRATEGY) No path to follow")
@@ -232,13 +234,15 @@ class Strategy:
             self.objectives = sequences.pop(0)
             max_time = times.pop(0)
             direction = BEST_DIRECTION
+            speed = MAX_SPEED
             while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
                 self.update_current_objective()
                 direction = self.current_objective.direction if self.current_objective else direction
+                speed = self.current_objective.speed if self.current_objective else speed
                 self.close_enough_raw_waypoint()
                 self.compute_path()
                 self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
-                self.follow_path(direction)
+                self.follow_path(speed, direction)
             self.collect_paths()
 
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
@@ -373,8 +377,8 @@ class Strategy:
         return [self.parse_objectives(team, phase, i) for i in range(len(rospy.get_param(f"/objectives/{team}/{phase}").values()))]
 
     def parse_objectives(self, team, phase, index_of_sequence):
-        return [Objective(x, y, theta, direction) for
-                x, y, theta, direction in rospy.get_param(f"/objectives/{team}/{phase}/sequence{index_of_sequence}")]
+        return [Objective(x, y, theta, speed, direction) for
+                x, y, theta, speed, direction in rospy.get_param(f"/objectives/{team}/{phase}/sequence{index_of_sequence}")]
 
     def close_enough_to_waypoint(self, threshold=5.0):
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (
