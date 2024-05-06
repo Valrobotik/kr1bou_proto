@@ -113,6 +113,6 @@ if __name__ == "__main__":
                 rospy.loginfo("(CAMERA_BACK) winner : " + str(winner))
             rate.sleep()
 
-        cam.release()
     finally:
+        cam.release()
         rospy.loginfo("[STOP] Camera back node has stopped.")
