@@ -82,7 +82,7 @@ def log_debug_obstacles(obstacles):
         dy = obstacle[1] - robot_position.y
         alpha = robot_position.theta
         rospy.loginfo(f"ROBOT POSITION: ({robot_position.x}, {robot_position.y}, {robot_position.theta})")
-        rospy.loginfo(f"Obstacle absolue: ({obstacle.x}, {obstacle.y})")
+        rospy.loginfo(f"Obstacle absolue: ({obstacle[0]}, {obstacle[1]})")
         rospy.loginfo(f"Obstacle relatif: ({dx * math.cos(alpha) + dy * math.sin(alpha)}, {-dx * math.sin(alpha) + dy * math.cos(alpha)})")
 
 
