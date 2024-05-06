@@ -207,12 +207,12 @@ def meters_to_units(path: list, resolution: int) -> list:
     return [Node((node.position[0] / resolution, node.position[1] / resolution), node.orientation) for node in path]
 
 
-def parse_camera_data(blue_robot, yellow_robot, blue_position, yellow_position):
-    if (blue_robot.x, blue_robot.y) == (-1, -1):
-        blue_robot.x, blue_robot.y, blue_robot.theta = blue_position.x, blue_position.y, blue_position.theta
-    if (yellow_robot.x, yellow_robot.y) == (-1, -1):
-        yellow_robot.x, yellow_robot.y, yellow_robot.theta = yellow_position.x, yellow_position.y, yellow_position.theta
-    return blue_robot, yellow_robot
+def parse_camera_data(own_robot, enemy_robot):
+    if own_robot.x != -1 and own_robot.y != -1:
+        return own_robot, enemy_robot
+    if enemy_robot.x != -1 and enemy_robot.y != -1:
+        return enemy_robot, own_robot
+    return None, None
 
 
 def clamp_theta(theta: float) -> float:
