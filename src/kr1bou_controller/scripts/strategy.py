@@ -260,6 +260,10 @@ class Strategy:
                 self.close_enough_to_waypoint()
             rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
 
+            # Backwards
+            self.reset_position_from_camera()
+            self.go_to(solar_objective.x, solar_objective.y + .2, 3 * pi / 2, .2, BACKWARD, Y_PLUS)
+
             # Rotate self
             self.rotate_only(3 * pi / 2)
             rospy.loginfo(f"(STRATEGY) Rotated to solar panel at 3pi/2")
