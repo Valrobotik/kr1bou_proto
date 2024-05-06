@@ -75,7 +75,7 @@ def callback_US_data(data: Float32MultiArray):
 
 def is_activated_bumper(ids):
     """Return True if all ids of bumpers are activated."""
-    if all(bumpers & (1 << i) for i in ids):
+    if any(bumpers & (1 << i) for i in ids):
         return True
     return False
 
@@ -97,7 +97,7 @@ def list_of_obstacles():
         dy = obstacles[i][1] - robot_position.y
         alpha = robot_position.theta
         obstacles[i] = (dx * math.cos(alpha) + dy * math.sin(alpha), -dx * math.sin(alpha) + dy * math.cos(alpha))
-        # rospy.loginfo(f"Obstacle relatif: {obstacles[i]}")
+        rospy.loginfo(f"Obstacle relatif: {obstacles[i]}")
     return obstacles
 
 

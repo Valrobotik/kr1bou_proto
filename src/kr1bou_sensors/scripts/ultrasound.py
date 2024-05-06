@@ -96,7 +96,7 @@ def calcul_absolut_position(raw_data: float, sensor_position: tuple) -> Tuple[fl
     x_obs = current_pose.x + d * math.sin(a  - current_pose.theta + math.pi/2)
     y_obs = current_pose.y + d * math.cos(a  - current_pose.theta + math.pi/2)
 
-    rospy.loginfo(f"Obstacle at {x_obs, y_obs}") if x_obs != -1 else None
+    #rospy.loginfo(f"Obstacle at {x_obs, y_obs}") if x_obs != -1 else None
 
     return x_obs, y_obs
 
