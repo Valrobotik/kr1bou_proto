@@ -359,6 +359,7 @@ class Strategy:
 
     def back_until_bumper(self, speed=0.15, axis='y+', direction=BACKWARD):
         while not self.is_activated_bumper([2, 3]):  # back bumpers should be activated
+            rospy.loginfo(f"Back bumpers not activated: {self.bumpers}")
             if axis == 'y+':
                 self.go_to(self.position.x, self.position.y + 2, speed=speed, direction=direction, on_axis=Y_PLUS)
             elif axis == 'y-':
@@ -404,7 +405,7 @@ class Strategy:
     # -- Callbacks --
     def update_bumpers(self, data: Byte):
         """Update the bumper states by reading the Byte message from the bumper topic."""
-        data = int(data.data)
+        self.bumpers = int(data.data)
         self.need_for_compute = True
 
     def update_position(self, data):
