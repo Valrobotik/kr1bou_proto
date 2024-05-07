@@ -42,9 +42,9 @@ objectives:
   solar_panel:
     sequence0: [[2.75, 1.80, 0, 2, 0], [1, 1.80, 3.14, 1, 1]]
   home:
-    sequence0: [[0.2, 1., -1, 2, 0]]
+    # sequence0: [[0.2, 1., -1, 2, 0]]
     # sequence1: [[2.70, 1.80, -1, 2, 0]]
-    # sequence2: [[2.70, 0.2, -1, 2, 0]]
+    sequence2: [[2.70, 0.2, -1, 2, 1]]
 
 phases: # robot has the declared below game elapsed time to complete each sequence
   plant:
