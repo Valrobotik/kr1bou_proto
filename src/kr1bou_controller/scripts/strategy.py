@@ -304,18 +304,17 @@ class Strategy:
                 x, y, theta, speed, direction in rospy.get_param(f"/objectives/{phase}/sequence{index_of_sequence}")]
 
     def close_enough_to_waypoint(self, threshold=5.0):
-        last_node_to_remove = None
-        for node in self.path:
-            if sqrt((self.position.x - node.position[0]) ** 2 + (self.position.y - node.position[1]) ** 2) < threshold:
-                last_node_to_remove = node
-        if last_node_to_remove:
-            for i in range(self.path.index(last_node_to_remove) + 1):
-                self.path.pop(0)
+        while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (
+                self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
+            self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
         if sqrt((self.position.x - self.current_objective.x) ** 2 + (
                 self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:
             self.current_objective = None
 
     def close_enough_raw_waypoint(self, threshold=10.0):
+        # while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (
+        #         self.position.y - self.raw_path[0].position[1]) ** 2) < threshold:
+        #     self.raw_path.pop(0)
         last_node_to_remove = None
         for node in self.raw_path:
             if sqrt((self.position.x - node.position[0]) ** 2 + (self.position.y - node.position[1]) ** 2) < threshold:
