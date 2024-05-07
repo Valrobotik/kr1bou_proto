@@ -309,7 +309,7 @@ class Strategy:
             self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
         if sqrt((self.position.x - self.current_objective.x) ** 2 + (
                 self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:
-            self.current_objective = None
+            self.collect_paths()
 
     def close_enough_raw_waypoint(self, threshold=10.0):
         # while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (
