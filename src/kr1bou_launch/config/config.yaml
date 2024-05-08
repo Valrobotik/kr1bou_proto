@@ -4,6 +4,7 @@ arduino:
     Motor: "/dev/ttyACM1"
     US: "/dev/ttyUSB1"
     Lidar: "/dev/ttyACM0"
+    UI_Controller: "/dev/ttyUSB0"
 
 gpio:
   start_button_pin: 4
