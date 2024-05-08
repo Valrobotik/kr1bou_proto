@@ -348,6 +348,8 @@ class Strategy:
         # while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (
         #         self.position.y - self.raw_path[0].position[1]) ** 2) < threshold:
         #     self.raw_path.pop(0)
+        if not self.raw_path:
+            return
         last_node_to_remove = None
         for node in self.raw_path:
             if sqrt((self.position.x - node.position[0]) ** 2 + (self.position.y - node.position[1]) ** 2) < threshold:
