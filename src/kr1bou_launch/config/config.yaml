@@ -38,8 +38,8 @@ sensor_positions: [
 objectives:
   plant:  # [[x, y, theta, speed=(Slow=0 | Medium=1 | Fast2), direction=(Backward=-1 | Best=0 | Forward=1], ...]
     # if theta is -1, the robot will choose best angle to reach the point
-    sequence0: [[0.45, 0.9, 5.93, 2, 1], [2.27, 0.2, 0, 1, 1],  [2.6, 0.2, 0, 1, 1]]
-    sequence1: [[2.35, 0.2, 2.35, 2, -1], [1.65, 1.17, 0.35, 1, 1], [2.85, 1.80, 0, 1, 1], [2.75, 1.80, 0, 2, -1]]
+    sequence0: [[0.45, 0.9, 5.93, 2, 1], [2.27, 0.25, 0, 1, 1],  [2.6, 0.25, 0, 1, 1]]
+    sequence1: [[2.35, 0.25, 2.35, 2, -1], [1.65, 1.17, 0.35, 1, 1], [2.7, 1.7, 0, 1, 1], [2.7, 1.7, 0, 2, -1]]
   solar_panel:
     sequence0: [[2.75, 1.80, 0, 2, 0], [1, 1.80, 3.14, 1, 1]]
   home:
