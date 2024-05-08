@@ -14,8 +14,10 @@ gpio:
 frequency: 10  # Rate 
 queue_size: 1
 map_boundaries: [0, 0, 3, 2]  # in m
+map_boundaries_obstacles_radius: 0.13 # in m
+pami_obstacles: [[1.05, 0], [1.95, 0.15]] # rectangle obstacles
 resolution: 100  # for cm
-radius: 40 # radius around obstacles
+radius: 40 # radius around obstacles like the adversary robot
 # sensor_positions: [
 #                    [0, -12.5, 0, 4.712388],
 #                    [-8, 10, 0, 2.3561294],

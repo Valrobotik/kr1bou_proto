@@ -65,7 +65,8 @@ class Strategy:
         self.previous_obstacles = set()  # Previous obstacles
         self.maze_shape = (int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution))
         self.maze = np.zeros(self.maze_shape, dtype=Node)
-        self.maze = setup_maze(self.maze, self.obstacles1)
+        self.maze = setup_maze(self.maze, setup_map_boundaries_obstacles(self.map_boundaries, self.resolution,
+                                                                         pami_obstacles=rospy.get_param('/pami_obstacles')))
         self.custom_waiting_rate = rospy.Rate(20)
 
         # -- Variables for Subscribers --

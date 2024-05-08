@@ -13,6 +13,32 @@ TEAM_BLUE = 1
 TEAM_YELLOW = 0
 
 
+def setup_map_boundaries_obstacles(map_boundaries=None, resolution: int = 100, radius: int = 13, pami_obstacles=None) -> set:
+    """Create a list of tuples of obstacles using the map boundaries and the resolution of the map.
+    The obstacles point generate a square of radius around them"""
+    if pami_obstacles is None:
+        pami_obstacles = [[1.05, 0], [1.95, 0.15]]
+    if map_boundaries is None:
+        map_boundaries = [0, 0, 3, 2]
+    # map boundaries lines
+    obstacles = [(0, y) for y in range(map_boundaries[3] * resolution)] + \
+                [(map_boundaries[2] * resolution - 1, y) for y in range(map_boundaries[3] * resolution)] + \
+                [(x, 0) for x in range(map_boundaries[2] * resolution)] + \
+                [(x, map_boundaries[3] * resolution - 1) for x in range(map_boundaries[2] * resolution)]
+    # Pami rectangle using pami obstacles[0] and pami obstacles[1]
+    for x in range(int(pami_obstacles[0][0] * resolution), int(pami_obstacles[1][0] * resolution)):
+        for y in range(int(pami_obstacles[0][1] * resolution), int(pami_obstacles[1][1] * resolution)):
+            obstacles.append((x, y))
+
+    # Add radius
+    for x, y in obstacles:
+        for j in range(-radius, radius + 1):
+            for k in range(-radius, radius + 1):
+                if 0 <= x + j < map_boundaries[2] * resolution and 0 <= y + k < map_boundaries[3] * resolution:
+                    obstacles.append((x + j, y + k))
+    return set(obstacles)
+
+
 class Node:
     def __init__(self, position: tuple, orientation: float, neighbors=None, obstacle=False):
         if neighbors is None:
@@ -103,7 +129,7 @@ class Objective:
 
 
 def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, resolution: int, radius: int,
-                           map_boundaries: list, position) -> Tuple[set, set]:
+                           map_boundaries: list, position, safe_radius=13) -> Tuple[set, set]:
     """Get the obstacles from the ultrasound sensors (etc.), the position of the adversary and discretize them
     We extend each obstacle to 2 squares around it to take into account the robot's size. First square is radius, and
     second is more lenient. remove obstacles that are too close to position (10 cm)"""
@@ -114,8 +140,8 @@ def get_discrete_obstacles(lidar_data: list, us_data: list, camera_data: list, r
     obstacles1, obstacles2 = extend_obstacles(camera_data, obstacles1, obstacles2, radius, resolution, map_boundaries)
     # Remove obstacles that are too close to the robot
     x, y = int(position.x * resolution), int(position.y * resolution)  # Meters to unit
-    for j in range(-10, 11):
-        for k in range(-10, 11):
+    for j in range(-safe_radius, safe_radius + 1):
+        for k in range(-safe_radius, safe_radius + 1):
             if 0 <= x + j < map_boundaries[2] * resolution and 0 <= y + k < map_boundaries[3] * resolution:
                 if (x + j, y + k) in obstacles1:
                     obstacles1.remove((x + j, y + k))
