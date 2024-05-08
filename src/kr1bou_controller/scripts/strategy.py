@@ -114,8 +114,8 @@ class Strategy:
         # Start debug
         # pr.enable()
         self.start_time = time.time()
-        self.debug_phase()
-        # self.debug_phase_goto()
+        #self.debug_phase()
+        self.debug_phase_goto()
         # self.debug_phase_rotate()
         #self.plant_phase()
         #self.solar_phase()
