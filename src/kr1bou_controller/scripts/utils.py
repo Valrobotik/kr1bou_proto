@@ -13,8 +13,6 @@ TEAM_BLUE = 1
 TEAM_YELLOW = 0
 
 
-import numpy as np
-
 def setup_map_boundaries_obstacles(map_boundaries=None, resolution: int = 100, radius: int = 13, pami_obstacles=None) -> set:
     """Create a set of tuples of obstacles using the map boundaries and the resolution of the map, optimized to use fewer nodes
     by stepping through radius increments."""
