@@ -242,7 +242,9 @@ class Strategy:
         self.current_max_time = 1000
         while not rospy.is_shutdown():
             self.go_to(1.5, 1, -1, MEDIUM_SPEED, FORWARD)
+            self.wait_until_ready()
             self.go_to(.45, 1, -1, MEDIUM_SPEED, BACKWARD)
+            self.wait_until_ready()
 
     def debug_phase_rotate(self):
         while not rospy.is_shutdown():
