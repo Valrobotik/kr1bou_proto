@@ -10,10 +10,10 @@ from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 from search_path import a_star, clean_path
 from utils import *
 
-import pickle
-import cProfile
-import pstats
-import io
+# import pickle
+# import cProfile
+# import pstats
+# import io
 
 READY_LINEAR = 0
 READY = 1
@@ -112,7 +112,7 @@ class Strategy:
             rospy.sleep(0.05)
 
         # Start debug
-        pr.enable()
+        # pr.enable()
         self.start_time = time.time()
         # self.debug_phase()
         # self.debug_phase_goto()
@@ -154,7 +154,7 @@ class Strategy:
             end.orientation = self.current_objective.theta
             rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {end.position}")
 
-            self.register_game_state(origin, end)
+            # self.register_game_state(origin, end)
 
             # Before computing A*, check if a direct line is valid.
             straight_path = [self.maze[i][j] for i, j in bresenham(origin.position, end.position)]
@@ -365,12 +365,12 @@ class Strategy:
         self.path = []
         self.current_objective = None
 
-    def register_game_state(self, origin, end):
-        if SAVE_GAME_STATE:
-            self.game_states.append([origin.position, end.position,
-                                     self.path, self.obstacles1, self.obstacles2, self.resolution, self.map_boundaries])
-            with open("all_game_states.pkl", "wb") as f:
-                pickle.dump(self.game_states, f)
+    # def register_game_state(self, origin, end):
+    #     if SAVE_GAME_STATE:
+    #         self.game_states.append([origin.position, end.position,
+    #                                  self.path, self.obstacles1, self.obstacles2, self.resolution, self.map_boundaries])
+    #         with open("all_game_states.pkl", "wb") as f:
+    #             pickle.dump(self.game_states, f)
 
     def wait_until_ready(self):
         while self.state_robot != READY:
@@ -523,7 +523,7 @@ def run(data):
 
 if __name__ == "__main__":
     # profile le code stratégie
-    pr = cProfile.Profile()
+    # pr = cProfile.Profile()
     try:
         start = False
         rospy.init_node("strategy")
@@ -548,11 +548,11 @@ if __name__ == "__main__":
         strategy_manager.run()
     finally:
         rospy.loginfo("[STOP] Strategy node has stopped.")
-        pr.disable()
-        s = io.StringIO()
-        ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
-        # Sauvegarde des résultats dans un fichier
-        ps.print_stats()
-
-        with open('cProfile.txt', 'w') as f:
-            f.write(s.getvalue())
+        # pr.disable()
+        # s = io.StringIO()
+        # ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
+        # # Sauvegarde des résultats dans un fichier
+        # ps.print_stats()
+        #
+        # with open('cProfile.txt', 'w') as f:
+        #     f.write(s.getvalue())
