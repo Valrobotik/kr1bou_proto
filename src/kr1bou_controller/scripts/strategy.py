@@ -217,6 +217,7 @@ class Strategy:
                 self.compute_path()
                 self.close_enough_to_waypoint(threshold=4.0)
                 if self.path:
+                    rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
                     chosen_sequence = sequence
                     max_time = times[sequences.index(sequence)]
                     break
