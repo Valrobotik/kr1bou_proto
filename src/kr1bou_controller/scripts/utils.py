@@ -47,8 +47,6 @@ def setup_map_boundaries_obstacles(map_boundaries=None, resolution: int = 100, r
 
     return expanded_obstacles
 
-
-
 class Node:
     def __init__(self, position: tuple, orientation: float, neighbors=None, obstacle=False):
         if neighbors is None:
@@ -208,7 +206,7 @@ def setup_maze(maze, obstacles: set):
     """Create the maze with the obstacles"""
     for i in range(maze.shape[0]):
         for j in range(maze.shape[1]):
-            maze[i][j] = Node((i, j), 0, obstacle=((i, j) in obstacles))
+            maze[i][j] = Node((i, j), 0)
     for i in range(maze.shape[0]):
         for j in range(maze.shape[1]):
             for direction in DIRECTIONS:
@@ -216,6 +214,8 @@ def setup_maze(maze, obstacles: set):
                 y = j + direction[1]
                 if 0 <= x < maze.shape[0] and 0 <= y < maze.shape[1]:
                     maze[i][j].neighbors[direction] = (1, maze[x][y])
+    for x, y in obstacles:
+        maze[int(x)][int(y)].is_obstacle = True
     return maze
 
 
