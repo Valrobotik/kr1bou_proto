@@ -35,7 +35,7 @@ if __name__ == '__main__':
         # Initialization
         rospy.init_node('ui_controller', anonymous=True)
 
-        ser = serial.Serial("/dev/ttyUSB0", 115200)
+        ser = serial.Serial(rospy.get_param("/arduino/arduino_serial_ports/UI_Controller"), rospy.get_param("/arduino/baudrate"))
         rospy.Subscriber("team", Bool, update_team)
 
         rospy.Subscriber('running_phase', Bool, run)
