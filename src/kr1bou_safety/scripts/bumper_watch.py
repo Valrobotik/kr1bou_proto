@@ -5,9 +5,11 @@ When two front or two back buttons are held, it publishes on the 'bumper' topic.
 """
 import rospy
 from std_msgs.msg import Byte, Bool
+from gpiozero.pins.rpigpio import RPiGPIOFactory
 from gpiozero import Button
 from typing import List
 
+factory = RPiGPIOFactory()
 
 def on_bumper_press():
     global buttons_list
@@ -22,7 +24,7 @@ def on_bumper_release():
 
 def setup_buttons(pins):
     global buttons_list
-    buttons_list = [Button(int(pin)) for pin in pins]
+    buttons_list = [Button(int(pin), pin_factory=factory) for pin in pins]
     #rospy.loginfo(f"(BUMPER WATCH) {buttons_list}")
     buttons_list[0].when_activated = on_bumper_press
     buttons_list[0].when_activated = on_bumper_release

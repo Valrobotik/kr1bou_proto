@@ -4,9 +4,11 @@ Looks out for Emergency Red Button. Stops everything.
 """
 
 import rospy
+from gpiozero.pins.rpigpio import RPiGPIOFactory
 from gpiozero import Button
 from std_msgs.msg import Bool, Int8
 
+factory = RPiGPIOFactory()
 
 def speaker_state_callback(data: Bool):
     global speaker_state
@@ -50,7 +52,7 @@ if __name__ == '__main__':
 
         # GPIO setup
         button_pin = rospy.get_param('/gpio/team_button_pin')
-        button = Button(int(button_pin))  # The emergency button
+        button = Button(int(button_pin),  pin_factory=factory)  # The emergency button
 
         frequency = rospy.get_param('/frequency')
         rate = rospy.Rate(frequency)
