@@ -202,6 +202,39 @@ class Strategy:
                 self.follow_path(speed, direction)
             self.collect_paths()
 
+    def follow_best_sequence(self, sequences, times):
+        """We assume that the sequences are sorted by priority."""
+        chosen_sequence = None
+        max_time = times[0]
+        direction = BEST_DIRECTION
+        speed = MAX_SPEED
+
+        while not chosen_sequence:
+            for sequence in sequences:
+                self.objectives = sequence
+                self.update_current_objective()
+                self.close_enough_raw_waypoint()
+                self.compute_path()
+                self.close_enough_to_waypoint(threshold=4.0)
+                if self.path:
+                    chosen_sequence = sequence
+                    max_time = times[sequences.index(sequence)]
+                    break
+                rospy.sleep(.1)
+
+        if not chosen_sequence:
+            rospy.logwarn("(STRATEGY) No sequence found. Using first sequence as fallback.")
+        
+        while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
+                self.update_current_objective()
+                direction = self.current_objective.direction if self.current_objective else direction
+                speed = self.current_objective.speed if self.current_objective else speed
+                self.close_enough_raw_waypoint()
+                self.compute_path()
+                self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
+                self.follow_path(speed, direction)
+        self.collect_paths()
+
     # -- Phases --
     def debug_phase_goto(self):
         self.current_max_time = 1000
@@ -230,7 +263,7 @@ class Strategy:
         times = list(rospy.get_param("/phases/home").values())
         sequences = self.parse_sequences("home")
 
-        self.follow_sequences(sequences, times)
+        self.follow_best_sequence(sequences, times)
         rospy.loginfo("(STRATEGY) Home phase is over" + (": time over" if not sequences else ": next sequence"))
 
     def solar_phase(self):
