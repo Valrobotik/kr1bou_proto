@@ -5,7 +5,10 @@ When the key/button is pressed, it publishes a True signal to the 'starter' topi
 """
 
 import rospy
+from gpiozero.pins.rpigpio import RPiGPIOFactory
 from gpiozero import Button
+factory = RPiGPIOFactory()
+
 from std_msgs.msg import Bool, Int8
 
 
@@ -40,7 +43,7 @@ if __name__ == '__main__':
         queue_size = rospy.get_param('/queue_size')
         
         pub = rospy.Publisher('running_phase', Bool, queue_size=queue_size)
-        key = Button(int(start_pin))
+        key = Button(int(start_pin), pin_factory=factory)
         key.when_pressed = on_key_press
         key.when_released = on_key_release
 
