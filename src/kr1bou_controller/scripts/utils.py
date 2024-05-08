@@ -13,30 +13,42 @@ TEAM_BLUE = 1
 TEAM_YELLOW = 0
 
 
+import numpy as np
+
 def setup_map_boundaries_obstacles(map_boundaries=None, resolution: int = 100, radius: int = 13, pami_obstacles=None) -> set:
-    """Create a list of tuples of obstacles using the map boundaries and the resolution of the map.
-    The obstacles point generate a square of radius around them"""
+    """Create a set of tuples of obstacles using the map boundaries and the resolution of the map, optimized to use fewer nodes
+    by stepping through radius increments."""
     if pami_obstacles is None:
         pami_obstacles = [[1.05, 0], [1.95, 0.15]]
     if map_boundaries is None:
         map_boundaries = [0, 0, 3, 2]
-    # map boundaries lines
-    obstacles = [(0, y) for y in range(map_boundaries[3] * resolution)] + \
-                [(map_boundaries[2] * resolution - 1, y) for y in range(map_boundaries[3] * resolution)] + \
-                [(x, 0) for x in range(map_boundaries[2] * resolution)] + \
-                [(x, map_boundaries[3] * resolution - 1) for x in range(map_boundaries[2] * resolution)]
-    # Pami rectangle using pami obstacles[0] and pami obstacles[1]
-    for x in range(int(pami_obstacles[0][0] * resolution), int(pami_obstacles[1][0] * resolution)):
-        for y in range(int(pami_obstacles[0][1] * resolution), int(pami_obstacles[1][1] * resolution)):
-            obstacles.append((x, y))
 
-    # Add radius
+    obstacles = set()
+
+    # Process map boundaries with step size equal to the radius
+    for y in np.arange(0, map_boundaries[3] * resolution, radius):
+        obstacles.add((0, y))
+        obstacles.add((map_boundaries[2] * resolution - 1, y))
+    for x in np.arange(0, map_boundaries[2] * resolution, radius):
+        obstacles.add((x, 0))
+        obstacles.add((x, map_boundaries[3] * resolution - 1))
+
+    # Process each pami obstacle as a rectangular block of points
+    for x in np.arange(pami_obstacles[0][0] * resolution, pami_obstacles[1][0] * resolution, radius):
+        for y in np.arange(pami_obstacles[0][1] * resolution, pami_obstacles[1][1] * resolution, radius):
+            obstacles.add((x, y))
+
+    # Expand the obstacles by radius, avoiding points outside the boundaries
+    expanded_obstacles = set()
     for x, y in obstacles:
         for j in range(-radius, radius + 1):
             for k in range(-radius, radius + 1):
-                if 0 <= x + j < map_boundaries[2] * resolution and 0 <= y + k < map_boundaries[3] * resolution:
-                    obstacles.append((x + j, y + k))
-    return set(obstacles)
+                new_x, new_y = x + j, y + k
+                if 0 <= new_x < map_boundaries[2] * resolution and 0 <= new_y < map_boundaries[3] * resolution:
+                    expanded_obstacles.add((new_x, new_y))
+
+    return expanded_obstacles
+
 
 
 class Node:
