@@ -231,7 +231,7 @@ class Strategy:
             origin.orientation = self.position.theta
             end = self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]
             end.orientation = self.current_objective.theta
-            rospy.loginfo(f"(STRATEGY) Computing path from {origin} to {end}")
+            #rospy.loginfo(f"(STRATEGY) Computing path from {origin} to {end}")
 
             self.register_game_state(origin, end) if SAVE_GAME_STATE else None
 
@@ -240,18 +240,18 @@ class Strategy:
             if is_path_valid(straight_path, self.thin_obstacles):
                 self.set_raw_path(straight_path)
                 self.set_path([straight_path[-1]])
-                rospy.loginfo(f"(STRATEGY) Computed path using Bresenham : {self.raw_path}")
+                #rospy.loginfo(f"(STRATEGY) Computed path using Bresenham : {self.raw_path}")
             else:
                 self.set_raw_path(a_star(origin, end))
-                rospy.loginfo(f"(STRATEGY) Computed path using A* : {self.raw_path}")
+                #rospy.loginfo(f"(STRATEGY) Computed path using A* : {self.raw_path}")
                 self.set_path(clean_path(self.raw_path))
             self.set_path(meters_to_units(self.path, self.resolution))
 
     def follow_path(self, speed=MAX_SPEED, direction=BEST_DIRECTION):
         if self.path:
-            rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
+            #ospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.get_path(0).x, self.get_path(0).y, -1, speed, direction)
-            rospy.loginfo(f"(STRATEGY) Going to {self.get_path(0)} with direction {direction}")
+            #rospy.loginfo(f"(STRATEGY) Going to {self.get_path(0)} with direction {direction}")
         else:
             rospy.loginfo("(STRATEGY) No path to follow")
 
