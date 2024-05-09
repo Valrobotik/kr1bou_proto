@@ -184,16 +184,15 @@ class Kr1bou:
     def update_bumpers(self, data: Byte):
         self.bumpers = data.data
         if self.is_activated_bumper(FRONT_BUMPERS) and not(self.emergency_current in [EMERGENCY_BACK, EMERGENCY_BOTH]) and self.bumper_emergency_in_progress == False:
-            self.emergency_current = EMERGENCY_FRONT
             self.previous_objectif = [self.objectif_x, self.objectif_y, self.objectif_theta, self.force_forward, self.force_backward]
+            self.bumper_emergency_in_progress = True
             self.objectif_x = self.x - 0.05*cos(self.theta)
             self.objectif_y = self.y - 0.05*sin(self.theta)
             self.objectif_theta = -1
             self.force_backward = True
             self.force_forward = False
-            self.bumper_emergency_in_progress = True
+            rospy.logdebug(f"(MOTION CONTROL) FRONT BUMPER IN BACKWARD MODE")
 
-    NO_EMERGENCY
     def is_activated_bumper(self, ids):
         """Return True if all ids of bumpers are activated."""
         if any(self.bumpers & (1 << i) for i in ids):
