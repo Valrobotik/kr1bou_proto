@@ -263,14 +263,16 @@ class Strategy:
     def home_phase(self):
         rospy.loginfo("(STRATEGY) Starting home phase")
         times = list(rospy.get_param("/phases/home").values())
+        points = list(rospy.get_param("/points/home").values())
         sequences = self.parse_sequences("home")
 
-        self.follow_best_sequence(sequences, times)
+        self.follow_best_sequence(sequences, times, points)
         rospy.loginfo("(STRATEGY) Home phase is over" + (": time over" if not sequences else ": next sequence"))
 
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
         times = list(rospy.get_param("/phases/solar_panel").values())
+        points = list(rospy.get_param("/points/solar_panel").values())
         sequences = self.parse_sequences("solar_panel")
 
         # Move arm
@@ -279,7 +281,7 @@ class Strategy:
         else:
             self.solar_pub.publish(Int16(0))
 
-        self.follow_sequences(sequences, times)
+        self.follow_sequences(sequences, times, points)
 
         if self.team == TEAM_BLUE:
             self.solar_pub.publish(Int16(0))
@@ -291,9 +293,10 @@ class Strategy:
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
         times = list(rospy.get_param("/phases/plant").values())
+        points = list(rospy.get_param("/points/plant").values())
         sequences = self.parse_sequences("plant")
 
-        self.follow_sequences(sequences, times)
+        self.follow_sequences(sequences, times, points)
 
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
 
