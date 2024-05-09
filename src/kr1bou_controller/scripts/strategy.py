@@ -54,7 +54,7 @@ class Strategy:
         self.game_states = []
         self.current_max_time = 0
 
-        self.points_counter = 0
+        self.points_counter = 12
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
@@ -189,10 +189,11 @@ class Strategy:
         self.pos_ordre_pub.publish(Pose2D(x, y, alpha))
         self.state_robot = IN_PROGRESS
 
-    def follow_sequences(self, sequences, times):
+    def follow_sequences(self, sequences, times, points):
         while sequences:
             self.objectives = sequences.pop(0)
             max_time = times.pop(0)
+            seq_points = points.pop(0)
             direction = BEST_DIRECTION
             speed = MAX_SPEED
             while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
@@ -203,9 +204,11 @@ class Strategy:
                 self.compute_path()
                 self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
                 self.follow_path(speed, direction)
+            if time.time() < max_time or self.current_objective is None:
+                self.add_points(seq_points)
             self.collect_paths()
 
-    def follow_best_sequence(self, sequences, times):
+    def follow_best_sequence(self, sequences, times, points):
         """We assume that the sequences are sorted by priority."""
         chosen_sequence = None
         max_time = times[0]
@@ -223,6 +226,7 @@ class Strategy:
                     rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
                     chosen_sequence = sequence
                     max_time = times[sequences.index(sequence)]
+                    seq_points = points[sequence.index(sequence)]
                     break
                 rospy.sleep(.1)
 
@@ -237,6 +241,8 @@ class Strategy:
                 self.compute_path()
                 self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
                 self.follow_path(speed, direction)
+        if time.time() < max_time or self.current_objective is None:
+            self.add_points(seq_points)
         self.collect_paths()
 
     # -- Phases --
