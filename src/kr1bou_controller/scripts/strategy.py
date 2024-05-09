@@ -54,7 +54,7 @@ class Strategy:
         self.game_states = []
         self.current_max_time = 0
 
-        self.points_counter = 12
+        self.points_counter = 0
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
@@ -83,6 +83,8 @@ class Strategy:
         self.last_time_cam = time.time()
         self.camera_position = Pose2D()
         self.got_cam_data = False
+        # Arm
+        self.arm_angle = 0
         # Bumpers
         self.bumpers = 0
         # State of the robot
@@ -112,6 +114,13 @@ class Strategy:
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
+
+        # Move arm
+        self.arm_angle = 180 if self.team == TEAM_BLUE else 0
+        self.solar_pub.publish(Int16(self.arm_angle))
+
+        # Publish first points
+        self.add_points(12)
 
         # pr.enable()
         self.start_time = time.time()
@@ -152,13 +161,10 @@ class Strategy:
         times = list(rospy.get_param("/phases/solar_panel").values())
         points = list(rospy.get_param("/points/solar_panel").values())
 
-        # Move arm
-        angle = 180 if self.team == TEAM_BLUE else 0
-        self.solar_pub.publish(Int16(angle))
         self.follow_sequences(sequences := self.parse_sequences("solar_panel"), times, points)  # Do phase
 
         # Move arm back
-        self.solar_pub.publish(Int16(abs(angle - 180)))
+        self.solar_pub.publish(Int16(abs(self.arm_angle - 180)))
         rospy.loginfo("(STRATEGY) Solar phase is over" + (": time over" if not sequences else ": next sequence"))
 
     def plant_phase(self):
@@ -294,6 +300,7 @@ class Strategy:
     def add_points(self, points):
         self.points_counter += points
         self.points_pub.publish(Int8(self.points_counter))
+        self.rospy.loginfo(f"(STRATEGY) Added points. Score: {self.points_counter}")
 
     def phase_end(self):
         return self.current_max_time < time.time() - self.start_time
@@ -408,7 +415,7 @@ class Strategy:
             self.go_to(self.position.x - distance, self.position.y, speed=speed, direction=direction, on_axis=X_MINUS)
         elif axis == 'x+':
             self.go_to(self.position.x + distance, self.position.y, speed=speed, direction=direction, on_axis=X_PLUS)
-        self.wait_until_ready()
+        self.wait_until_ready()        
 
     def rotate_only(self, angle: float):
         self.go_to(-1, -1, angle)
