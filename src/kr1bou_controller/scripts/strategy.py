@@ -166,9 +166,12 @@ class Strategy:
         times = list(rospy.get_param("/phases/plant").values())
         points = list(rospy.get_param("/points/plant").values())
 
-        self.follow_sequences(sequences := self.parse_sequences("plant"), times, points)
+        alternative = False  # whether to get to the default of alternative phase
+        sequences = self.parse_sequences("plant", alternative)
+        self.follow_sequences(sequences, times, points)
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
 
+    # -- Core functions --
     def update_current_objective(self):
         if self.current_objective is None:  # Get new closest objective
             self.reset_position_from_camera()
@@ -293,7 +296,9 @@ class Strategy:
     def phase_end(self):
         return self.current_max_time < time.time() - self.start_time
 
-    def parse_sequences(self, phase):
+    def parse_sequences(self, phase, alternative=False):
+        if alternative:
+            return [self.parse_objectives_alt(phase, i) for i in range(len(rospy.get_param(f"/objectives/{phase}").values()))]
         return [self.parse_objectives(phase, i) for i in range(len(rospy.get_param(f"/objectives/{phase}").values()))]
 
     def parse_objectives(self, phase, index_of_sequence):
