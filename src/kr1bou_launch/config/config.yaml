@@ -62,3 +62,13 @@ phases: # robot has the declared below game elapsed time to complete each sequen
     sequence1: 90
     sequence2: 90
 
+points: 
+  plant:
+    sequence0: 9
+    sequence1: 6
+  solar_panel:
+    sequence0: 0
+  home:
+    sequence0: 10
+    sequence1: 10
+    sequence2: 10

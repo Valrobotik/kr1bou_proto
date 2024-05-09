@@ -54,7 +54,7 @@ class Strategy:
         self.game_states = []
         self.current_max_time = 0
 
-        self.points_counter = 0
+        self.points_counter = 12
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
@@ -199,16 +199,21 @@ class Strategy:
             self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
             self.follow_path(speed, direction)
 
-    def follow_sequences(self, sequences, times):
+    def follow_sequences(self, sequences, times, points):
         while sequences:
             self.objectives = sequences.pop(0)
-            self.follow_sequence(times.pop(0), BEST_DIRECTION, MAX_SPEED)
+            seq_points = points.pop(0)
+            self.follow_sequence(max_time:=times.pop(0), BEST_DIRECTION, MAX_SPEED)
+
+            if time.time() < max_time or self.current_objective is None:
+                self.add_points(seq_points)
             self.collect_paths()
 
-    def follow_best_sequence(self, sequences, times):
+    def follow_best_sequence(self, sequences, times, points):
         """We assume that the sequences are sorted by priority."""
         chosen_sequence = None
         max_time = times[0]
+        seq_points = 0
 
         while not chosen_sequence:
             for sequence in sequences:
@@ -220,6 +225,8 @@ class Strategy:
                 if self.path:
                     rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
                     self.objectives = sequence
+                    max_time = times[sequences.index(sequence)]
+                    seq_points = points[sequence.index(sequence)]
                     break
                 rospy.sleep(.1)
 
@@ -228,6 +235,8 @@ class Strategy:
             self.objectives = sequences[0]
 
         self.follow_sequence(max_time, BEST_DIRECTION, MAX_SPEED)
+        if time.time() < max_time or self.current_objective is None:
+            self.add_points(seq_points)
         self.collect_paths()
 
     # -- Phases --
@@ -248,14 +257,16 @@ class Strategy:
     def home_phase(self):
         rospy.loginfo("(STRATEGY) Starting home phase")
         times = list(rospy.get_param("/phases/home").values())
+        points = list(rospy.get_param("/points/home").values())
         sequences = self.parse_sequences("home")
 
-        self.follow_best_sequence(sequences, times)
+        self.follow_best_sequence(sequences, times, points)
         rospy.loginfo("(STRATEGY) Home phase is over" + (": time over" if not sequences else ": next sequence"))
 
     def solar_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar phase")
         times = list(rospy.get_param("/phases/solar_panel").values())
+        points = list(rospy.get_param("/points/solar_panel").values())
         sequences = self.parse_sequences("solar_panel")
 
         # Move arm
@@ -264,7 +275,7 @@ class Strategy:
         else:
             self.solar_pub.publish(Int16(0))
 
-        self.follow_sequences(sequences, times)
+        self.follow_sequences(sequences, times, points)
 
         if self.team == TEAM_BLUE:
             self.solar_pub.publish(Int16(0))
@@ -276,9 +287,10 @@ class Strategy:
     def plant_phase(self):
         rospy.loginfo("(STRATEGY) Starting plant phase")
         times = list(rospy.get_param("/phases/plant").values())
+        points = list(rospy.get_param("/points/plant").values())
         sequences = self.parse_sequences("plant")
 
-        self.follow_sequences(sequences, times)
+        self.follow_sequences(sequences, times, points)
 
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
 
