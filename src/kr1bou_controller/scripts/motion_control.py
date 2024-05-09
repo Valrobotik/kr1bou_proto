@@ -6,7 +6,7 @@ from math import atan2, sqrt, cos, sin, atan, pi
 
 import rospy
 from geometry_msgs.msg import Pose2D, Vector3
-from std_msgs.msg import Float64, Bool, Int16
+from std_msgs.msg import Float64, Bool, Int16, Byte, Float32MultiArray
 import time
 
 READY_LINEAR = 0
@@ -38,6 +38,9 @@ EMERGENCY_FRONT = 1
 EMERGENCY_BACK = 2
 EMERGENCY_BOTH = 3
 NO_EMERGENCY = 0
+
+FRONT_BUMPERS = [0, 1]
+BACK_BUMPERS = [2, 3]
 
 NO_AXIS_MODE = 0
 X_PLUS = 1
@@ -75,16 +78,22 @@ class Kr1bou:
         self.angle_to_follow = 0
 
         self.emergency_current = EMERGENCY_BACK
+        self.bumper_emergency_in_progress = False
+        self.bumpers = 0
+        self.previous_objectif = [0, 0, 0, False, False] # (x, y, z, force_forwarde, force_backward) in case of emergency stop we will go back from 5 cm and com back to aboard objectif
 
         self.freq = rospy.get_param('/frequency')
 
         self.publisher_speed = rospy.Publisher('motor_speed', Vector3, queue_size=1)
         self.publisher_state = rospy.Publisher('state', Int16, queue_size=1)
+        self.publisher_request_camera_update = rospy.Publisher('request_camera_update', Bool, queue_size=1)
 
         self.solar_mode = False
 
         self.integral_rotation = 0
         self.time_last_rotation = time.time()
+
+        self.camera_position = Pose2D()
 
         rospy.Subscriber('odometry', Pose2D, self.update_pose)
         rospy.Subscriber('next_objectif', Pose2D, self.set_objectif)
@@ -94,6 +103,7 @@ class Kr1bou:
         rospy.Subscriber('emergency_stop', Int16, self.stop_move)
         rospy.Subscriber('solar_mode', Bool, self.update_solar_mode)
         rospy.Subscriber('axis_mode', Int16, self.update_axis_mode)
+        rospy.Subscriber('bumper', Byte, self.update_bumpers)
 
     def stop_move(self, data: Int16):
         self.emergency_current = data.data
@@ -104,10 +114,21 @@ class Kr1bou:
         elif self.state == READY_LINEAR and self.objectif_theta != -1:
             self.update_rotation_speed()
         elif self.state == READY_LINEAR:
-            self.state = READY
-            self.publish_state()
-            self.vitesse_gauche = 0
-            self.vitesse_droite = 0
+            if self.bumper_emergency_in_progress:
+                self.bumper_emergency_in_progress = False
+                self.objectif_x, self.objectif_y, self.objectif_theta, self.force_forward, self.force_backward = self.previous_objectif
+                data = Vector3()
+                data.x, data.y = 0, 0
+                self.publisher_speed.publish(data)
+                self.publisher_request_camera_update.publish(Bool(True))
+                self.state = IN_PROGRESS
+                self.publish_state()
+                time.sleep(1)
+            else : 
+                self.state = READY
+                self.publish_state()
+                self.vitesse_gauche = 0
+                self.vitesse_droite = 0
         else:
             self.vitesse_gauche = 0
             self.vitesse_droite = 0
@@ -115,7 +136,7 @@ class Kr1bou:
         data.x = self.vitesse_gauche
         data.y = self.vitesse_droite
 
-        if (data.x > 0 or data.y > 0) and self.emergency_current == EMERGENCY_FRONT:
+        if (data.x > 0 or data.y > 0) and self.emergency_current == EMERGENCY_FRONT :
             data.x = 0
             data.y = 0
         elif ((data.x < 0 or data.y < 0) and not self.solar_mode) and self.emergency_current == EMERGENCY_BACK:
@@ -159,6 +180,25 @@ class Kr1bou:
         self.x = data.x
         self.y = data.y
         self.theta = data.theta
+
+    def update_bumpers(self, data: Byte):
+        self.bumpers = data.data
+        if self.is_activated_bumper(FRONT_BUMPERS) and not(self.emergency_current in [EMERGENCY_BACK, EMERGENCY_BOTH]) and self.bumper_emergency_in_progress == False:
+            self.emergency_current = EMERGENCY_FRONT
+            self.previous_objectif = [self.objectif_x, self.objectif_y, self.objectif_theta, self.force_forward, self.force_backward]
+            self.objectif_x = self.x - 0.05*cos(self.theta)
+            self.objectif_y = self.y - 0.05*sin(self.theta)
+            self.objectif_theta = -1
+            self.force_backward = True
+            self.force_forward = False
+            self.bumper_emergency_in_progress = True
+
+    NO_EMERGENCY
+    def is_activated_bumper(self, ids):
+        """Return True if all ids of bumpers are activated."""
+        if any(self.bumpers & (1 << i) for i in ids):
+            return True
+        return False
 
     def update_speed(self, force_angle_line=-1):
         x2 = self.objectif_x
@@ -248,9 +288,14 @@ class Kr1bou:
         # rospy.loginfo(f"(MOTION CONTROL) New objective set to ({data.x};{data.y};{data.theta})")
         self.state = IN_PROGRESS
         self.publish_state()
-        self.objectif_x = data.x
-        self.objectif_y = data.y
-        self.objectif_theta = data.theta
+        if self.bumper_emergency_in_progress:
+            self.previous_objectif[0] = data.x
+            self.previous_objectif[1] = data.y
+            self.previous_objectif[2] = data.theta
+        else :
+            self.objectif_x = data.x
+            self.objectif_y = data.y
+            self.objectif_theta = data.theta
 
         if self.axis_mode == PREFERRED_AXIS:
             self.angle_to_follow = atan2(self.objectif_y - self.y, self.objectif_x - self.x)
@@ -275,16 +320,12 @@ class Kr1bou:
         self.publisher_state.publish(temp)
 
     def update_moving_direction(self, data: Int16):
-        if data.data == 0:
-            self.force_backward = False
-            self.force_forward = False
-        elif data.data == 1:
-            self.force_backward = False
-            self.force_forward = True
-        elif data.data == -1:
-            self.force_forward = False
-            self.force_backward = True
-
+        if self.bumper_emergency_in_progress :
+            self.previous_objectif[3] = data.data == 1
+            self.previous_objectif[4] = data.data == -1
+        else :
+            self.force_forward = data.data == 1
+            self.force_backward = data.data == -1
 
 def angleDiffRad(from_a, to_a):
     return atan2(sin(to_a - from_a), cos(to_a - from_a))

@@ -53,7 +53,7 @@ class Strategy:
         self.next_pos_obj = [0, 0, 0]  # Next position to go to / Intermediate objective
         self.game_states = []
         self.current_max_time = float("inf")
-        self.points_counter = 12
+        self.points_counter = 0
         self.custom_waiting_rate = rospy.Rate(20)
 
         # -- Map --
@@ -72,6 +72,9 @@ class Strategy:
         self.last_time_cam = time.time()
         self.camera_position = Pose2D()
         self.got_cam_data = False
+        # Arm
+        self.arm_angle = 0
+        # Bumpers
         self.bumpers = 0
         self.state_robot = READY
         self.team = -1
@@ -105,6 +108,12 @@ class Strategy:
             rospy.sleep(0.05)
 
         pr.enable() if PROFILE else None
+        # Move arm
+        self.arm_angle = 180 if self.team == TEAM_BLUE else 0
+        self.solar_pub.publish(Int16(self.arm_angle))
+        # Publish first points
+        self.add_points(12)
+
         self.start_time = time.time()
         # self.debug_phase_goto() # self.debug_phase_rotate()
         self.plant_phase()
@@ -127,13 +136,10 @@ class Strategy:
         times = list(rospy.get_param("/phases/solar_panel").values())
         points = list(rospy.get_param("/points/solar_panel").values())
 
-        # Move arm
-        angle = 180 if self.team == TEAM_BLUE else 0
-        self.solar_pub.publish(Int16(angle))
         self.follow_sequences(sequences := self.parse_sequences("solar_panel"), times, points)  # Do phase
 
         # Move arm back
-        self.solar_pub.publish(Int16(abs(angle - 180)))
+        self.solar_pub.publish(Int16(abs(self.arm_angle - 180)))
         rospy.loginfo("(STRATEGY) Solar phase is over" + (": time over" if not sequences else ": next sequence"))
 
     def plant_phase(self):
@@ -260,6 +266,7 @@ class Strategy:
     def add_points(self, points):
         self.points_counter += points
         self.points_pub.publish(Int8(self.points_counter))
+        self.rospy.loginfo(f"(STRATEGY) Added points. Score: {self.points_counter}")
 
     def phase_end(self):
         return self.current_max_time < time.time() - self.start_time
@@ -309,11 +316,17 @@ class Strategy:
             if self.phase_end():
                 return
 
-    def reset_position_from_camera(self, wait: float = .3):
+    def camera_reset_request(self, data: Bool):
+        if data.data:
+            self.reset_position_from_camera(wait=0.5, force=True)
+
+
+    def reset_position_from_camera(self, wait: float = .3, force: bool = False):
         """Publishes the camera position to the odometry topic to correct the odometry"""
-        self.wait_until_ready()
-        if self.phase_end():
-            return
+        if not(force):
+            self.wait_until_ready()
+            if self.phase_end():
+                return
         rospy.sleep(wait)
         if time.time() - self.last_time_cam < 2:
             self.got_cam_data = False
@@ -382,6 +395,7 @@ class Strategy:
         rospy.Subscriber('bumper', Byte, self.update_bumpers)
         rospy.Subscriber('state', Int16, self.update_state)
         rospy.Subscriber('team', Bool, self.update_team)
+        rospy.Subscriber('request_camera_update', Bool, self.camera_reset_request)
 
     # -- Callbacks --
     def update_bumpers(self, data: Byte):
