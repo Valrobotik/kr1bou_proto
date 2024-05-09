@@ -115,6 +115,7 @@ class Kr1bou:
             self.update_rotation_speed()
         elif self.state == READY_LINEAR:
             if self.bumper_emergency_in_progress:
+                rospy.loginfo("END EMERGENCY BACKARD")
                 self.bumper_emergency_in_progress = False
                 self.objectif_x, self.objectif_y, self.objectif_theta, self.force_forward, self.force_backward = self.previous_objectif
                 data = Vector3()
@@ -184,6 +185,7 @@ class Kr1bou:
     def update_bumpers(self, data: Byte):
         self.bumpers = data.data
         if self.is_activated_bumper(FRONT_BUMPERS) and not(self.emergency_current in [EMERGENCY_BACK, EMERGENCY_BOTH]) and self.bumper_emergency_in_progress == False:
+            self.state = IN_PROGRESS
             self.previous_objectif = [self.objectif_x, self.objectif_y, self.objectif_theta, self.force_forward, self.force_backward]
             self.bumper_emergency_in_progress = True
             self.objectif_x = self.x - 0.05*cos(self.theta)
