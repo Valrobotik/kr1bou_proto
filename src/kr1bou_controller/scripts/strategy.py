@@ -222,6 +222,7 @@ class Strategy:
         # Check if the path is still valid (with a certain tolerance)
         if is_path_valid(self.raw_path, self.thin_obstacles):
             #rospy.loginfo("(STRATEGY) Path still exists")
+            pass
         else:  # Compute a new path
             self.maze = update_maze(self.maze, self.previous_obstacles, self.large_obstacles)
             self.previous_obstacles = self.large_obstacles
