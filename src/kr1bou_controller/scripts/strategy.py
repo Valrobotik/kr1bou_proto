@@ -482,11 +482,11 @@ class Strategy:
 
     # Setters
     def set_path(self, value):
-        rospy.loginfo(f"(STRATEGY) Changing path from {self.path[:3]} to {value[:-3]}")
+        rospy.loginfo(f"(STRATEGY) Changing path from {self.path[:3]} to {value[-3:]}")
         self.path = value
 
     def set_raw_path(self, value):
-        rospy.loginfo(f"(STRATEGY) Changing raw path from {self.raw_path[:3]} to {value[:-3]}")
+        rospy.loginfo(f"(STRATEGY) Changing raw path from {self.raw_path[:3]} to {value[-3:]}")
         self.raw_path = value
 
     def set_objectives(self, value):
