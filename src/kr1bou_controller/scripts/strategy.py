@@ -331,6 +331,11 @@ class Strategy:
             self.got_cam_data = False
             while not self.got_cam_data:
                 rospy.sleep(0.05)
+            
+            # Reposition the robot
+            self.direction_pub.publish(Int16(BEST_DIRECTION))
+            self.wait_until_ready()
+
             self.publisher_correct_odom.publish(self.camera_position)
         else:
             rospy.logwarn("(STRATEGY) No connexion with camera")
