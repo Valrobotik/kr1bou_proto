@@ -221,7 +221,7 @@ class Strategy:
 
         # Check if the path is still valid (with a certain tolerance)
         if is_path_valid(self.raw_path, self.thin_obstacles):
-            rospy.loginfo("(STRATEGY) Path still exists")
+            #rospy.loginfo("(STRATEGY) Path still exists")
         else:  # Compute a new path
             self.maze = update_maze(self.maze, self.previous_obstacles, self.large_obstacles)
             self.previous_obstacles = self.large_obstacles
@@ -253,7 +253,8 @@ class Strategy:
             self.go_to(self.get_path(0).x, self.get_path(0).y, -1, speed, direction)
             #rospy.loginfo(f"(STRATEGY) Going to {self.get_path(0)} with direction {direction}")
         else:
-            rospy.loginfo("(STRATEGY) No path to follow")
+            #rospy.loginfo("(STRATEGY) No path to follow")
+            pass
 
     def go_to(self, x=-1., y=-1., alpha=-1., speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
         self.axis_mode_pub.publish(Int16(on_axis))
