@@ -115,10 +115,10 @@ class Strategy:
         self.start_time = time.time()
         
         # Phases
-        # self.debug_phase_goto() # self.debug_phase_rotate()
-        self.plant_phase()
-        self.solar_phase()
-        self.home_phase()
+        self.debug_phase_goto() # self.debug_phase_rotate()
+        # self.plant_phase()
+        # self.solar_phase()
+        # self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
     # -- Phases --
@@ -496,10 +496,11 @@ class Strategy:
     # -- DEBUG --
     def debug_phase_goto(self):
         while not rospy.is_shutdown():
-            self.go_to(1.5, 1, -1, MEDIUM_SPEED, FORWARD)
+            self.go_to(0.45, 0.95, 5.93, MAX_SPEED, 1)
             self.wait_until_ready()
-            self.go_to(.45, 1, -1, MEDIUM_SPEED, BACKWARD)
+            self.go_to(2.3, 0.37, 5.88, MEDIUM_SPEED, 1)
             self.wait_until_ready()
+            break
 
     def debug_phase_rotate(self):
         while not rospy.is_shutdown():
