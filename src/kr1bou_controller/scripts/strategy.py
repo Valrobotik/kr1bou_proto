@@ -167,8 +167,8 @@ class Strategy:
             self.update_current_objective()
             direction = self.current_objective.direction if self.current_objective else direction
             speed = self.current_objective.speed if self.current_objective else speed
-            self.close_enough_raw_waypoint()
             self.compute_path()
+            self.close_enough_raw_waypoint()
             self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
             self.follow_path(speed, direction)
 
