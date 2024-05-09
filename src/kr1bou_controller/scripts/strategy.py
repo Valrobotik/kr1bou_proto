@@ -189,28 +189,26 @@ class Strategy:
         self.pos_ordre_pub.publish(Pose2D(x, y, alpha))
         self.state_robot = IN_PROGRESS
 
+    def follow_sequence(self, max_time, direction, speed):
+        while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
+            self.update_current_objective()
+            direction = self.current_objective.direction if self.current_objective else direction
+            speed = self.current_objective.speed if self.current_objective else speed
+            self.close_enough_raw_waypoint()
+            self.compute_path()
+            self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
+            self.follow_path(speed, direction)
+
     def follow_sequences(self, sequences, times):
         while sequences:
             self.objectives = sequences.pop(0)
-            max_time = times.pop(0)
-            direction = BEST_DIRECTION
-            speed = MAX_SPEED
-            while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
-                self.update_current_objective()
-                direction = self.current_objective.direction if self.current_objective else direction
-                speed = self.current_objective.speed if self.current_objective else speed
-                self.close_enough_raw_waypoint()
-                self.compute_path()
-                self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
-                self.follow_path(speed, direction)
+            self.follow_sequence(times.pop(0), BEST_DIRECTION, MAX_SPEED)
             self.collect_paths()
 
     def follow_best_sequence(self, sequences, times):
         """We assume that the sequences are sorted by priority."""
         chosen_sequence = None
         max_time = times[0]
-        direction = BEST_DIRECTION
-        speed = MAX_SPEED
 
         while not chosen_sequence:
             for sequence in sequences:
@@ -221,22 +219,15 @@ class Strategy:
                 self.close_enough_to_waypoint(threshold=4.0)
                 if self.path:
                     rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
-                    chosen_sequence = sequence
-                    max_time = times[sequences.index(sequence)]
+                    self.objectives = sequence
                     break
                 rospy.sleep(.1)
 
         if not chosen_sequence:
             rospy.logwarn("(STRATEGY) No sequence found. Using first sequence as fallback.")
-        
-        while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
-                self.update_current_objective()
-                direction = self.current_objective.direction if self.current_objective else direction
-                speed = self.current_objective.speed if self.current_objective else speed
-                self.close_enough_raw_waypoint()
-                self.compute_path()
-                self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
-                self.follow_path(speed, direction)
+            self.objectives = sequences[0]
+
+        self.follow_sequence(max_time, BEST_DIRECTION, MAX_SPEED)
         self.collect_paths()
 
     # -- Phases --
@@ -336,6 +327,10 @@ class Strategy:
         return [Objective(x, y, theta, speed, direction, self.team) for
                 x, y, theta, speed, direction in rospy.get_param(f"/objectives/{phase}/sequence{index_of_sequence}")]
 
+    def parse_objectives_alt(self, phase, index_of_sequence):
+        return [Objective(x, y, theta, speed, direction, self.team) for
+                x, y, theta, speed, direction in rospy.get_param(f"/objectives/{phase}/sequence{index_of_sequence}alt")]
+
     def close_enough_to_waypoint(self, threshold=5.0):
         while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (
                 self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
@@ -345,9 +340,6 @@ class Strategy:
             self.collect_paths()
 
     def close_enough_raw_waypoint(self, threshold=10.0):
-        # while self.raw_path and sqrt((self.position.x - self.raw_path[0].position[0]) ** 2 + (
-        #         self.position.y - self.raw_path[0].position[1]) ** 2) < threshold:
-        #     self.raw_path.pop(0)
         if not self.raw_path:
             return
         last_node_to_remove = None
