@@ -348,12 +348,18 @@ class Strategy:
             self.custom_waiting_rate.sleep()
             if self.phase_end():
                 return
+    
+    def camera_reset_request(self, data: Bool):
+        if data.data:
+            self.reset_position_from_camera(wait=0.5, force=True)
+        
 
-    def reset_position_from_camera(self, wait: float = .3):
+    def reset_position_from_camera(self, wait: float = .3, force: bool = False):
         """Publishes the camera position to the odometry topic to correct the odometry"""
-        self.wait_until_ready()
-        if self.phase_end():
-            return
+        if not(force):
+            self.wait_until_ready()
+            if self.phase_end():
+                return
         rospy.sleep(wait)
         if time.time() - self.last_time_cam < 2:
             self.got_cam_data = False
@@ -425,6 +431,7 @@ class Strategy:
         rospy.Subscriber('bumper', Byte, self.update_bumpers)
         rospy.Subscriber('state', Int16, self.update_state)
         rospy.Subscriber('team', Bool, self.update_team)
+        rospy.Subscriber('request_camera_update', Bool, self.camera_reset_request)
 
     # -- Callbacks --
     def update_bumpers(self, data: Byte):
