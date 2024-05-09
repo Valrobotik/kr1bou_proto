@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
         rospy.Subscriber('running_phase', Bool, run)
         rospy.sleep(6)
-        ser.write(b'INI\r')
+        #ser.write(b'INI\r')
         
         pts = Int8(18)
         change_pts(pts)
