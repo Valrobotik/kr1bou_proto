@@ -113,22 +113,68 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        # Start debug
         # pr.enable()
         self.start_time = time.time()
-        #self.debug_phase()
-        #self.debug_phase_goto()
+        # self.debug_phase()
+        # self.debug_phase_goto()
         # self.debug_phase_rotate()
         self.plant_phase()
-        #self.solar_phase()
+        # self.solar_phase()
         self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
+
+    # -- Phases --
+    def debug_phase_goto(self):
+        self.current_max_time = 1000
+        while not rospy.is_shutdown():
+            self.go_to(1.5, 1, -1, MEDIUM_SPEED, FORWARD)
+            self.wait_until_ready()
+            self.go_to(.45, 1, -1, MEDIUM_SPEED, BACKWARD)
+            self.wait_until_ready()
+
+    def debug_phase_rotate(self):
+        while not rospy.is_shutdown():
+            rospy.loginfo("(STRATEGY) Rotating to 0")
+            self.rotate_only(pi)
+            self.wait_until_ready()
+
+    def home_phase(self):
+        rospy.loginfo("(STRATEGY) Starting home phase")
+        times = list(rospy.get_param("/phases/home").values())
+        points = list(rospy.get_param("/points/home").values())
+        sequences = self.parse_sequences("home")
+
+        self.follow_best_sequence(sequences, times, points)
+        rospy.loginfo("(STRATEGY) Home phase is over" + (": time over" if not sequences else ": next sequence"))
+
+    def solar_phase(self):
+        rospy.loginfo("(STRATEGY) Starting solar phase")
+        times = list(rospy.get_param("/phases/solar_panel").values())
+        points = list(rospy.get_param("/points/solar_panel").values())
+
+        # Move arm
+        angle = 180 if self.team == TEAM_BLUE else 0
+        self.solar_pub.publish(Int16(angle))
+        self.follow_sequences(sequences := self.parse_sequences("solar_panel"), times, points)  # Do phase
+
+        # Move arm back
+        self.solar_pub.publish(Int16(abs(angle - 180)))
+        rospy.loginfo("(STRATEGY) Solar phase is over" + (": time over" if not sequences else ": next sequence"))
+
+    def plant_phase(self):
+        rospy.loginfo("(STRATEGY) Starting plant phase")
+        times = list(rospy.get_param("/phases/plant").values())
+        points = list(rospy.get_param("/points/plant").values())
+
+        self.follow_sequences(sequences := self.parse_sequences("plant"), times, points)
+        rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
 
     def update_current_objective(self):
         if self.current_objective is None:  # Get new closest objective
             self.reset_position_from_camera()
-            self.current_objective = self.objectives[0]
-            self.objectives.pop(0)
+            if self.objectives:
+                self.current_objective = self.objectives[0]
+                self.objectives.pop(0)
             self.raw_path = []
             rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
 
@@ -203,7 +249,7 @@ class Strategy:
         while sequences:
             self.objectives = sequences.pop(0)
             seq_points = points.pop(0)
-            self.follow_sequence(max_time:=times.pop(0), BEST_DIRECTION, MAX_SPEED)
+            self.follow_sequence(max_time := times.pop(0), BEST_DIRECTION, MAX_SPEED)
 
             if time.time() < max_time or self.current_objective is None:
                 self.add_points(seq_points)
@@ -239,99 +285,14 @@ class Strategy:
             self.add_points(seq_points)
         self.collect_paths()
 
-    # -- Phases --
-    def debug_phase_goto(self):
-        self.current_max_time = 1000
-        while not rospy.is_shutdown():
-            self.go_to(1.5, 1, -1, MEDIUM_SPEED, FORWARD)
-            self.wait_until_ready()
-            self.go_to(.45, 1, -1, MEDIUM_SPEED, BACKWARD)
-            self.wait_until_ready()
-
-    def debug_phase_rotate(self):
-        while not rospy.is_shutdown():
-            rospy.loginfo("(STRATEGY) Rotating to 0")
-            self.rotate_only(pi)
-            self.wait_until_ready()
-
-    def home_phase(self):
-        rospy.loginfo("(STRATEGY) Starting home phase")
-        times = list(rospy.get_param("/phases/home").values())
-        points = list(rospy.get_param("/points/home").values())
-        sequences = self.parse_sequences("home")
-
-        self.follow_best_sequence(sequences, times, points)
-        rospy.loginfo("(STRATEGY) Home phase is over" + (": time over" if not sequences else ": next sequence"))
-
-    def solar_phase(self):
-        rospy.loginfo("(STRATEGY) Starting solar phase")
-        times = list(rospy.get_param("/phases/solar_panel").values())
-        points = list(rospy.get_param("/points/solar_panel").values())
-        sequences = self.parse_sequences("solar_panel")
-
-        # Move arm
-        if self.team == TEAM_BLUE:
-            self.solar_pub.publish(Int16(180))
-        else:
-            self.solar_pub.publish(Int16(0))
-
-        self.follow_sequences(sequences, times, points)
-
-        if self.team == TEAM_BLUE:
-            self.solar_pub.publish(Int16(0))
-        else:
-            self.solar_pub.publish(Int16(180))
-
-        rospy.loginfo("(STRATEGY) Solar phase is over" + (": time over" if not sequences else ": next sequence"))
-
-    def plant_phase(self):
-        rospy.loginfo("(STRATEGY) Starting plant phase")
-        times = list(rospy.get_param("/phases/plant").values())
-        points = list(rospy.get_param("/points/plant").values())
-        sequences = self.parse_sequences("plant")
-
-        self.follow_sequences(sequences, times, points)
-
-        rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
-
+    # -- Utils --
     def add_points(self, points):
         self.points_counter += points
         self.points_pub.publish(Int8(self.points_counter))
 
-    def solar_alt_phase(self):
-        rospy.loginfo("(STRATEGY) Starting solar alternative phase")
-        self.current_max_time = rospy.get_param("/phases/solar_panel_alt")
-        solar_objectives = self.parse_objectives("solar_panel_alt")
-
-        for solar_objective in solar_objectives:
-            self.objectives = [solar_objective]
-            self.current_objective = self.objectives[0]
-            startup_arm_pos = 0
-
-            rospy.loginfo(f"(STRATEGY) going to original solar_pannel at {solar_objective}")
-
-            while (self.path or self.objectives or self.current_objective) and self.phase_end():
-                self.update_current_objective()
-
-                self.compute_path()
-                self.follow_path(self.current_objective.direction)
-                self.close_enough_to_waypoint()
-            rospy.loginfo(f"(STRATEGY) Arrived at solar panel at {solar_objective}")
-
-            self.reset_position_from_camera()
-
-            # Rotate self
-            self.go_to(1, solar_objective.y, speed=0.2, direction=BACKWARD, on_axis=X_PLUS)
-            self.reset_position_from_camera()
-            if self.phase_end(): break
-            self.go_to(2, solar_objective.y, 0, speed=0.2, direction=FORWARD, on_axis=X_PLUS)
-            self.reset_position_from_camera()
-            if self.phase_end(): break
-
     def phase_end(self):
         return self.current_max_time < time.time() - self.start_time
 
-    # -- Utils --
     def parse_sequences(self, phase):
         return [self.parse_objectives(phase, i) for i in range(len(rospy.get_param(f"/objectives/{phase}").values()))]
 
@@ -378,12 +339,14 @@ class Strategy:
         while self.state_robot != READY:
             # rospy.loginfo("(STRATEGY) Waiting for the robot to be ready...")
             self.custom_waiting_rate.sleep()
-            if self.phase_end(): return
+            if self.phase_end():
+                return
 
     def reset_position_from_camera(self, wait: float = .3):
         """Publishes the camera position to the odometry topic to correct the odometry"""
         self.wait_until_ready()
-        if self.phase_end(): return
+        if self.phase_end():
+            return
         rospy.sleep(wait)
         if time.time() - self.last_time_cam < 2:
             self.got_cam_data = False
@@ -444,7 +407,7 @@ class Strategy:
             rospy.loginfo(f"(STRATEGY) Correcting angle : {self.position.theta} -> {angle}")
             self.go_to(-1, -1, angle)
             use_cam = self.reset_position_from_camera()
-        rospy.loginfo(f"(STRATEGY) Rotated to {angle} SUCESSFULLY")
+        rospy.loginfo(f"(STRATEGY) Rotated to {angle} SUCCESSFULLY")
 
     def setup_subscribers(self):
         rospy.Subscriber('odometry', Pose2D, self.update_position)

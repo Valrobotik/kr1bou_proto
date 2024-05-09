@@ -25,10 +25,11 @@ def update_team(data: Bool):
         ser.write(b'Y\r')
         team = TEAM_YELLOW
     rospy.sleep(3)
-    pts = Int8(18)
-    change_pts(pts)
+    # pts = Int8(18)
+    # change_pts(pts)
 
-def change_pts(data : Int8):
+
+def change_pts(data: Int8):
     cmd = "S"+str(data.data)+"\r"
     ser.write(cmd.encode())
 
