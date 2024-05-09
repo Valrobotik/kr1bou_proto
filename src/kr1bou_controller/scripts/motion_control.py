@@ -188,8 +188,8 @@ class Kr1bou:
             self.state = IN_PROGRESS
             self.previous_objectif = [self.objectif_x, self.objectif_y, self.objectif_theta, self.force_forward, self.force_backward]
             self.bumper_emergency_in_progress = True
-            self.objectif_x = self.x - 0.05*cos(self.theta)
-            self.objectif_y = self.y - 0.05*sin(self.theta)
+            self.objectif_x = self.x - 0.15*cos(self.theta)
+            self.objectif_y = self.y - 0.15*sin(self.theta)
             self.objectif_theta = -1
             self.force_backward = True
             self.force_forward = False
