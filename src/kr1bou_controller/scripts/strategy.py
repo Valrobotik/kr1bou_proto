@@ -184,8 +184,8 @@ class Strategy:
             for sequence in sequences:
                 self.set_objectives(sequence)
                 self.update_current_objective()
-                self.close_enough_raw_waypoint()
                 self.compute_path()
+                self.close_enough_raw_waypoint()
                 self.close_enough_to_waypoint(threshold=4.0)
                 if self.path:
                     rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
