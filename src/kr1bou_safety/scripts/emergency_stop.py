@@ -64,6 +64,11 @@ def callback_camera(data: Float32MultiArray):
         camera_adverse_position.x = yellow_robot_x
         camera_adverse_position.y = yellow_robot_y
         camera_adverse_position.theta = yellow_robot_theta
+    
+    if camera_adverse_position.x == 0 and camera_adverse_position.y == 0:
+        camera_adverse_position.x = -1
+        camera_adverse_position.y = -1
+        camera_adverse_position.theta = -1
 
 
 def callback_US_data(data: Float32MultiArray):
