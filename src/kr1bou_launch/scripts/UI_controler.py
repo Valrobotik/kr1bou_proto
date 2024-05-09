@@ -46,6 +46,7 @@ if __name__ == '__main__':
         rospy.Subscriber("team", Bool, update_team)
 
         rospy.Subscriber('running_phase', Bool, run)
+        rospy.Subscriber('points', Int8, change_pts)
         rospy.sleep(6)
         ser.write(b'INI\r')
         

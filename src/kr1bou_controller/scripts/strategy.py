@@ -105,6 +105,7 @@ class Strategy:
         self.publisher_correct_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
         self.solar_mode_pub = rospy.Publisher('solar_mode', Bool, queue_size=1)
         self.axis_mode_pub = rospy.Publisher('axis_mode', Int16, queue_size=1)
+        self.points_pub = rospy.Publisher('points', Int8, queue_size=1)
 
     def run(self):
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
