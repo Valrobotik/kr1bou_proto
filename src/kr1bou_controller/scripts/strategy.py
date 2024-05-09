@@ -339,6 +339,7 @@ class Strategy:
             self.wait_until_ready()
 
             self.publisher_correct_odom.publish(self.camera_position)
+            rospy.loginfo(f"Updated pos from camera: {self.camera_position}")
         else:
             rospy.logwarn("(STRATEGY) No connexion with camera")
             return False

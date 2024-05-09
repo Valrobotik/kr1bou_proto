@@ -255,11 +255,12 @@ def meters_to_units(path: list, resolution: int) -> list:
 
 
 def parse_camera_data(own_robot, enemy_robot):
+    allied_robot, oponent_robot = None, None
     if own_robot.x != -1 and own_robot.y != -1:
-        return own_robot, enemy_robot
+        allied_robot = own_robot
     if enemy_robot.x != -1 and enemy_robot.y != -1:
-        return enemy_robot, own_robot
-    return None, None
+        oponent_robot = enemy_robot
+    return allied_robot, oponent_robot
 
 
 def clamp_theta(theta: float) -> float:
