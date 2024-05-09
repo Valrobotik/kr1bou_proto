@@ -47,12 +47,13 @@ def setup_map_boundaries_obstacles(map_boundaries=None, resolution: int = 100, r
 
     return expanded_obstacles
 
+
 class Node:
     def __init__(self, position: tuple, orientation: float, neighbors=None, obstacle=False):
         if neighbors is None:
             neighbors = {}
         self.parent = None
-        self.position = position
+        self.x, self.y = position
         self.orientation = orientation
         self.is_obstacle = obstacle
         self.neighbors = neighbors
@@ -64,16 +65,16 @@ class Node:
         return self.f < other.f
 
     def __eq__(self, other: 'Node'):
-        return self.position == other.position
+        return self.x, self.y == other.x, other.y
 
     def __hash__(self):
-        return hash(self.position)
+        return hash((self.x, self.y))
 
     def __str__(self):
-        return f"Node({self.position}, {self.orientation})"
+        return f"Node({self.x, self.y, self.orientation})"
 
     def __repr__(self):
-        return f"Node({self.position}, {self.orientation})"
+        return f"Node({self.x, self.y, self.orientation})"
 
 
 def euclidian(node1: Node, node2: Node) -> float:
@@ -83,7 +84,7 @@ def euclidian(node1: Node, node2: Node) -> float:
     :param node2: node 2
     :return: euclidian distance between the two nodes
     """
-    return ((node1.position[0] - node2.position[0]) ** 2 + (node1.position[1] - node2.position[1]) ** 2) ** 0.5
+    return ((node1.x - node2.x) ** 2 + (node1.y - node2.y) ** 2) ** 0.5
 
 
 def manhattan(node1: Node, node2: Node) -> float:
@@ -93,7 +94,7 @@ def manhattan(node1: Node, node2: Node) -> float:
     :param node2: node 2
     :return: manhattan distance between the two nodes
     """
-    return abs(node1.position[0] - node2.position[0]) + abs(node1.position[1] - node2.position[1])
+    return abs(node1.x - node2.x) + abs(node1.y - node2.y)
 
 
 def other_estimate(node1: Node, node2: Node) -> float:
@@ -176,10 +177,10 @@ def extend_obstacles(data: list, obstacles1: set, obstacles2: set, radius: int, 
     return obstacles1, obstacles2
 
 
-def bresenham(start: tuple, end: tuple) -> list:
+def bresenham(start: Node, end: Node) -> list:
     """Bresenham algorithm to get the path between two points."""
-    x0, y0 = start
-    x1, y1 = end
+    x0, y0 = start.x, start.y
+    x1, y1 = end.x, end.y
     points = []
     dx = abs(x1 - x0)
     dy = -abs(y1 - y0)
@@ -250,7 +251,7 @@ def is_path_valid(path: list, obstacles: set) -> bool:
 
 def meters_to_units(path: list, resolution: int) -> list:
     """Convert the path from meters to units"""
-    return [Node((node.position[0] / resolution, node.position[1] / resolution), node.orientation) for node in path]
+    return [Node((node.x / resolution, node.y / resolution), node.orientation) for node in path]
 
 
 def parse_camera_data(own_robot, enemy_robot):
@@ -307,7 +308,7 @@ def save_game_state(maze, path: list, obstacles1: set, obstacles2, resolution: i
     if path:
         for node in path:  # convert path to used unit
             ax.add_patch(
-                plt.Rectangle((node.position[0] * resolution, node.position[1] * resolution), 1, 1, color='blue'))
+                plt.Rectangle((node.x * resolution, node.y * resolution), 1, 1, color='blue'))
     for obstacle in obstacles1:
         ax.add_patch(plt.Rectangle((obstacle[0], obstacle[1]), 1, 1, color='red'))
     for obstacle in obstacles2:

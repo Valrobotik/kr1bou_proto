@@ -10,10 +10,10 @@ from std_msgs.msg import Float64, Bool, Int8, Int16, Float32MultiArray, Byte
 from search_path import a_star, clean_path
 from utils import *
 
-# import pickle
-# import cProfile
-# import pstats
-# import io
+import pickle
+import cProfile
+import pstats
+import io
 
 READY_LINEAR = 0
 READY = 1
@@ -44,59 +44,50 @@ Y_MINUS = 4
 PREFERRED_AXIS = 5
 
 SAVE_GAME_STATE = False
+PROFILE = False
 
 
 class Strategy:
     def __init__(self) -> None:
-        # -- Robot related --
-        self.need_for_compute = True  # Whether to ask for a new path
+        # -- Robot related --  # Whether to ask for a new path
         self.next_pos_obj = [0, 0, 0]  # Next position to go to / Intermediate objective
         self.game_states = []
-        self.current_max_time = 0
-
+        self.current_max_time = float("inf")
         self.points_counter = 12
-        # -- Map/Graph related --
+        self.custom_waiting_rate = rospy.Rate(20)
+
+        # -- Map --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
         self.radius = rospy.get_param('/radius')  # Radius of the robot in the resolution/unit given.
-        self.raw_path = []  # Raw path to follow
-        self.path = []  # List of waypoints to follow
-        self.obstacles1 = set()  # List of obstacles with radius
-        self.obstacles2 = set()  # List of obstacles with radius - 10
-        self.previous_obstacles = set()  # Previous obstacles
-        self.maze_shape = (int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution))
-        self.maze = np.zeros(self.maze_shape, dtype=Node)
-        self.maze = setup_maze(self.maze, setup_map_boundaries_obstacles(self.map_boundaries, self.resolution,
-                                                                         pami_obstacles=rospy.get_param('/pami_obstacles')))
-        self.custom_waiting_rate = rospy.Rate(20)
 
         # -- Variables for Subscribers --
         self.position = Pose2D()  # Get the initial position of the robot
         self.enemy_position = Pose2D()  # Get the position of the enemy robot
         self.lidar_data = []  # Get the lidar data
-        # Get the ultrasound sensor data
         self.us_data = [(-1, -1) for _ in range(10)]
         self.latest_solar_winner = SOLAR_DEFAULT
         self.need_solar_winner = False
-        # Get the camera data
         self.need_rst_odom = False
         self.last_time_cam = time.time()
         self.camera_position = Pose2D()
         self.got_cam_data = False
-        # Bumpers
         self.bumpers = 0
-        # State of the robot
         self.state_robot = READY
-        # Team Color
         self.team = -1
+
         # -- Subscribers --
         self.setup_subscribers()
 
         # -- Strategy related --
+        self.start_time = float("inf")
         self.objectives = []
         self.current_objective = None
-        self.current_direction = BEST_DIRECTION
-        self.start_time = float("inf")
+        self.path, self.raw_path = [], []
+        self.large_obstacles, self.thin_obstacles, self.previous_obstacles = set(), set(), set()
+        self.maze_shape = (int(self.map_boundaries[2] * self.resolution), int(self.map_boundaries[3] * self.resolution))
+        self.maze = setup_maze(np.zeros(self.maze_shape, dtype=Node),
+                               setup_map_boundaries_obstacles(self.map_boundaries, pami_obstacles=rospy.get_param('/pami_obstacles')))
 
         # -- Publishers --
         self.solar_pub = rospy.Publisher('solar_angle', Int16, queue_size=1)
@@ -113,31 +104,15 @@ class Strategy:
         while self.team == -1 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
-        # pr.enable()
+        pr.enable() if PROFILE else None
         self.start_time = time.time()
-        # self.debug_phase()
-        # self.debug_phase_goto()
-        # self.debug_phase_rotate()
+        # self.debug_phase_goto() # self.debug_phase_rotate()
         self.plant_phase()
         # self.solar_phase()
         self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
     # -- Phases --
-    def debug_phase_goto(self):
-        self.current_max_time = 1000
-        while not rospy.is_shutdown():
-            self.go_to(1.5, 1, -1, MEDIUM_SPEED, FORWARD)
-            self.wait_until_ready()
-            self.go_to(.45, 1, -1, MEDIUM_SPEED, BACKWARD)
-            self.wait_until_ready()
-
-    def debug_phase_rotate(self):
-        while not rospy.is_shutdown():
-            rospy.loginfo("(STRATEGY) Rotating to 0")
-            self.rotate_only(pi)
-            self.wait_until_ready()
-
     def home_phase(self):
         rospy.loginfo("(STRATEGY) Starting home phase")
         times = list(rospy.get_param("/phases/home").values())
@@ -172,71 +147,14 @@ class Strategy:
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
 
     # -- Core functions --
-    def update_current_objective(self):
-        if self.current_objective is None:  # Get new closest objective
-            self.reset_position_from_camera()
-            if self.objectives:
-                self.current_objective = self.objectives[0]
-                self.objectives.pop(0)
-            self.raw_path = []
-            rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
+    def follow_sequences(self, sequences, times, points):
+        while sequences:
+            self.set_objectives(sequences.pop(0))
+            self.follow_sequence(max_time := times.pop(0), BEST_DIRECTION, MAX_SPEED)
 
-    def compute_path(self):
-        """Aggregate all the data and compute the path to follow using A* algorithm. Neighbors are defined by a dict of
-        the form {direction: (cost, neighbor_node)}. The cost is very high if the neighbor is an obstacle.
-        :return: the path to follow
-        """
-        rospy.loginfo(f"Data : \nL: {self.lidar_data}, \nC: {self.enemy_position} \n SELF POS : {self.position}")
-        self.obstacles1, self.obstacles2 = get_discrete_obstacles(self.lidar_data, self.us_data,
-                                                                  [(self.enemy_position.x, self.enemy_position.y)],
-                                                                  self.resolution, self.radius, self.map_boundaries,
-                                                                  self.position)
-
-        if is_path_valid(self.raw_path, self.obstacles2):  # Check if the path is still valid with a 10 cm margin
-            rospy.loginfo("(STRATEGY) Path still exists")
-        else:  # Compute a new path
-            self.maze = update_maze(self.maze, self.previous_obstacles, self.obstacles1)
-            self.previous_obstacles = self.obstacles1
-
-            # Get the start and end nodes
-            origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
-            origin.orientation = self.position.theta
-            end = self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]
-            end.orientation = self.current_objective.theta
-            rospy.loginfo(f"(STRATEGY) Computing path from {origin.position} to {end.position}")
-
-            # self.register_game_state(origin, end)
-
-            # Before computing A*, check if a direct line is valid.
-            straight_path = [self.maze[i][j] for i, j in bresenham(origin.position, end.position)]
-            if is_path_valid(straight_path, self.obstacles2):
-                self.raw_path = straight_path
-                self.path = [straight_path[-1]]
-                rospy.loginfo(f"(STRATEGY) Computed path using Bresenham : {self.raw_path}")
-            else:
-                self.raw_path = a_star(origin, end)
-                rospy.loginfo(f"(STRATEGY) Computed path using A* : {self.raw_path}")
-                self.path = clean_path(self.raw_path)
-            self.path = meters_to_units(self.path, self.resolution)
-
-    def follow_path(self, speed=MAX_SPEED, direction=BEST_DIRECTION):
-        if self.path:
-            rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
-            self.go_to(self.path[0].position[0], self.path[0].position[1], -1, speed, direction)
-            rospy.loginfo(f"(STRATEGY) Going to {self.path[0]} with direction {direction}")
-        else:
-            rospy.loginfo("(STRATEGY) No path to follow")
-
-    def go_to(self, x=-1., y=-1., alpha=-1., speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
-        """Update topic for going to a position (x, y, alpha) ==> Motion Control
-        -> if alpha = -1 go to (x,y)
-        -> direction = [0 : best option, 1 : forward, -1 : backward]
-        """
-        self.axis_mode_pub.publish(Int16(on_axis))
-        self.direction_pub.publish(Int16(direction))
-        self.speed_ctrl_pub.publish(Float64(speed))
-        self.pos_ordre_pub.publish(Pose2D(x, y, alpha))
-        self.state_robot = IN_PROGRESS
+            if time.time() < max_time or self.current_objective is None:
+                self.add_points(points.pop(0))
+            self.collect_paths()
 
     def follow_sequence(self, max_time, direction, speed):
         while (self.path or self.objectives or self.current_objective) and max_time > time.time() - self.start_time:
@@ -248,16 +166,6 @@ class Strategy:
             self.close_enough_to_waypoint(threshold=4.0)  # remove close enough waypoints
             self.follow_path(speed, direction)
 
-    def follow_sequences(self, sequences, times, points):
-        while sequences:
-            self.objectives = sequences.pop(0)
-            seq_points = points.pop(0)
-            self.follow_sequence(max_time := times.pop(0), BEST_DIRECTION, MAX_SPEED)
-
-            if time.time() < max_time or self.current_objective is None:
-                self.add_points(seq_points)
-            self.collect_paths()
-
     def follow_best_sequence(self, sequences, times, points):
         """We assume that the sequences are sorted by priority."""
         rospy.loginfo(f"(STRATEGY) Points : {points}")
@@ -268,7 +176,7 @@ class Strategy:
 
         while not chosen_sequence:
             for sequence in sequences:
-                self.objectives = sequence
+                self.set_objectives(sequence)
                 self.update_current_objective()
                 self.close_enough_raw_waypoint()
                 self.compute_path()
@@ -276,19 +184,77 @@ class Strategy:
                 if self.path:
                     rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
                     chosen_sequence = sequence
-                    self.objectives = sequence
-
+                    self.set_objectives(sequence)
                     break
                 rospy.sleep(.1)
 
         if not chosen_sequence:
             rospy.logwarn("(STRATEGY) No sequence found. Using first sequence as fallback.")
-            self.objectives = sequences[0]
+            self.set_objectives(sequences[0])
 
         self.follow_sequence(max_time, BEST_DIRECTION, MAX_SPEED)
         if time.time() < max_time or self.current_objective is None:
             self.add_points(seq_points)
         self.collect_paths()
+
+    def update_current_objective(self):
+        if self.current_objective is None:
+            self.reset_position_from_camera()
+            if self.objectives:
+                self.current_objective = self.get_objective(0, pop=True)
+            self.set_raw_path([])
+            rospy.loginfo(f"(STRATEGY) New objective : {self.current_objective}")
+
+    def compute_path(self):
+        """Compute a new path for a given objective if necessary. The path is obtained using Bresenham or A*."""
+        rospy.loginfo(f"\nData : \n\tL: {self.lidar_data}, \n\tC: {self.enemy_position} \n\tS: {self.position}")
+        self.large_obstacles, self.thin_obstacles = get_discrete_obstacles(self.lidar_data, self.us_data,
+                                                                           [(self.enemy_position.x, self.enemy_position.y)],
+                                                                           self.resolution, self.radius, self.map_boundaries,
+                                                                           self.position)  # Update obstacles and tolerance zone
+
+        # Check if the path is still valid (with a certain tolerance)
+        if is_path_valid(self.raw_path, self.thin_obstacles):
+            rospy.loginfo("(STRATEGY) Path still exists")
+        else:  # Compute a new path
+            self.maze = update_maze(self.maze, self.previous_obstacles, self.large_obstacles)
+            self.previous_obstacles = self.large_obstacles
+
+            # Get the start and end nodes
+            origin = self.maze[int(self.position.x * self.resolution)][int(self.position.y * self.resolution)]
+            origin.orientation = self.position.theta
+            end = self.maze[int(self.current_objective.x * self.resolution)][int(self.current_objective.y * self.resolution)]
+            end.orientation = self.current_objective.theta
+            rospy.loginfo(f"(STRATEGY) Computing path from {origin} to {end}")
+
+            self.register_game_state(origin, end) if SAVE_GAME_STATE else None
+
+            # Before computing A*, check if a direct line is valid.
+            straight_path = [self.maze[i][j] for i, j in bresenham(origin, end)]
+            if is_path_valid(straight_path, self.thin_obstacles):
+                self.set_raw_path(straight_path)
+                self.set_path([straight_path[-1]])
+                rospy.loginfo(f"(STRATEGY) Computed path using Bresenham : {self.raw_path}")
+            else:
+                self.set_raw_path(a_star(origin, end))
+                rospy.loginfo(f"(STRATEGY) Computed path using A* : {self.raw_path}")
+                self.set_path(clean_path(self.raw_path))
+            self.set_path(meters_to_units(self.path, self.resolution))
+
+    def follow_path(self, speed=MAX_SPEED, direction=BEST_DIRECTION):
+        if self.path:
+            rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
+            self.go_to(self.get_path(0).position[0], self.get_path(0).position[1], -1, speed, direction)
+            rospy.loginfo(f"(STRATEGY) Going to {self.get_path(0)} with direction {direction}")
+        else:
+            rospy.loginfo("(STRATEGY) No path to follow")
+
+    def go_to(self, x=-1., y=-1., alpha=-1., speed=0.30, direction=BEST_DIRECTION, on_axis=NO_AXIS_MODE):
+        self.axis_mode_pub.publish(Int16(on_axis))
+        self.direction_pub.publish(Int16(direction))
+        self.speed_ctrl_pub.publish(Float64(speed))
+        self.pos_ordre_pub.publish(Pose2D(x, y, alpha))
+        self.state_robot = IN_PROGRESS
 
     # -- Utils --
     def add_points(self, points):
@@ -300,21 +266,17 @@ class Strategy:
 
     def parse_sequences(self, phase, alternative=False):
         if alternative:
-            return [self.parse_objectives_alt(phase, i) for i in range(len(rospy.get_param(f"/objectives/{phase}").values()))]
+            return [self.parse_objectives(phase, i) for i in range(len(rospy.get_param(f"/objectives/{phase}_alternative").values()))]
         return [self.parse_objectives(phase, i) for i in range(len(rospy.get_param(f"/objectives/{phase}").values()))]
 
     def parse_objectives(self, phase, index_of_sequence):
         return [Objective(x, y, theta, speed, direction, self.team) for
                 x, y, theta, speed, direction in rospy.get_param(f"/objectives/{phase}/sequence{index_of_sequence}")]
 
-    def parse_objectives_alt(self, phase, index_of_sequence):
-        return [Objective(x, y, theta, speed, direction, self.team) for
-                x, y, theta, speed, direction in rospy.get_param(f"/objectives/{phase}/sequence{index_of_sequence}alt")]
-
     def close_enough_to_waypoint(self, threshold=5.0):
-        while self.path and sqrt((self.position.x - self.path[0].position[0]) ** 2 + (
-                self.position.y - self.path[0].position[1]) ** 2) < threshold / self.resolution:
-            self.path.pop(0)  # Remove if he is close enough to the current intermediate objective
+        while self.path and sqrt((self.position.x - self.get_path(0).position[0]) ** 2 + (
+                self.position.y - self.get_path(0).position[1]) ** 2) < threshold / self.resolution:
+            self.get_path(0, pop=True)  # Remove if he is close enough to the current intermediate objective
         if sqrt((self.position.x - self.current_objective.x) ** 2 + (
                 self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:
             self.collect_paths()
@@ -324,23 +286,21 @@ class Strategy:
             return
         last_node_to_remove = None
         for node in self.raw_path:
-            if sqrt((self.position.x - node.position[0]) ** 2 + (self.position.y - node.position[1]) ** 2) < threshold:
+            if sqrt((self.position.x - node.x) ** 2 + (self.position.y - node.y) ** 2) < threshold:
                 last_node_to_remove = node
         if last_node_to_remove:
             for i in range(self.raw_path.index(last_node_to_remove) + 1):
-                self.raw_path.pop(0)
+                self.get_raw_path(0, pop=True)
 
     def collect_paths(self):
-        self.raw_path = []
-        self.path = []
+        self.set_raw_path([])
+        self.set_path([])
         self.current_objective = None
 
-    # def register_game_state(self, origin, end):
-    #     if SAVE_GAME_STATE:
-    #         self.game_states.append([origin.position, end.position,
-    #                                  self.path, self.obstacles1, self.obstacles2, self.resolution, self.map_boundaries])
-    #         with open("all_game_states.pkl", "wb") as f:
-    #             pickle.dump(self.game_states, f)
+    def register_game_state(self, origin, end):
+        self.game_states.append([origin, end, self.path, self.large_obstacles, self.thin_obstacles, self.resolution, self.map_boundaries])
+        with open("all_game_states.pkl", "wb") as file:
+            pickle.dump(self.game_states, file)
 
     def wait_until_ready(self):
         while self.state_robot != READY:
@@ -372,11 +332,8 @@ class Strategy:
         self.go_to(self.position.x, self.position.y)  # Stop the robot
 
     def is_activated_bumper(self, ids):
-        """Return True if all ids of bumpers are activated."""
-        for i in ids:
-            if self.bumpers & (1 << i):
-                return True
-        return False
+        """Return True if all/any ids of bumpers are activated."""
+        return any(self.bumpers & (1 << i) for i in ids)
 
     def back_until_bumper(self, speed: float = 0.2, axis: str = 'y+', direction: int = BACKWARD, shift: int = 10):
         # shift /= self.resolution
@@ -430,21 +387,17 @@ class Strategy:
     def update_bumpers(self, data: Byte):
         """Update the bumper states by reading the Byte message from the bumper topic."""
         self.bumpers = int(data.data)
-        self.need_for_compute = True
 
     def update_position(self, data):
         self.position = data
-        self.need_for_compute = True
 
     def update_lidar_data(self, data: PoseArray):
         raw = data
         self.lidar_data = [(raw.poses[i].position.x, raw.poses[i].position.y) for i in range(len(raw.poses))]
-        self.need_for_compute = True
 
     def update_us_data(self, data):
         raw = data.data
         self.us_data = [(raw[i], raw[i + 1]) for i in range(0, len(raw), 2)]  # Unflatten the data
-        self.need_for_compute = True
 
     def update_camera(self, data: Float32MultiArray):
         """Updates the info from the camera [team_blue_x, team_blue_y, team_blue_theta, team_yellow_x, team_yellow_y,
@@ -479,12 +432,49 @@ class Strategy:
 
     def update_state(self, data: Int16):
         self.state_robot = data.data
-        self.need_for_compute = True
 
     def update_solar_winner(self, winner: Int8):
         if self.need_solar_winner:
             self.need_solar_winner = False
             self.latest_solar_winner = winner.data
+
+    # -- Accessors --
+    # Getters
+    def get_path(self, index, pop=False):
+        if self.path:
+            return self.path[index] if not pop else self.path.pop(index)
+
+    def get_raw_path(self, index, pop=False):
+        if self.raw_path:
+            return self.raw_path[index] if not pop else self.raw_path.pop(index)
+
+    def get_objective(self, index, pop=False):
+        if self.objectives:
+            return self.objectives[index] if not pop else self.objectives.pop(index)
+
+    # Setters
+    def set_path(self, value):
+        self.path = value
+
+    def set_raw_path(self, value):
+        self.raw_path = value
+
+    def set_objectives(self, value):
+        self.objectives = value
+
+    # -- DEBUG --
+    def debug_phase_goto(self):
+        while not rospy.is_shutdown():
+            self.go_to(1.5, 1, -1, MEDIUM_SPEED, FORWARD)
+            self.wait_until_ready()
+            self.go_to(.45, 1, -1, MEDIUM_SPEED, BACKWARD)
+            self.wait_until_ready()
+
+    def debug_phase_rotate(self):
+        while not rospy.is_shutdown():
+            rospy.loginfo("(STRATEGY) Rotating to 0")
+            self.rotate_only(pi)
+            self.wait_until_ready()
 
 
 def run(data):
@@ -494,8 +484,7 @@ def run(data):
 
 
 if __name__ == "__main__":
-    # profile le code stratégie
-    # pr = cProfile.Profile()
+    pr = cProfile.Profile() if PROFILE else None
     try:
         start = False
         rospy.init_node("strategy")
@@ -520,11 +509,12 @@ if __name__ == "__main__":
         strategy_manager.run()
     finally:
         rospy.loginfo("[STOP] Strategy node has stopped.")
-        # pr.disable()
-        # s = io.StringIO()
-        # ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
-        # # Sauvegarde des résultats dans un fichier
-        # ps.print_stats()
-        #
-        # with open('cProfile.txt', 'w') as f:
-        #     f.write(s.getvalue())
+        if PROFILE:
+            pr.disable()
+            s = io.StringIO()
+            ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
+            # Sauvegarde des résultats dans un fichier
+            ps.print_stats()
+
+            with open('cProfile.txt', 'w') as f:
+                f.write(s.getvalue())
