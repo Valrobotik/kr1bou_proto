@@ -126,7 +126,7 @@ class Strategy:
         rospy.loginfo("(STRATEGY) Starting home phase")
         times = list(rospy.get_param("/phases/home").values())
         points = list(rospy.get_param("/points/home").values())
-        sequences = self.parse_sequences("/home")
+        sequences = self.parse_sequences("home")
 
         self.follow_best_sequence(sequences, times, points)
         rospy.loginfo("(STRATEGY) Home phase is over" + (": time over" if not sequences else ": next sequence"))
