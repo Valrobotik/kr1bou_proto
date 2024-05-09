@@ -104,8 +104,8 @@ def other_estimate(node1: Node, node2: Node) -> float:
     :param node2: node 2
     :return: estimated distance between the two nodes
     """
-    node_x, node_y = node1.position
-    goal_x, goal_y = node2.position
+    node_x, node_y = node1.x, node1.y
+    goal_x, goal_y = node2.x, node2.y
     dx = abs(node_x - goal_x)
     dy = abs(node_y - goal_y)
     return dx + dy + (2 ** 0.5 - 2) * min(dx, dy)
@@ -243,8 +243,8 @@ def is_path_valid(path: list, obstacles: set) -> bool:
         return False
     superposed = []
     for node in path:
-        if node.position in obstacles:
-            superposed.append(node.position)
+        if (node.x, node.y) in obstacles:
+            superposed.append((node.x, node.y))
     rospy.loginfo(f"Obstacle at {superposed}") if superposed else None
     return superposed == []
 

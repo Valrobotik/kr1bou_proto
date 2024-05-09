@@ -250,7 +250,7 @@ class Strategy:
     def follow_path(self, speed=MAX_SPEED, direction=BEST_DIRECTION):
         if self.path:
             rospy.loginfo(f"(STRATEGY) Following path : {self.path}")
-            self.go_to(self.get_path(0).position[0], self.get_path(0).position[1], -1, speed, direction)
+            self.go_to(self.get_path(0).x, self.get_path(0).y, -1, speed, direction)
             rospy.loginfo(f"(STRATEGY) Going to {self.get_path(0)} with direction {direction}")
         else:
             rospy.loginfo("(STRATEGY) No path to follow")
@@ -281,8 +281,8 @@ class Strategy:
                 x, y, theta, speed, direction in rospy.get_param(f"/objectives/{phase}/sequence{index_of_sequence}")]
 
     def close_enough_to_waypoint(self, threshold=5.0):
-        while self.path and sqrt((self.position.x - self.get_path(0).position[0]) ** 2 + (
-                self.position.y - self.get_path(0).position[1]) ** 2) < threshold / self.resolution:
+        while self.path and sqrt((self.position.x - self.get_path(0).x) ** 2 + (
+                self.position.y - self.get_path(0).y) ** 2) < threshold / self.resolution:
             self.get_path(0, pop=True)  # Remove if he is close enough to the current intermediate objective
         if sqrt((self.position.x - self.current_objective.x) ** 2 + (
                 self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:

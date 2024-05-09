@@ -71,7 +71,7 @@ def distance(node1: Node, node2: Node) -> float:
     """Distance between two nodes to be measured as the cost of moving from node1 to node2"""
     # return euclidian(node1, node2)
     # return manhattan(node1, node2)
-    return 1 if node1.position[0] == node2.position[0] or node1.position[1] == node2.position[1] else 2
+    return 1 if node1.x == node2.x or node1.y == node2.y else 2
     # return 1
 
 
@@ -81,8 +81,8 @@ def orientation_change(node1: Node, node2: Node) -> float:
     :return: the angle between node1's and 2's orientation
     """
     # get angle between node1 and node2
-    x1, y1 = node1.position
-    x2, y2 = node2.position
+    x1, y1 = node1.x, node1.y
+    x2, y2 = node2.x, node2.y
     if x1 == x2:  # vertical line
         angle = 0 if y1 < y2 else pi  # 0 or 180 degrees
     elif y1 == y2:  # horizontal line
