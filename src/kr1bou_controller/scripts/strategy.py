@@ -54,6 +54,7 @@ class Strategy:
         self.game_states = []
         self.current_max_time = 0
 
+        self.points_counter = 0
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
@@ -289,6 +290,10 @@ class Strategy:
         self.follow_sequences(sequences, times)
 
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
+
+    def add_points(self, points):
+        self.points_counter += points
+        self.points_pub.publish(Int8(self.points_counter))
 
     def solar_alt_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar alternative phase")
