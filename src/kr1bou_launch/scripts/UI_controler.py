@@ -5,7 +5,7 @@
 
 import rospy
 import serial
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int8
 
 
 def run(data: Bool):
@@ -24,6 +24,13 @@ def update_team(data: Bool):
     else:
         ser.write(b'Y\r')
         team = TEAM_YELLOW
+    rospy.sleep(3)
+    pts = Int8(18)
+    change_pts(pts)
+
+def change_pts(data : Int8):
+    cmd = "S"+str(data.data)+"\r"
+    ser.write(cmd.encode())
 
 
 if __name__ == '__main__':
@@ -39,8 +46,10 @@ if __name__ == '__main__':
         rospy.Subscriber("team", Bool, update_team)
 
         rospy.Subscriber('running_phase', Bool, run)
+        rospy.Subscriber('points', Int8, change_pts)
         rospy.sleep(6)
         ser.write(b'INI\r')
+        
         rospy.spin()
     except Exception as e:
         rospy.logerr("Error on UI Controller")

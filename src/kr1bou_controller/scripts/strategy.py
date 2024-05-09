@@ -54,6 +54,7 @@ class Strategy:
         self.game_states = []
         self.current_max_time = 0
 
+        self.points_counter = 0
         # -- Map/Graph related --
         self.map_boundaries = [int(m) for m in rospy.get_param('/map_boundaries')]
         self.resolution = rospy.get_param('/resolution')  # Resolution to centimeters for example.
@@ -105,6 +106,7 @@ class Strategy:
         self.publisher_correct_odom = rospy.Publisher('odom_corrected', Pose2D, queue_size=1)
         self.solar_mode_pub = rospy.Publisher('solar_mode', Bool, queue_size=1)
         self.axis_mode_pub = rospy.Publisher('axis_mode', Int16, queue_size=1)
+        self.points_pub = rospy.Publisher('points', Int8, queue_size=1)
 
     def run(self):
         rospy.loginfo("(STRATEGY) Strategy running loop has started.")
@@ -114,12 +116,12 @@ class Strategy:
         # Start debug
         # pr.enable()
         self.start_time = time.time()
-        # self.debug_phase()
-        # self.debug_phase_goto()
+        #self.debug_phase()
+        #self.debug_phase_goto()
         # self.debug_phase_rotate()
         self.plant_phase()
         #self.solar_phase()
-        #self.home_phase()
+        self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
     def update_current_objective(self):
@@ -241,18 +243,10 @@ class Strategy:
     def debug_phase_goto(self):
         self.current_max_time = 1000
         while not rospy.is_shutdown():
-            rospy.loginfo("(STRATEGY) Going to 2.25, .5")
-            self.go_to(2.25, .5, -1, .25, BEST_DIRECTION)
-            self.reset_position_from_camera()
-            rospy.loginfo("(STRATEGY) Going to 2.25, 1.5")
-            self.go_to(2.25, 1.5, -1, .25, BEST_DIRECTION)
-            self.reset_position_from_camera()
-            rospy.loginfo("(STRATEGY) Going to .75, 1.5")
-            self.go_to(.75, 1.5, -1, .25, BEST_DIRECTION)
-            self.reset_position_from_camera()
-            rospy.loginfo("(STRATEGY) Going to .75, .5")
-            self.go_to(.75, .5, -1, .25, BEST_DIRECTION)
-            self.reset_position_from_camera()
+            self.go_to(1.5, 1, -1, MEDIUM_SPEED, FORWARD)
+            self.wait_until_ready()
+            self.go_to(.45, 1, -1, MEDIUM_SPEED, BACKWARD)
+            self.wait_until_ready()
 
     def debug_phase_rotate(self):
         while not rospy.is_shutdown():
@@ -296,6 +290,10 @@ class Strategy:
         self.follow_sequences(sequences, times)
 
         rospy.loginfo("(STRATEGY) Plant phase is over" + (": time over" if not sequences else ": next sequence"))
+
+    def add_points(self, points):
+        self.points_counter += points
+        self.points_pub.publish(Int8(self.points_counter))
 
     def solar_alt_phase(self):
         rospy.loginfo("(STRATEGY) Starting solar alternative phase")
