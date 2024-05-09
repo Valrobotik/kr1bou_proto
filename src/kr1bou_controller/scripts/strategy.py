@@ -111,13 +111,13 @@ class Strategy:
         # Move arm
         self.arm_angle = 180 if self.team == TEAM_BLUE else 0
         self.solar_pub.publish(Int16(self.arm_angle))
-        # Publish first points
-        self.add_points(12)
-
+        self.add_points(12) # Publish first points
         self.start_time = time.time()
+        
+        # Phases
         # self.debug_phase_goto() # self.debug_phase_rotate()
         self.plant_phase()
-        # self.solar_phase()
+        self.solar_phase()
         self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
 
