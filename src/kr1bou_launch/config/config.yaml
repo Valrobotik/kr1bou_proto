@@ -38,7 +38,7 @@ points:
     sequence1: 10
     sequence2: 10
 
-  arduino:
+arduino:
   baudrate: 115200
   arduino_serial_ports:
     Motor: "/dev/ttyACM1"
@@ -61,3 +61,4 @@ radius: 40 # radius around obstacles like the adversary robot
 
 sensor_positions: [[-0.10, 0.05, 0, 3.141592],
                    [-0.10, -0.05, 0, 3.141592]]
+
