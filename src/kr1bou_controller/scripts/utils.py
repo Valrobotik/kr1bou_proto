@@ -123,7 +123,7 @@ class Objective:
     def __init__(self, x, y, theta, speed, direction, team):
         self.x = x if team == TEAM_BLUE else 3 - x
         self.y = y
-        self.theta = theta if team == TEAM_BLUE else objective_clamp(pi - theta)
+        self.theta = theta if team == TEAM_BLUE else objective_clamp(2*pi - theta)
         self.speed = SLOW_SPEED if speed == 0 else MEDIUM_SPEED if speed == 1 else MAX_SPEED
         self.direction = direction  # forward, backward, or best
 
