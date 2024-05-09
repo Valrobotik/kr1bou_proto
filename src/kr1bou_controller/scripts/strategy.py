@@ -266,7 +266,7 @@ class Strategy:
     def add_points(self, points):
         self.points_counter += points
         self.points_pub.publish(Int8(self.points_counter))
-        self.rospy.loginfo(f"(STRATEGY) Added points. Score: {self.points_counter}")
+        rospy.loginfo(f"(STRATEGY) Added points. Score: {self.points_counter}")
 
     def phase_end(self):
         return self.current_max_time < time.time() - self.start_time
@@ -320,10 +320,9 @@ class Strategy:
         if data.data:
             self.reset_position_from_camera(wait=0.5, force=True)
 
-
     def reset_position_from_camera(self, wait: float = .3, force: bool = False):
         """Publishes the camera position to the odometry topic to correct the odometry"""
-        if not(force):
+        if not force:
             self.wait_until_ready()
             if self.phase_end():
                 return
