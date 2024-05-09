@@ -260,9 +260,11 @@ class Strategy:
 
     def follow_best_sequence(self, sequences, times, points):
         """We assume that the sequences are sorted by priority."""
+        rospy.loginfo(f"(STRATEGY) Points : {points}")
+        rospy.loginfo(f"(STRATEGY) Times: {times}")
         chosen_sequence = None
         max_time = times[0]
-        seq_points = 0
+        seq_points = points[0]
 
         while not chosen_sequence:
             for sequence in sequences:
@@ -273,9 +275,9 @@ class Strategy:
                 self.close_enough_to_waypoint(threshold=4.0)
                 if self.path:
                     rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
+                    chosen_sequence = sequence
                     self.objectives = sequence
-                    max_time = times[sequences.index(sequence)]
-                    seq_points = points[sequence.index(sequence)]
+
                     break
                 rospy.sleep(.1)
 
