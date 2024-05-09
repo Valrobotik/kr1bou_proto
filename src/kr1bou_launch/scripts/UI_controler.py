@@ -46,7 +46,7 @@ if __name__ == '__main__':
         rospy.sleep(6)
         ser.write(b'INI\r')
         
-        pts = Int8(15)
+        pts = Int8(18)
         change_pts(pts)
         
         rospy.spin()
