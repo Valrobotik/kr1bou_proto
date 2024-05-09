@@ -24,6 +24,9 @@ def update_team(data: Bool):
     else:
         ser.write(b'Y\r')
         team = TEAM_YELLOW
+    rospy.sleep(3)
+    pts = Int8(18)
+    change_pts(pts)
 
 def change_pts(data : Int8):
     cmd = "S"+str(data.data)+"\r"
@@ -44,10 +47,7 @@ if __name__ == '__main__':
 
         rospy.Subscriber('running_phase', Bool, run)
         rospy.sleep(6)
-        #ser.write(b'INI\r')
-        
-        pts = Int8(18)
-        change_pts(pts)
+        ser.write(b'INI\r')
         
         rospy.spin()
     except Exception as e:
