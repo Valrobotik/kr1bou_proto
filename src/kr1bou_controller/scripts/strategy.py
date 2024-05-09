@@ -213,7 +213,7 @@ class Strategy:
 
     def compute_path(self):
         """Compute a new path for a given objective if necessary. The path is obtained using Bresenham or A*."""
-        rospy.loginfo(f"\nData : \n\tL: {self.lidar_data}, \n\tC: {self.enemy_position} \n\tS: {self.position}")
+        # rospy.loginfo(f"\nData : \n\tL: {self.lidar_data}, \n\tC: {self.enemy_position} \n\tS: {self.position}")
         self.large_obstacles, self.thin_obstacles = get_discrete_obstacles(self.lidar_data, self.us_data,
                                                                            [(self.enemy_position.x, self.enemy_position.y)],
                                                                            self.resolution, self.radius, self.map_boundaries,
@@ -460,11 +460,19 @@ class Strategy:
     # Getters
     def get_path(self, index, pop=False):
         if self.path:
-            return self.path[index] if not pop else self.path.pop(index)
+            if pop:
+                path_el=self.path.pop(index)
+                rospy.loginfo("(STRATEGY) Popped path element : " + str(path_el))
+                return path_el
+            return self.path[index]
 
     def get_raw_path(self, index, pop=False):
         if self.raw_path:
-            return self.raw_path[index] if not pop else self.raw_path.pop(index)
+            if pop:
+                path_el=self.raw_path.pop(index)
+                rospy.loginfo("(STRATEGY) Popped raw path element : " + str(path_el))
+                return path_el
+            return self.raw_path[index]
 
     def get_objective(self, index, pop=False):
         if self.objectives:
@@ -472,9 +480,11 @@ class Strategy:
 
     # Setters
     def set_path(self, value):
+        rospy.loginfo(f"(STRATEGY) Changing path from {self.path} to {value}")
         self.path = value
 
     def set_raw_path(self, value):
+        rospy.loginfo(f"(STRATEGY) Changing raw path from {self.raw_path} to {value}")
         self.raw_path = value
 
     def set_objectives(self, value):
