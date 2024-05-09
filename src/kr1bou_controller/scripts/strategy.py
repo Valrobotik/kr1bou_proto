@@ -498,7 +498,7 @@ class Strategy:
         while not rospy.is_shutdown():
             self.go_to(2.55, 1.05, 2.79, MAX_SPEED, 1)
             self.wait_until_ready()
-            self.go_to(.7, 2.63, 2.74, MEDIUM_SPEED, 1)
+            self.go_to(.7, 1.63, 2.74, MEDIUM_SPEED, 1)
             self.wait_until_ready()
             break
 
