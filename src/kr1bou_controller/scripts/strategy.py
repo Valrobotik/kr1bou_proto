@@ -126,7 +126,7 @@ class Strategy:
         rospy.loginfo("(STRATEGY) Starting home phase")
         times = list(rospy.get_param("/phases/home").values())
         points = list(rospy.get_param("/points/home").values())
-        sequences = self.parse_sequences("home")
+        sequences = self.parse_sequences("/home")
 
         self.follow_best_sequence(sequences, times, points)
         rospy.loginfo("(STRATEGY) Home phase is over" + (": time over" if not sequences else ": next sequence"))
@@ -192,7 +192,6 @@ class Strategy:
                     chosen_sequence = sequence
                     self.set_objectives(sequence)
                     break
-                rospy.sleep(.1)
 
         if not chosen_sequence:
             rospy.logwarn("(STRATEGY) No sequence found. Using first sequence as fallback.")
@@ -305,6 +304,7 @@ class Strategy:
         self.set_raw_path([])
         self.set_path([])
         self.current_objective = None
+        rospy.loginfo("Collected paths.")
 
     def register_game_state(self, origin, end):
         self.game_states.append([origin, end, self.path, self.large_obstacles, self.thin_obstacles, self.resolution, self.map_boundaries])
@@ -482,11 +482,11 @@ class Strategy:
 
     # Setters
     def set_path(self, value):
-        rospy.loginfo(f"(STRATEGY) Changing path from {self.path} to {value}")
+        rospy.loginfo(f"(STRATEGY) Changing path from {self.path[:3]} to {value[:-3]}")
         self.path = value
 
     def set_raw_path(self, value):
-        rospy.loginfo(f"(STRATEGY) Changing raw path from {self.raw_path} to {value}")
+        rospy.loginfo(f"(STRATEGY) Changing raw path from {self.raw_path[:3]} to {value[:-3]}")
         self.raw_path = value
 
     def set_objectives(self, value):
