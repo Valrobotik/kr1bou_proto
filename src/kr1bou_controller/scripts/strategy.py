@@ -158,7 +158,7 @@ class Strategy:
             self.set_objectives(sequences.pop(0))
             self.follow_sequence(max_time := times.pop(0), BEST_DIRECTION, MAX_SPEED)
 
-            if time.time() < max_time or self.current_objective is None:
+            if self.current_objective is None or max_time > time.time() - self.start_time:
                 self.add_points(points.pop(0))
             self.collect_paths()
 
@@ -176,6 +176,7 @@ class Strategy:
         """We assume that the sequences are sorted by priority."""
         rospy.loginfo(f"(STRATEGY) Points : {points}")
         rospy.loginfo(f"(STRATEGY) Times: {times}")
+        rospy.loginfo(f"(STRATEGY) Sequences: {sequences}")
         chosen_sequence = None
         max_time = times[0]
         seq_points = points[0]

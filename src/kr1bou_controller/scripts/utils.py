@@ -124,7 +124,7 @@ class Objective:
         self.x = x if team == TEAM_BLUE else 3 - x
         self.y = y
         if team == TEAM_YELLOW : 
-            self.y += 0.07  ############################################################################# POURQUOI FOUTRE CE PUTAIN DE +.05 ????????????????
+            self.y += 0.06  ############################################################################# POURQUOI FOUTRE CE PUTAIN DE +.05 ????????????????
         #theta = clamp_theta(theta)
         self.theta = theta if team == TEAM_BLUE else objective_clamp(pi - theta)
         self.speed = SLOW_SPEED if speed == 0 else MEDIUM_SPEED if speed == 1 else MAX_SPEED
