@@ -23,7 +23,7 @@ KI_R = -0.07
 GOTO_DELTA = -0.02
 POSITION_SHIFT = 0.0
 
-GOTO_BASE_DISTANCE_THRESHOLD = 0.04
+GOTO_BASE_DISTANCE_THRESHOLD = 0.02
 
 ROTATE_TIME = 1.0
 
@@ -233,7 +233,7 @@ class Kr1bou:
         diff_angle_line_to_robot = angleDiffRad(destination_angle, angle_line_to_robot)
 
         is_on_right_side = diff_angle_line_to_robot > 0.0
-        target_angle = destination_angle + atan(dist_to_line * 1) * (-1 if is_on_right_side else 1)  # dist_to_line * 3.5
+        target_angle = destination_angle + atan(dist_to_line * 3.0) * (-1 if is_on_right_side else 1)  # dist_to_line * 3.5
 
         dx_base = x2 - pos[0]
         dy_base = y2 - pos[1]
