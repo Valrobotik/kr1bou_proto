@@ -116,7 +116,7 @@ class Strategy:
         
         # Phases
         # self.debug_phase_goto() # self.debug_phase_rotate()
-        self.plant_phase()
+        # self.plant_phase()
         # self.solar_phase()
         self.home_phase()
         rospy.loginfo("(STRATEGY) Strategy running loop has stopped.")
@@ -180,7 +180,6 @@ class Strategy:
         chosen_sequence = None
         max_time = times[0]
         seq_points = points[0]
-
 
         for sequence in sequences:
             self.set_objectives(sequence)
