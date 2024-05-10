@@ -181,25 +181,31 @@ class Strategy:
         max_time = times[0]
         seq_points = points[0]
 
-        while not chosen_sequence and max_time > time.time() - self.start_time:
-            for sequence in sequences:
-                self.set_objectives(sequence)
-                self.update_current_objective()
-                self.compute_path()
-                self.close_enough_raw_waypoint()
-                self.close_enough_to_waypoint(threshold=4.0)
-                if self.path:
-                    rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
-                    chosen_sequence = sequence
-                    self.set_objectives(sequence)
-                    break
 
+        for sequence in sequences:
+            self.set_objectives(sequence)
+            rospy.loginfo("11111")
+            self.update_current_objective()
+            rospy.loginfo("22222")
+            self.compute_path()
+            rospy.loginfo("33333")
+            self.close_enough_raw_waypoint()
+            rospy.loginfo("44444")
+            self.close_enough_to_waypoint(threshold=4.0)
+            rospy.loginfo("55555")
+            if self.path:
+                rospy.loginfo(f"(STRATEGY) Sequence found : {sequence}")
+                chosen_sequence = sequence
+                self.set_objectives(sequence)
+                break
+        
         if not chosen_sequence:
             rospy.logwarn("(STRATEGY) No sequence found. Using first sequence as fallback.")
             self.set_objectives(sequences[0])
         else:
             rospy.loginfo(f"(STRATEGY) Chosen sequence : {chosen_sequence}")
-
+    
+        
         self.follow_sequence(max_time, BEST_DIRECTION, MAX_SPEED)
         if max_time > time.time() - self.start_time and self.current_objective is None:
             self.add_points(seq_points)
@@ -285,11 +291,9 @@ class Strategy:
                 x, y, theta, speed, direction in rospy.get_param(f"/objectives/{phase}/sequence{index_of_sequence}")]
 
     def close_enough_to_waypoint(self, threshold=5.0):
-        while self.path and sqrt((self.position.x - self.get_path(0).x) ** 2 + (
-                self.position.y - self.get_path(0).y) ** 2) < threshold / self.resolution:
+        while self.path and sqrt((self.position.x - self.get_path(0).x) ** 2 + (self.position.y - self.get_path(0).y) ** 2) < threshold / self.resolution:
             self.get_path(0, pop=True)  # Remove if he is close enough to the current intermediate objective
-        if sqrt((self.position.x - self.current_objective.x) ** 2 + (
-                self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:
+        if sqrt((self.position.x - self.current_objective.x) ** 2 + (self.position.y - self.current_objective.y) ** 2) < threshold / self.resolution:
             self.collect_paths()
 
     def close_enough_raw_waypoint(self, threshold=10.0):
