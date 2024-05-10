@@ -496,13 +496,14 @@ class Strategy:
     # -- DEBUG --
     def debug_phase_goto(self):
         while not rospy.is_shutdown():
-            self.go_to(.75, .50, 0, MAX_SPEED, 1)
+
+            #[0.45, 0.95, 5.93, 2, 1], [2.3, 0.37, 5.88, 1, 1],  [2.6, 0.25, 0, 1, 1]
+
+            self.go_to(.45, .95, 5.93, MAX_SPEED, FORWARD)
             self.wait_until_ready()
-            self.go_to(2.25, 0.50, pi/2, MEDIUM_SPEED, 1)
+            self.go_to(2.3, .37, 5.88, MAX_SPEED, FORWARD)
             self.wait_until_ready()
-            self.go_to(2.25, 1.50, pi, MAX_SPEED, 1)
-            self.wait_until_ready()
-            self.go_to(.75, 1.50, -pi/2, MEDIUM_SPEED, 1)
+            self.go_to(2.6, .25, 0, MAX_SPEED, FORWARD)
             self.wait_until_ready()
             break
 
