@@ -122,9 +122,9 @@ def emergency_stop_run():
         emergency_front = False
         emergency_back = False
         for obstacle in obstacles:
-            if 0.0 < obstacle[0] < 0.40 and -0.22 < obstacle[1] < 0.22:
+            if 0.0 < obstacle[0] < 0.40 and -0.20 < obstacle[1] < 0.20:
                 emergency_front = True
-            if -0.50 < obstacle[0] < 0.0 and -0.22 < obstacle[1] < 0.22:
+            if -0.50 < obstacle[0] < 0.0 and -0.20 < obstacle[1] < 0.20:
                 emergency_back = True
         if is_activated_bumper([0, 1]):
             emergency_front = True
