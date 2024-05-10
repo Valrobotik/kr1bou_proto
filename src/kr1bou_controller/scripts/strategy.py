@@ -196,9 +196,11 @@ class Strategy:
         if not chosen_sequence:
             rospy.logwarn("(STRATEGY) No sequence found. Using first sequence as fallback.")
             self.set_objectives(sequences[0])
+        else:
+            rospy.loginfo(f"(STRATEGY) Chosen sequence : {chosen_sequence}")
 
         self.follow_sequence(max_time, BEST_DIRECTION, MAX_SPEED)
-        if time.time() < max_time or self.current_objective is None:
+        if max_time > time.time() - self.start_time and self.current_objective is None:
             self.add_points(seq_points)
         self.collect_paths()
 
