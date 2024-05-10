@@ -546,8 +546,10 @@ if __name__ == "__main__":
         if not strategy_manager.reset_position_from_camera():
             rospy.logwarn("Failed to reset the position from the camera. Applying default position.")
             if strategy_manager.team == TEAM_BLUE:
-                strategy_manager.position = Pose2D(.2, 1., 0) #TODO : change back
-                strategy_manager.publisher_correct_odom.publish(Pose2D(.2, 1, 0))
+                # strategy_manager.position = Pose2D(.2, 1., 0) #TODO : change back
+                # strategy_manager.publisher_correct_odom.publish(Pose2D(.2, 1, 0))
+                strategy_manager.position = Pose2D(2.8, 1., pi)
+                strategy_manager.publisher_correct_odom.publish(Pose2D(2.8, 1., pi))
             else:
                 strategy_manager.position = Pose2D(2.8, 1., pi)
                 strategy_manager.publisher_correct_odom.publish(Pose2D(2.8, 1., pi))
