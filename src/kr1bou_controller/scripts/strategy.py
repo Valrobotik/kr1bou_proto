@@ -254,7 +254,7 @@ class Strategy:
         if self.path:
             #ospy.loginfo(f"(STRATEGY) Following path : {self.path}")
             self.go_to(self.get_path(0).x, self.get_path(0).y, -1, speed, direction)
-            #rospy.loginfo(f"(STRATEGY) Going to {self.get_path(0)} with direction {direction}")
+            rospy.loginfo(f"(STRATEGY) Going to {self.get_path(0)} with direction {direction}")
         else:
             #rospy.loginfo("(STRATEGY) No path to follow")
             pass
