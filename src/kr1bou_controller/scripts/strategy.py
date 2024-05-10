@@ -511,9 +511,9 @@ class Strategy:
             ### YELLOW PATH
             self.go_to(2.55, 0.85, -1, MAX_SPEED, FORWARD)
             self.wait_until_ready()
-            self.go_to(0.68, 0.29, -1, MEDIUM_SPEED, FORWARD)
+            self.go_to(0.68, 0.29, -1, MEDIUM_SPEED, FORWARD, PREFERRED_AXIS)
             self.wait_until_ready()
-            self.go_to(0.4, 0.25, 0, MAX_SPEED, FORWARD)
+            self.go_to(0.4, 0.25, pi, MAX_SPEED, FORWARD)
             self.wait_until_ready()
             break
 
