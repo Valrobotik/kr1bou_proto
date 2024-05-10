@@ -17,7 +17,7 @@ class WheelController:
         self.baudrate = rospy.get_param('/arduino/baudrate')
         self.rate = rospy.Rate(30)
         self.list_command_to_send = []
-
+        self.match_end = False
         # Initialize the serial port for communication with Arduino
         self.serial_port = serial.Serial(self.serial_port_param, self.baudrate, timeout=1)
         rospy.sleep(0.1)
@@ -64,7 +64,10 @@ class WheelController:
                     for command in self.list_command_to_send:
                         str_ += command
                         self.list_command_to_send.pop(self.list_command_to_send.index(command))
-                    self.serial_port.write(str_.encode())
+                    if not self.match_end:
+                        self.serial_port.write(str_.encode())
+                    else:
+                        self.serial_port.write("V0.00;0.00R".encode())
                     # rospy.loginfo(f"(WHEEL CONTROL) send_data : {str}")
                 except serial.SerialException as s:
                     rospy.logwarn("(WHEEL CONTROL) Error while sending correction to Arduino.")
@@ -77,9 +80,15 @@ class WheelController:
 
 
 def run(data: Bool):
-    global start
+    global start, wheel_controller
     start = data.data
     rospy.loginfo(f"{rospy.get_name()} received: {data.data} from RunningPhase")
+    if data.data == False and wheel_controller is not None:
+        wheel_controller.motor_speed_callback(Vector3(0, 0, 0))
+        wheel_controller.match_end = True
+        
+
+
 
 
 if __name__ == "__main__":
@@ -89,6 +98,7 @@ if __name__ == "__main__":
         # Initialization
         rospy.init_node('wheel_controller')
         rospy.loginfo("[START] Wheel Controller node has started.")
+        rospy.Subscriber('running_phase', Bool, run)
         # Wait for the running_phase True signal
         rospy.sleep(2)
         wheel_controller = WheelController()

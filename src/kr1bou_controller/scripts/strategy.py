@@ -180,7 +180,7 @@ class Strategy:
         max_time = times[0]
         seq_points = points[0]
 
-        while not chosen_sequence:
+        while not chosen_sequence and max_time > time.time() - self.start_time:
             for sequence in sequences:
                 self.set_objectives(sequence)
                 self.update_current_objective()
