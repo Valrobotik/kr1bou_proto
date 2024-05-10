@@ -499,11 +499,21 @@ class Strategy:
 
             #[0.45, 0.95, 5.93, 2, 1], [2.3, 0.37, 5.88, 1, 1],  [2.6, 0.25, 0, 1, 1]
 
-            self.go_to(.45, .85, -1, MAX_SPEED, FORWARD)
+
+            ### BLUE PATH
+            # self.go_to(.45, .85, -1, MAX_SPEED, FORWARD)
+            # self.wait_until_ready()
+            # self.go_to(2.32, .29, -1, MEDIUM_SPEED, FORWARD)
+            # self.wait_until_ready()
+            # self.go_to(2.6, .25, 0, MAX_SPEED, FORWARD)
+            # self.wait_until_ready()
+
+            ### YELLOW PATH
+            self.go_to(2.55, 0.85, -1, MAX_SPEED, FORWARD)
             self.wait_until_ready()
-            self.go_to(2.32, .29, -1, MEDIUM_SPEED, FORWARD)
+            self.go_to(0.68, 0.29, -1, MEDIUM_SPEED, FORWARD)
             self.wait_until_ready()
-            self.go_to(2.6, .25, 0, MAX_SPEED, FORWARD)
+            self.go_to(0.4, 0.25, 0, MAX_SPEED, FORWARD)
             self.wait_until_ready()
             break
 
