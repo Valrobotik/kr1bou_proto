@@ -18,7 +18,7 @@ objectives:
 
 phases: # robot has the declared below game elapsed time to complete each sequence
   plant:
-    sequence0: 90
+    sequence0: 45
     sequence1: 90
   solar_panel:
     sequence0: 90
