@@ -99,7 +99,7 @@ def list_of_obstacles():
     if camera_adverse_position.x != -1 and camera_adverse_position.y != -1:
         obstacles.append((camera_adverse_position.x, camera_adverse_position.y))
 
-    obstacles.extend(US_obstacles)
+    # obstacles.extend(US_obstacles)
 
     # log_debug_obstacles(US_obstacles)
 
